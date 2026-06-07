@@ -20,13 +20,16 @@ const MOCK_NOTIFICATIONS = [
 export const Navbar: React.FC = () => {
   const location = useLocation();
   const [searchOpen, setSearchOpen] = React.useState(false);
-  const [scrolled, setScrolled] = React.useState(false);
+  const [scrollDepth, setScrollDepth] = React.useState(0);
   const [notifOpen, setNotifOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
   const { user, openLoginModal, logout } = useAuth();
 
+  const scrolled = scrollDepth > 24;
+  const scrolledFull = scrollDepth > 80;
+
   React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrollDepth(window.scrollY);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -58,11 +61,18 @@ export const Navbar: React.FC = () => {
         initial={{ y: -72, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? 'glass shadow-[0_1px_0_rgba(255,255,255,0.06),0_8px_32px_rgba(0,0,0,0.5)]'
-            : 'bg-gradient-to-b from-[rgba(8,8,8,0.9)] to-transparent backdrop-blur-none'
-        }`}
+        className="fixed top-0 inset-x-0 z-50 transition-all duration-400"
+        style={{
+          background: scrolledFull
+            ? 'rgba(8,8,8,0.92)'
+            : scrolled
+            ? 'rgba(8,8,8,0.7)'
+            : 'linear-gradient(to bottom, rgba(8,8,8,0.85), transparent)',
+          backdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
+          borderBottom: scrolledFull ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
+          boxShadow: scrolledFull ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
+        }}
       >
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between relative">
           {/* LEFT — Logo + Nyxen */}
@@ -111,15 +121,17 @@ export const Navbar: React.FC = () => {
                   {active && (
                     <motion.div
                       layoutId="nav-pill"
-                      className="absolute inset-0 rounded-xl bg-white/[0.08]"
+                      className="absolute inset-0 rounded-xl"
+                      style={{ background: 'rgba(139,92,246,0.1)' }}
                       transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                     />
                   )}
-                  {/* Active underline */}
+                  {/* Active glow underline */}
                   {active && (
                     <motion.div
                       layoutId="nav-underline"
-                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-accent rounded-full"
+                      className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-[2.5px] w-5 rounded-full"
+                      style={{ background: '#A78BFA', boxShadow: '0 0 8px rgba(167,139,250,0.6)' }}
                       transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                     />
                   )}

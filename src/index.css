@@ -26,7 +26,7 @@
 
   /* Cinematic shadows */
   --shadow-card:  0 2px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
-  --shadow-card-hover: 0 12px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+  --shadow-card-hover: 0 16px 56px rgba(0,0,0,0.8), 0 0 0 1px rgba(139,92,246,0.15), 0 0 40px rgba(139,92,246,0.12);
   --shadow-glow:  0 0 60px rgba(139,92,246,0.2), 0 0 120px rgba(139,92,246,0.08);
   --shadow-poster: 0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
 
@@ -41,9 +41,78 @@
   /* Transitions */
   --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 400ms;
+  --duration-cinematic: 700ms;
+}
+
+/* ─────────────────────────────────────────
+   KEYFRAMES
+───────────────────────────────────────── */
+@keyframes aurora {
+  0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.6; }
+  25% { transform: scale(1.05) translate(2%, 1%); opacity: 0.8; }
+  50% { transform: scale(0.97) translate(-1%, 2%); opacity: 0.5; }
+  75% { transform: scale(1.03) translate(1%, -1%); opacity: 0.7; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-4px) rotate(0.5deg); }
+  66% { transform: translateY(-8px) rotate(-0.5deg); }
+}
+
+@keyframes shimmer-sweep {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.08); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes text-glow {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 8px rgba(167,139,250,0.3)); }
+  50% { filter: brightness(1.15) drop-shadow(0 0 20px rgba(167,139,250,0.6)); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes backdrop-reveal {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ─────────────────────────────────────────
@@ -134,6 +203,13 @@
     border: 1px solid var(--border-light);
   }
 
+  .glass-ultra {
+    background: rgba(8, 8, 8, 0.85);
+    backdrop-filter: blur(60px) saturate(220%);
+    -webkit-backdrop-filter: blur(60px) saturate(220%);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
   /* ── Gradient Overlays (cinematic) ── */
   .overlay-bottom {
     background: linear-gradient(
@@ -173,6 +249,37 @@
     );
   }
 
+  /* ── Aurora Background ── */
+  .aurora-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    animation: aurora 10s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  .aurora-orb-1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+    animation-delay: 0s;
+  }
+
+  .aurora-orb-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(109,40,217,0.08) 0%, transparent 70%);
+    animation-delay: -3s;
+  }
+
+  .aurora-orb-3 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(167,139,250,0.07) 0%, transparent 70%);
+    animation-delay: -6s;
+  }
+
   /* ── Shimmer Skeleton ── */
   .skeleton {
     background: linear-gradient(
@@ -186,11 +293,6 @@
     border-radius: var(--radius-md);
   }
 
-  @keyframes skeleton-shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
   /* ── Accent Glow ── */
   .glow-accent {
     box-shadow: var(--shadow-glow);
@@ -198,6 +300,10 @@
 
   .glow-accent-sm {
     box-shadow: 0 0 24px rgba(139,92,246,0.2), 0 0 48px rgba(139,92,246,0.08);
+  }
+
+  .glow-accent-strong {
+    box-shadow: 0 0 40px rgba(139,92,246,0.4), 0 0 80px rgba(139,92,246,0.15);
   }
 
   /* ── Horizontal Scroll (no bar) ── */
@@ -228,6 +334,20 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .text-shimmer {
+    background: linear-gradient(90deg, #A78BFA 0%, #FFFFFF 30%, #C4B5FD 50%, #FFFFFF 70%, #A78BFA 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-sweep 3s linear infinite;
+  }
+
+  /* ── Animated text glow ── */
+  .animate-text-glow {
+    animation: text-glow 3s ease-in-out infinite;
   }
 
   /* ── Buttons ── */
@@ -273,6 +393,24 @@
     background: rgba(255,255,255,0.05); 
   }
 
+  /* Pulse ring CTA */
+  .btn-cta-pulse {
+    position: relative;
+  }
+  .btn-cta-pulse::before,
+  .btn-cta-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 2px solid rgba(139, 92, 246, 0.4);
+    animation: pulse-ring 2.5s ease-out infinite;
+    pointer-events: none;
+  }
+  .btn-cta-pulse::after {
+    animation-delay: 1.25s;
+  }
+
   /* ── Premium Input ── */
   .input-premium {
     @apply w-full bg-transparent text-white placeholder-muted/60
@@ -304,12 +442,13 @@
     border-color: var(--border-light);
     color: white;
     background: rgba(255,255,255,0.07);
+    transform: translateY(-1px);
   }
   .chip.active {
     background: rgba(139,92,246,0.18);
     border-color: rgba(139,92,246,0.5);
     color: #C4B5FD;
-    box-shadow: 0 0 0 1px rgba(139,92,246,0.2);
+    box-shadow: 0 0 0 1px rgba(139,92,246,0.2), 0 4px 16px rgba(139,92,246,0.15);
   }
 
   /* ── Movie Card Poster ── */
@@ -324,6 +463,34 @@
   .poster-wrap:hover {
     box-shadow: var(--shadow-card-hover);
   }
+
+  /* ── DNA Badge ── */
+  .dna-badge {
+    background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.15));
+    border: 1px solid rgba(139,92,246,0.35);
+    backdrop-filter: blur(12px);
+  }
+
+  /* ── Spinning animation ── */
+  .animate-spin-slow {
+    animation: spin-slow 4s linear infinite;
+  }
+
+  /* ── Float animations ── */
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  .animate-float-gentle {
+    animation: float-gentle 6s ease-in-out infinite;
+  }
+
+  /* ── Reveal animations ── */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s var(--ease-premium) forwards;
+  }
+  .animate-reveal-up {
+    animation: reveal-up 0.7s var(--ease-premium) forwards;
+  }
 }
 
 /* ─────────────────────────────────────────
@@ -335,13 +502,30 @@
   .aspect-backdrop { aspect-ratio: 16/9; }
   .aspect-wide { aspect-ratio: 2.39/1; }
 
-  /* Fade edge masks for scroll rows */
+  /* Horizontal fade edge masks for scroll rows */
   .fade-edges {
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%);
   }
 
+  .fade-edges-sm {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 24px, black calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 24px, black calc(100% - 24px), transparent 100%);
+  }
+
+  /* Vertical fade edge for overflow containers */
+  .fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+
   /* Text clamp utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
   .line-clamp-2 {
     overflow: hidden;
     display: -webkit-box;
