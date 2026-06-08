@@ -29,8 +29,15 @@ export const Navbar: React.FC = () => {
   const [notifOpen, setNotifOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
   const { user, openLoginModal, logout } = useAuth();
-
   const scrolled = scrollDepth > 10;
+
+  const handleProtectedClick = (e: React.MouseEvent, to: string) => {
+    const isProtected = ['/watchlist', '/profile', '/settings', '/ai'].some(route => to.startsWith(route));
+    if (isProtected && !user) {
+      e.preventDefault();
+      openLoginModal();
+    }
+  };
 
   React.useEffect(() => {
     const onScroll = () => {
@@ -118,7 +125,7 @@ export const Navbar: React.FC = () => {
             {NAV_CENTER.map(({ to, label }) => {
               const active = isActive(to);
               return (
-                <Link key={to} href={to} className="relative px-4 py-2 rounded-xl transition-all duration-200">
+                <Link key={to} href={to} onClick={(e) => handleProtectedClick(e, to)} className="relative px-4 py-2 rounded-xl transition-all duration-200">
                   <span className={`relative z-10 text-[13.5px] font-semibold tracking-wide transition-colors duration-300 ${
                     active ? 'text-white' : 'text-muted hover:text-white/95'
                   }`}>
@@ -331,8 +338,17 @@ const MOBILE_TABS = [
 ];
 
 export const MobileNav: React.FC = () => {
+  const { user, openLoginModal } = useAuth();
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = React.useState(false);
+
+  const handleProtectedClick = (e: React.MouseEvent, to: string) => {
+    const isProtected = ['/watchlist', '/profile', '/settings', '/ai'].some(route => to.startsWith(route));
+    if (isProtected && !user) {
+      e.preventDefault();
+      openLoginModal();
+    }
+  };
 
   const isActive = (to: string) =>
     to === '/' ? pathname === '/' : pathname.startsWith(to);
@@ -350,7 +366,7 @@ export const MobileNav: React.FC = () => {
             {MOBILE_TABS.map(({ to, label, Icon }) => {
               const active = isActive(to);
               return (
-                <Link key={to} href={to} className="flex-1">
+                <Link key={to} href={to} onClick={(e) => handleProtectedClick(e, to)} className="flex-1">
                   <motion.div
                     whileTap={{ scale: 0.9 }}
                     className="flex flex-col items-center gap-1 py-1"

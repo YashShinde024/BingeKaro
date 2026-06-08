@@ -1,23 +1,20 @@
 "use client";
 
 import React, { useState, Suspense } from 'react';
-import { useSignIn, useSignUp } from '@clerk/nextjs/legacy';
+import { useSignUp } from '@clerk/nextjs/legacy';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, ArrowRight, Loader2, Check } from 'lucide-react';
+import { ShieldCheck, Loader2, Check } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '../../context/ToastContext';
 
 function VerifyOtpContent() {
-  const { signIn, isLoaded: isSignInLoaded, setActive: setSignInActive } = useSignIn();
   const { signUp, isLoaded: isSignUpLoaded, setActive: setSignUpActive } = useSignUp();
 
   const searchParams = useSearchParams();
   const router = useRouter();
   const { showToast } = useToast();
 
-  const type = searchParams.get('type') || 'signin'; // 'signin' or 'signup'
   const identifier = searchParams.get('identifier') || '';
-  const method = searchParams.get('method') || 'email'; // 'email' or 'phone'
 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
@@ -51,42 +48,19 @@ function VerifyOtpContent() {
     setError('');
 
     try {
-      if (type === 'signin') {
-        if (!isSignInLoaded) return;
-        const result = await signIn.attemptFirstFactor({
-          strategy: method === 'email' ? 'email_code' : 'phone_code',
-          code,
-        });
+      if (!isSignUpLoaded) return;
+      const result = await signUp.attemptEmailAddressVerification({ code });
 
-        if (result.status === 'complete') {
-          await setSignInActive({ session: result.createdSessionId });
-          setSuccess(true);
-          showToast('Sign in successful!', 'success');
-          setTimeout(() => {
-            router.push('/profile');
-          }, 2000);
-        } else {
-          console.error(result);
-          setError('Sign in status incomplete. Please try again.');
-        }
+      if (result.status === 'complete') {
+        await setSignUpActive({ session: result.createdSessionId });
+        setSuccess(true);
+        showToast('Account verified successfully!', 'success');
+        setTimeout(() => {
+          router.push('/onboarding');
+        }, 2000);
       } else {
-        // signup
-        if (!isSignUpLoaded) return;
-        const result = method === 'email'
-          ? await signUp.attemptEmailAddressVerification({ code })
-          : await signUp.attemptPhoneNumberVerification({ code });
-
-        if (result.status === 'complete') {
-          await setSignUpActive({ session: result.createdSessionId });
-          setSuccess(true);
-          showToast('Account verified successfully!', 'success');
-          setTimeout(() => {
-            router.push('/onboarding');
-          }, 2000);
-        } else {
-          console.error(result);
-          setError('Sign up status incomplete. Please check verification code.');
-        }
+        console.error(result);
+        setError('Sign up status incomplete. Please check verification code.');
       }
     } catch (err: any) {
       console.error(err);
@@ -117,7 +91,7 @@ function VerifyOtpContent() {
               </div>
               <h2 className="text-xl font-bold text-white tracking-tight">Verify Code</h2>
               <p className="text-[12.5px] text-muted-foreground max-w-[280px] mx-auto">
-                We've sent a 6-digit confirmation code to <span className="text-white font-semibold">{identifier || 'your device'}</span>.
+                We've sent a 6-digit confirmation code to <span className="text-white font-semibold">{identifier || 'your email'}</span>.
               </p>
             </div>
 
@@ -152,7 +126,7 @@ function VerifyOtpContent() {
 
             <div className="flex items-center justify-between text-[12px]">
               <button
-                onClick={() => router.push(type === 'signin' ? '/sign-in' : '/sign-up')}
+                onClick={() => router.push('/sign-up')}
                 className="text-muted-foreground hover:text-white transition-colors"
               >
                 ← Back

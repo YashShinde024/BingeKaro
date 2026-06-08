@@ -37,6 +37,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   // Sync Clerk user profile with BingeKaro custom settings stored locally
   useEffect(() => {
     if (!isLoaded) return;
@@ -69,6 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         favoriteProviders,
         joinedAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'June 2026',
       });
+      // Close modal if user gets authenticated successfully
+      setIsLoginModalOpen(false);
     } else {
       setUserProfile(null);
     }
@@ -109,11 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const openLoginModal = () => {
-    router.push('/sign-in');
+    setIsLoginModalOpen(true);
   };
 
   const closeLoginModal = () => {
-    // No-op since we use pages
+    setIsLoginModalOpen(false);
   };
 
   return (
@@ -126,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatePreferences,
         openLoginModal,
         closeLoginModal,
-        isLoginModalOpen: false,
+        isLoginModalOpen,
       }}
     >
       {children}

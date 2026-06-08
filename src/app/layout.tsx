@@ -25,6 +25,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+import { AuthModal } from "../components/auth/AuthModal";
+
 export default function RootLayout({
   children,
 }: {
@@ -47,6 +49,7 @@ export default function RootLayout({
             <Footer />
             <MobileNav />
             <CommandPalette />
+            <AuthModal />
           </Providers>
         </body>
       </html>
