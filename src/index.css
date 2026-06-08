@@ -370,7 +370,7 @@
   .btn-primary {
     @apply relative inline-flex items-center justify-center gap-2
            text-white font-semibold
-           px-6 py-3 rounded-xl
+           px-6 py-3 rounded-btn
            select-none cursor-pointer overflow-hidden;
     background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 40%, #6D28D9 100%);
     box-shadow: 
@@ -398,7 +398,7 @@
   .btn-secondary {
     @apply relative inline-flex items-center justify-center gap-2
            text-white font-semibold
-           px-6 py-3 rounded-xl
+           px-6 py-3 rounded-btn
            select-none cursor-pointer overflow-hidden;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.1);
@@ -425,7 +425,7 @@
   .btn-danger {
     @apply relative inline-flex items-center justify-center gap-2
            text-white font-semibold
-           px-6 py-3 rounded-xl
+           px-6 py-3 rounded-btn
            select-none cursor-pointer overflow-hidden;
     background: linear-gradient(135deg, #E11D48 0%, #BE123C 40%, #9F1239 100%);
     box-shadow: 
@@ -485,7 +485,7 @@
   /* ── Premium Input ── */
   .input-premium {
     @apply w-full bg-transparent text-white placeholder-muted/60
-           rounded-xl px-4 py-3.5 text-sm outline-none;
+           rounded-input px-4 py-3.5 text-sm outline-none;
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--border);
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);

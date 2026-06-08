@@ -10,7 +10,6 @@ export type OTTProviderId =
   | 'zee5'
   | 'apple-tv'
   | 'crunchyroll'
-  | 'youtube'
   | 'mx-player';
 
 export interface OTTProvider {

@@ -22,11 +22,28 @@ const FILTER_PROVIDERS: { id: OTTProviderId; label: string }[] = [
   { id: 'jiohotstar', label: 'JioHotstar' },
   { id: 'sonyliv', label: 'SonyLIV' },
   { id: 'zee5', label: 'ZEE5' },
-  { id: 'youtube', label: 'YouTube' },
+  { id: 'apple-tv', label: 'Apple TV' },
+  { id: 'crunchyroll', label: 'Crunchyroll' },
+  { id: 'mx-player', label: 'MX Player' },
 ];
 
 const FALLBACK = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=200&q=80';
 const FEATURED = MOVIES.filter(m => m.rating >= 8.2).slice(0, 4);
+
+const SearchSkeleton = () => (
+  <div className="p-3 space-y-2.5">
+    <div className="h-4 bg-white/5 rounded w-1/4 animate-pulse mb-2" />
+    {[1, 2, 3].map(i => (
+      <div key={i} className="flex items-center gap-3.5 p-2.5 rounded-btn bg-white/[0.01] border border-white/[0.02] animate-pulse">
+        <div className="w-10 h-14 bg-white/5 rounded-lg shrink-0" />
+        <div className="flex-1 space-y-2 min-w-0">
+          <div className="h-3.5 bg-white/10 rounded w-1/2" />
+          <div className="h-3 bg-white/5 rounded w-1/3" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = React.useState('');
@@ -34,11 +51,11 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const [recentSearches, setRecentSearches] = React.useState<string[]>([]);
   const [selectedProvider, setSelectedProvider] = React.useState<OTTProviderId | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Keyboard shortcut listener for overlay
   React.useEffect(() => {
     try {
       const stored = localStorage.getItem('kd_recent_searches');
@@ -62,24 +79,31 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
     const q = query.toLowerCase().trim();
     if (!q && !selectedProvider) {
       setResults([]);
+      setIsLoading(false);
       return;
     }
 
-    let found = MOVIES;
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      let found = MOVIES;
 
-    if (q) {
-      found = found.filter(m =>
-        m.title.toLowerCase().includes(q) ||
-        (m.director && m.director.toLowerCase().includes(q)) ||
-        m.genres.some(g => g.includes(q))
-      );
-    }
+      if (q) {
+        found = found.filter(m =>
+          m.title.toLowerCase().includes(q) ||
+          (m.director && m.director.toLowerCase().includes(q)) ||
+          m.genres.some(g => g.includes(q))
+        );
+      }
 
-    if (selectedProvider) {
-      found = found.filter(m => m.providers.includes(selectedProvider));
-    }
+      if (selectedProvider) {
+        found = found.filter(m => m.providers.includes(selectedProvider));
+      }
 
-    setResults(found.slice(0, 6));
+      setResults(found.slice(0, 6));
+      setIsLoading(false);
+    }, 250);
+
+    return () => clearTimeout(timer);
   }, [query, selectedProvider]);
 
   React.useEffect(() => {
@@ -131,9 +155,9 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
     localStorage.removeItem('kd_recent_searches');
   };
 
-  const showResults = results.length > 0 || selectedProvider !== null;
-  const showEmpty = (query.trim().length >= 2 || selectedProvider) && results.length === 0;
-  const showPreQuery = !showResults && !showEmpty;
+  const showResults = !isLoading && (results.length > 0 || selectedProvider !== null);
+  const showEmpty = !isLoading && (query.trim().length >= 2 || selectedProvider) && results.length === 0;
+  const showPreQuery = !isLoading && !showResults && !showEmpty;
 
   return (
     <AnimatePresence>
@@ -148,7 +172,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
         >
           <div className="max-w-xl w-full mx-auto px-4 pt-16 sm:pt-20">
             {/* Search Input Bar */}
-            <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/[0.1] bg-[#0c0c0c] shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+            <div className="relative flex items-center rounded-input overflow-hidden border border-white/[0.1] bg-[#0c0c0c] shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
               <Search className="absolute left-4 w-4.5 h-4.5 text-muted/60" />
               <input
                 ref={inputRef}
@@ -180,7 +204,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setSelectedProvider(active ? null : prov.id)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold border shrink-0 transition-all ${
+                    className={`px-3 py-1.5 rounded-btn text-[11px] font-bold border shrink-0 transition-all ${
                       active 
                         ? 'bg-accent border-accent text-white shadow-[0_0_12px_rgba(139,92,246,0.35)]'
                         : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:text-white'
@@ -196,10 +220,12 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 max-h-[60vh] overflow-y-auto rounded-2xl border border-white/[0.07] bg-[#0c0c0c]/95"
+              className="mt-2 max-h-[60vh] overflow-y-auto rounded-card border border-white/[0.07] bg-[#0c0c0c]/95"
             >
+              {isLoading && <SearchSkeleton />}
+
               {/* Show Results List */}
-              {results.length > 0 && (
+              {showResults && results.length > 0 && (
                 <div className="p-2 space-y-0.5">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.04] mb-1">
                     <span className="text-[9.5px] font-bold text-muted/30 uppercase tracking-widest">Search Matches</span>
@@ -211,7 +237,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                       key={movie.id}
                       to={`/movie/${movie.id}`}
                       onClick={() => handleResultClick(movie.title)}
-                      className={`flex items-center gap-3.5 p-2.5 rounded-xl border border-transparent transition-all ${
+                      className={`flex items-center gap-3.5 p-2.5 rounded-btn border border-transparent transition-all ${
                         i === selectedIndex
                           ? 'bg-accent/15 border-accent/20 text-white'
                           : 'hover:bg-white/[0.03]'
@@ -246,11 +272,11 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
               {/* Empty state */}
               {showEmpty && (
                 <div className="py-14 text-center px-4">
-                  <div className="w-14 h-14 mx-auto rounded-xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center mb-4 text-muted/30">
+                  <div className="w-14 h-14 mx-auto rounded-btn bg-white/[0.02] border border-white/[0.05] flex items-center justify-center mb-4 text-muted/30">
                     <Search className="w-5 h-5" />
                   </div>
-                  <p className="text-[13.5px] font-bold text-white">No matches found</p>
-                  <p className="text-[11.5px] text-muted/50 mt-0.5">Check for spelling errors or apply a different filter.</p>
+                  <p className="text-[13.5px] font-bold text-white font-sans">No matches found</p>
+                  <p className="text-[11.5px] text-muted/50 mt-1 max-w-xs mx-auto leading-relaxed">No movies or TV shows matched your filters. Try checking your spelling or clearing active filters.</p>
                 </div>
               )}
 
@@ -273,7 +299,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                           <button
                             key={term}
                             onClick={() => setQuery(term)}
-                            className="px-3 py-1.5 rounded-full bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-white/20 transition-all flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-btn bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-white/20 transition-all flex items-center gap-1"
                           >
                             <Clock className="w-2.5 h-2.5 opacity-55" />
                             {term}
@@ -293,7 +319,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         <button
                           key={term}
                           onClick={() => setQuery(term.replace(/^[^\s]+\s/, ''))}
-                          className="px-3 py-1.5 rounded-full bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-accent-light/30 hover:bg-accent/5 transition-all"
+                          className="px-3 py-1.5 rounded-btn bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-accent-light/30 hover:bg-accent/5 transition-all"
                         >
                           {term}
                         </button>
@@ -310,7 +336,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                     <div className="grid grid-cols-2 gap-2">
                       {FEATURED.map(m => (
                         <Link key={m.id} to={`/movie/${m.id}`} onClick={onClose}>
-                          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all">
+                          <div className="flex items-center gap-2.5 p-2 rounded-btn bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all">
                             <img src={m.posterPath} alt="" className="w-8 h-11 object-cover rounded-lg shrink-0" onError={e => (e.target as any).src = FALLBACK} />
                             <div className="min-w-0">
                               <p className="text-[12px] font-bold text-white truncate">{m.title}</p>
@@ -335,7 +361,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         <button
                           key={genre}
                           onClick={() => setQuery(genre.toLowerCase())}
-                          className="px-3 py-1.5 rounded-full bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-accent-light/30 hover:bg-accent/5 transition-all font-medium"
+                          className="px-3 py-1.5 rounded-btn bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-accent-light/30 hover:bg-accent/5 transition-all font-medium"
                         >
                           {genre}
                         </button>
@@ -353,7 +379,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         navigate(`/movie/${random.id}`);
                         onClose();
                       }}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[12.5px] font-bold text-white/80 hover:text-white transition-all"
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-btn text-[12.5px] font-bold text-white/80 hover:text-white transition-all"
                       style={{
                         background: 'linear-gradient(135deg, rgba(139,92,246,0.08), rgba(109,40,217,0.05))',
                         border: '1px solid rgba(139,92,246,0.15)',

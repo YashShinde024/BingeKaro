@@ -4,6 +4,7 @@ import { Bookmark, Grid3X3, List, SlidersHorizontal, Star, Clock, Trash2, Heart,
 import { Link } from 'react-router-dom';
 import { OTTBadgeList } from '../components/badges/OTTBadge';
 import { useWatchlist } from '../context/WatchlistContext';
+import type { WatchlistStatus } from '../context/WatchlistContext';
 import type { OTTProviderId } from '../types';
 import { PROVIDER_REGISTRY } from '../lib/providers';
 import { ProviderPill } from '../components/badges/ProviderLogo';
@@ -13,7 +14,7 @@ const FALLBACK = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w
 const SORT_OPTIONS = [
   { value: 'added', label: 'Recently Added' },
   { value: 'rating', label: 'Top Rated' },
-  { value: 'runtime', label: 'Runtime' },
+  { value: 'release', label: 'Release Date' },
 ];
 
 const AVAILABILITY_FILTERS = [
@@ -23,18 +24,29 @@ const AVAILABILITY_FILTERS = [
   { id: 'rent-buy', label: 'Rent/Buy' },
 ];
 
+const STATUS_TABS: { id: WatchlistStatus; label: string; emoji: string }[] = [
+  { id: 'want-to-watch', label: 'Want To Watch', emoji: '🧭' },
+  { id: 'watching', label: 'Watching', emoji: '🎬' },
+  { id: 'completed', label: 'Completed', emoji: '✅' },
+  { id: 'dropped', label: 'Dropped', emoji: '🗑' },
+];
+
 export const Watchlist: React.FC = () => {
   const [view, setView] = React.useState<'grid' | 'list'>('grid');
+  const [activeTab, setActiveTab] = React.useState<WatchlistStatus>('want-to-watch');
   const [availabilityFilter, setAvailabilityFilter] = React.useState<'all' | 'free' | 'subscription' | 'rent-buy'>('all');
-  const [sortBy, setSortBy] = React.useState<'added' | 'rating' | 'runtime'>('added');
+  const [sortBy, setSortBy] = React.useState<'added' | 'rating' | 'release'>('added');
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [providerFilter, setProviderFilter] = React.useState<string>('all');
   const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
-  const { watchlist, favorites, removeFromWatchlist } = useWatchlist();
+  const { watchlist, favorites, movieStatuses, removeFromWatchlist, updateMovieStatus } = useWatchlist();
 
   // Filter & Sort
   const sorted = React.useMemo(() => {
     let result = [...watchlist];
+
+    // Filter by Active Tab Status
+    result = result.filter(m => (movieStatuses[m.id] || 'want-to-watch') === activeTab);
 
     // Filter by Provider
     if (providerFilter !== 'all') {
@@ -53,12 +65,12 @@ export const Watchlist: React.FC = () => {
     // Sort
     if (sortBy === 'rating') {
       result.sort((a, b) => b.rating - a.rating);
-    } else if (sortBy === 'runtime') {
-      result.sort((a, b) => b.runtime - a.runtime);
+    } else if (sortBy === 'release') {
+      result.sort((a, b) => b.year - a.year);
     }
 
     return result;
-  }, [watchlist, providerFilter, availabilityFilter, sortBy]);
+  }, [watchlist, activeTab, providerFilter, availabilityFilter, sortBy, movieStatuses]);
 
   // Analytics breakdowns
   const stats = React.useMemo(() => {
@@ -145,8 +157,8 @@ export const Watchlist: React.FC = () => {
               <h1 className="text-3xl font-black text-white tracking-tight">My Watchlist</h1>
             </div>
             <p className="text-[12.5px] text-muted/50 mt-1 ml-11">
-              {sorted.length} saved title{sorted.length !== 1 ? 's' : ''}
-              {watchlist.length !== sorted.length && ` (filtered from ${watchlist.length})`}
+              {sorted.length} title{sorted.length !== 1 ? 's' : ''} in {STATUS_TABS.find(t => t.id === activeTab)?.label}
+              {watchlist.length !== sorted.length && ` (total saved: ${watchlist.length})`}
             </p>
           </div>
 
@@ -167,7 +179,7 @@ export const Watchlist: React.FC = () => {
 
             <button
               onClick={() => setFiltersOpen(o => !o)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-[12.5px] font-bold transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-btn border text-[12.5px] font-bold transition-all ${
                 filtersOpen
                   ? 'bg-accent/15 border-accent/40 text-accent-light'
                   : 'bg-white/[0.02] border-white/[0.06] text-muted hover:text-white'
@@ -178,6 +190,38 @@ export const Watchlist: React.FC = () => {
             </button>
           </div>
         </motion.div>
+
+        {/* Status Category Tabs */}
+        <div className="flex border-b border-white/[0.06] mb-8 overflow-x-auto pb-1 gap-2 scrollbar-none">
+          {STATUS_TABS.map(tab => {
+            const count = watchlist.filter(m => (movieStatuses[m.id] || 'want-to-watch') === tab.id).length;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setSelectedIds([]); }}
+                className={`relative pb-3.5 px-4 text-[13px] font-bold tracking-wide transition-colors duration-200 shrink-0 flex items-center gap-2 ${
+                  active ? 'text-white font-extrabold' : 'text-muted hover:text-white/80'
+                }`}
+              >
+                <span>{tab.emoji}</span>
+                <span>{tab.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                  active ? 'bg-accent/20 text-accent-light' : 'bg-white/5 text-muted/60'
+                }`}>
+                  {count}
+                </span>
+                {active && (
+                  <motion.div
+                    layoutId="watchlist-tab-underline"
+                    className="absolute bottom-0 inset-x-0 h-[2px] bg-accent rounded-full"
+                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Stats Grid Insights */}
         {watchlist.length > 0 && stats && (
@@ -290,7 +334,7 @@ export const Watchlist: React.FC = () => {
                       <button
                         key={opt.value}
                         onClick={() => setSortBy(opt.value as any)}
-                        className={`px-3 py-1.5 rounded-xl text-[11.5px] font-bold border transition-all ${
+                        className={`px-3 py-1.5 rounded-btn text-[11.5px] font-bold border transition-all ${
                           sortBy === opt.value
                             ? 'bg-accent/15 border-accent/40 text-accent-light'
                             : 'bg-white/[0.02] border-white/[0.06] text-muted hover:text-white'
@@ -309,7 +353,7 @@ export const Watchlist: React.FC = () => {
                       <button
                         key={opt.id}
                         onClick={() => setAvailabilityFilter(opt.id as any)}
-                        className={`px-3 py-1.5 rounded-xl text-[11.5px] font-bold border transition-all ${
+                        className={`px-3 py-1.5 rounded-btn text-[11.5px] font-bold border transition-all ${
                           availabilityFilter === opt.id
                             ? 'bg-accent/15 border-accent/40 text-accent-light'
                             : 'bg-white/[0.02] border-white/[0.06] text-muted hover:text-white'
@@ -354,7 +398,7 @@ export const Watchlist: React.FC = () => {
 
         {/* List / Grid Content render */}
         {sorted.length === 0 ? (
-          <EmptyWatchlist />
+          <EmptyWatchlist activeTab={activeTab} />
         ) : view === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
             {sorted.map((movie) => {
@@ -366,11 +410,11 @@ export const Watchlist: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   className="group relative"
                 >
-                  <div className="relative rounded-2xl overflow-hidden aspect-poster bg-[#121212] border border-white/[0.06] group-hover:border-accent-light/30 transition-all shadow-md">
+                  <div className="relative rounded-card overflow-hidden aspect-poster bg-[#121212] border border-white/[0.06] group-hover:border-accent-light/30 transition-all shadow-md">
                     <img src={movie.posterPath} alt="" className="w-full h-full object-cover group-hover:scale-104 transition-all duration-300" onError={e => (e.target as any).src = FALLBACK} />
                     
                     {/* Checkbox select */}
-                    <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10">
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 z-20">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
@@ -379,7 +423,7 @@ export const Watchlist: React.FC = () => {
                             prev.includes(movie.id) ? prev.filter(id => id !== movie.id) : [...prev, movie.id]
                           );
                         }}
-                        className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
+                        className={`w-6 h-6 rounded-btn border flex items-center justify-center transition-all ${
                           isSelected
                             ? 'bg-accent border-accent text-white shadow-sm'
                             : 'bg-black/60 border-white/20 text-white hover:border-white/40'
@@ -394,8 +438,23 @@ export const Watchlist: React.FC = () => {
                       <span className="text-[11px] font-bold text-white">{movie.rating.toFixed(1)}</span>
                     </div>
 
+                    {/* Status Changer Select Menu */}
+                    <div className="absolute bottom-2 left-2 z-20">
+                      <select
+                        value={movieStatuses[movie.id] || 'want-to-watch'}
+                        onClick={e => e.stopPropagation()}
+                        onChange={(e) => updateMovieStatus(movie.id, e.target.value as WatchlistStatus)}
+                        className="bg-black/90 text-white border border-white/10 rounded-lg text-[9px] py-1 px-1.5 focus:outline-none cursor-pointer outline-none"
+                      >
+                        <option value="want-to-watch">🧭 Want Watch</option>
+                        <option value="watching">🎬 Watching</option>
+                        <option value="completed">✅ Completed</option>
+                        <option value="dropped">🗑 Dropped</option>
+                      </select>
+                    </div>
+
                     <button
-                      className="absolute bottom-2 right-2 w-7 h-7 bg-black/60 hover:bg-rose-500/20 hover:text-rose-400 border border-white/10 rounded-lg flex items-center justify-center text-rose-300 opacity-0 group-hover:opacity-100 transition-all"
+                      className="absolute bottom-2 right-2 w-7 h-7 bg-black/60 hover:bg-rose-500/20 hover:text-rose-400 border border-white/10 rounded-lg flex items-center justify-center text-rose-300 opacity-0 group-hover:opacity-100 transition-all z-20"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -408,13 +467,11 @@ export const Watchlist: React.FC = () => {
                   <Link to={`/movie/${movie.id}`} className="block mt-2">
                     <div>
                       <h3 className="text-[13px] font-bold text-white/90 truncate group-hover:text-accent-light transition-colors">{movie.title}</h3>
-                      <div className="flex items-center gap-1.5 mt-0.5 text-muted text-[11px]">
-                        <span>{movie.year}</span>
-                        <span>•</span>
-                        <span>{movie.runtime}m</span>
-                      </div>
-                      <div className="mt-1.5">
-                        <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
+                      <div className="flex items-center justify-between gap-1.5 mt-1.5">
+                        <span className="text-[11px] font-medium text-muted">{movie.year}</span>
+                        <div className="shrink-0">
+                          <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -437,7 +494,7 @@ export const Watchlist: React.FC = () => {
                         prev.includes(movie.id) ? prev.filter(id => id !== movie.id) : [...prev, movie.id]
                       );
                     }}
-                    className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-all ${
+                    className={`w-6 h-6 rounded-btn border flex items-center justify-center shrink-0 transition-all ${
                       isSelected
                         ? 'bg-accent border-accent text-white shadow-sm'
                         : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
@@ -463,6 +520,18 @@ export const Watchlist: React.FC = () => {
                     </div>
                   </div>
                   <div className="shrink-0 flex items-center gap-3">
+                    {/* Status Changer in List */}
+                    <select
+                      value={movieStatuses[movie.id] || 'want-to-watch'}
+                      onChange={(e) => updateMovieStatus(movie.id, e.target.value as WatchlistStatus)}
+                      className="bg-white/5 border border-white/10 text-white rounded-lg text-[11.5px] py-1 px-2 focus:outline-none cursor-pointer outline-none"
+                    >
+                      <option value="want-to-watch">🧭 Want Watch</option>
+                      <option value="watching">🎬 Watching</option>
+                      <option value="completed">✅ Completed</option>
+                      <option value="dropped">🗑 Dropped</option>
+                    </select>
+
                     <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
                     <button
                       onClick={() => removeFromWatchlist(movie.id)}
@@ -520,7 +589,7 @@ export const Watchlist: React.FC = () => {
   );
 };
 
-const EmptyWatchlist: React.FC = () => (
+const EmptyWatchlist: React.FC<{ activeTab: WatchlistStatus }> = ({ activeTab }) => (
   <motion.div
     initial={{ opacity: 0, y: 15 }}
     animate={{ opacity: 1, y: 0 }}
@@ -529,13 +598,15 @@ const EmptyWatchlist: React.FC = () => (
     <div className="w-16 h-16 bg-white/[0.02] border border-white/[0.06] rounded-2xl flex items-center justify-center mb-5 text-muted/30">
       <Bookmark className="w-8 h-8" />
     </div>
-    <h3 className="text-[15px] font-bold text-white mb-1">Your Watchlist is empty</h3>
-    <p className="text-[12.5px] text-muted/50 max-w-xs mb-6">Explore the discover lists or ask our AI recommendation filter to help find shows.</p>
+    <h3 className="text-[15px] font-bold text-white mb-1">
+      No items in {STATUS_TABS.find(t => t.id === activeTab)?.label}
+    </h3>
+    <p className="text-[12.5px] text-muted/50 max-w-xs mb-6">Start building your collection or discover new releases matching your taste.</p>
     <Link to="/discover">
       <motion.button
         whileHover={{ scale: 1.02, y: -1 }}
         whileTap={{ scale: 0.98 }}
-        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-[12.5px] font-bold text-white shadow-[0_4px_15px_rgba(139,92,246,0.3)]"
+        className="btn-primary px-5 py-2.5 text-[12.5px]"
       >
         Find Something to Watch
       </motion.button>

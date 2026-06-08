@@ -30,7 +30,6 @@ const FOOTER_PLATFORMS: { id: OTTProviderId; href: string }[] = [
   { id: 'sonyliv', href: 'https://sonyliv.com' },
   { id: 'zee5', href: 'https://zee5.com' },
   { id: 'apple-tv', href: 'https://tv.apple.com' },
-  { id: 'youtube', href: 'https://youtube.com' },
   { id: 'mx-player', href: '#' },
   { id: 'crunchyroll', href: 'https://crunchyroll.com' },
 ];

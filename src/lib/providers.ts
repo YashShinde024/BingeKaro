@@ -50,12 +50,6 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     logo: '/providers/crunchyroll.png',
     type: 'subscription'
   },
-  'youtube': {
-    id: 'youtube',
-    name: 'YouTube',
-    logo: '/providers/youtube.png',
-    type: 'buy'
-  },
   'mx-player': {
     id: 'mx-player',
     name: 'MX Player',

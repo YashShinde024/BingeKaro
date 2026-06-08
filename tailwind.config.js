@@ -23,6 +23,10 @@ export default {
       borderRadius: {
         '3xl': '1.5rem',
         '4xl': '2rem',
+        'global': '16px',
+        'card': '18px',
+        'btn': '14px',
+        'input': '14px',
       },
       spacing: {
         '4.5': '1.125rem',

@@ -138,7 +138,7 @@ export const LoginModal: React.FC = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-          className="relative w-full max-w-[840px] h-[560px] bg-[#0c0c0c] border border-white/[0.08] rounded-[24px] overflow-hidden flex shadow-[0_24px_64px_rgba(0,0,0,0.8)] z-10"
+          className="relative w-full max-w-[840px] h-[560px] bg-[#0c0c0c] border border-white/[0.08] rounded-card overflow-hidden flex shadow-[0_24px_64px_rgba(0,0,0,0.8)] z-10"
         >
           {/* Close button */}
           <button
@@ -218,7 +218,7 @@ export const LoginModal: React.FC = () => {
                   className="space-y-6"
                 >
                   <div className="flex flex-col items-center text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
+                    <div className="w-14 h-14 rounded-card bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
                       <Mail className="w-6 h-6 text-accent-light" />
                     </div>
                     <h3 className="text-lg font-bold text-white">Check your inbox</h3>
@@ -228,7 +228,7 @@ export const LoginModal: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setStep('signin')}
-                    className="w-full h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-[13px] font-semibold text-white transition-all"
+                    className="w-full h-11 rounded-btn bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-[13px] font-semibold text-white transition-all"
                   >
                     ← Back to Sign In
                   </button>
@@ -263,7 +263,7 @@ export const LoginModal: React.FC = () => {
                           value={digit}
                           onChange={(e) => handleOtpChange(index, e.target.value)}
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className="w-11 h-13 text-center text-lg font-bold rounded-xl bg-white/[0.04] border border-white/[0.08] text-white focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all"
+                          className="w-11 h-13 text-center text-lg font-bold rounded-input bg-white/[0.04] border border-white/[0.08] text-white focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all"
                         />
                       ))}
                     </div>
@@ -271,7 +271,7 @@ export const LoginModal: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting || otp.some(d => !d)}
-                      className="w-full h-11 rounded-xl text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative"
+                      className="w-full h-11 rounded-btn text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative"
                       style={{
                         background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
                         boxShadow: '0 4px 20px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
@@ -317,12 +317,12 @@ export const LoginModal: React.FC = () => {
                   </div>
 
                   {/* Email / Phone Tabs */}
-                  <div className="flex rounded-xl bg-white/[0.04] p-1 border border-white/[0.05]">
+                  <div className="flex rounded-input bg-white/[0.04] p-1 border border-white/[0.05]">
                     {(['email', 'phone'] as const).map(tab => (
                       <button
                         key={tab}
                         onClick={() => { setActiveTab(tab); setErrors({}); }}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[12.5px] font-semibold transition-all duration-200 ${
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-btn text-[12.5px] font-semibold transition-all duration-200 ${
                           activeTab === tab
                             ? 'bg-white/[0.08] text-white shadow-sm'
                             : 'text-muted hover:text-white/80'
@@ -345,7 +345,7 @@ export const LoginModal: React.FC = () => {
                           placeholder="e.g. Yash Shinde"
                           value={name}
                           onChange={(e) => { setName(e.target.value); setErrors(prev => ({...prev, name: ''})); }}
-                          className={`w-full h-11 px-3.5 rounded-xl bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
+                          className={`w-full h-11 px-3.5 rounded-input bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
                             errors.name ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/[0.08]'
                           }`}
                         />
@@ -361,7 +361,7 @@ export const LoginModal: React.FC = () => {
                           placeholder="name@domain.com"
                           value={email}
                           onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({...prev, email: ''})); }}
-                          className={`w-full h-11 px-3.5 rounded-xl bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
+                          className={`w-full h-11 px-3.5 rounded-input bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
                             errors.email ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/[0.08]'
                           }`}
                         />
@@ -375,7 +375,7 @@ export const LoginModal: React.FC = () => {
                           placeholder="+91 XXXXX XXXXX"
                           value={phone}
                           onChange={(e) => { setPhone(e.target.value); setErrors(prev => ({...prev, phone: ''})); }}
-                          className={`w-full h-11 px-3.5 rounded-xl bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
+                          className={`w-full h-11 px-3.5 rounded-input bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
                             errors.phone ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/[0.08]'
                           }`}
                         />
@@ -393,7 +393,7 @@ export const LoginModal: React.FC = () => {
                             placeholder="Min 6 characters"
                             value={password}
                             onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({...prev, password: ''})); }}
-                            className={`w-full h-11 px-3.5 pr-10 rounded-xl bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
+                            className={`w-full h-11 px-3.5 pr-10 rounded-input bg-white/[0.04] border text-[13.5px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)] transition-all ${
                               errors.password ? 'border-rose-500/50 bg-rose-500/5' : 'border-white/[0.08]'
                             }`}
                           />
@@ -435,7 +435,7 @@ export const LoginModal: React.FC = () => {
 
                     <button
                       type="submit"
-                      className="w-full h-11 rounded-xl text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 group transition-all overflow-hidden relative"
+                      className="w-full h-11 rounded-btn text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 group transition-all overflow-hidden relative"
                       style={{
                         background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
                         boxShadow: '0 4px 20px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
@@ -470,7 +470,7 @@ export const LoginModal: React.FC = () => {
                     <button
                       onClick={() => handleSocialLogin('google')}
                       disabled={!!socialLoading}
-                      className="h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/15 text-[12px] font-medium text-white/90 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                      className="h-10 rounded-btn bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/15 text-[12px] font-medium text-white/90 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                     >
                       {socialLoading === 'google' ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon />}
                       Google
@@ -478,14 +478,14 @@ export const LoginModal: React.FC = () => {
                     <button
                       onClick={() => handleSocialLogin('facebook')}
                       disabled={!!socialLoading}
-                      className="h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/15 text-[12px] font-medium text-white/90 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                      className="h-10 rounded-btn bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/15 text-[12px] font-medium text-white/90 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                     >
                       {socialLoading === 'facebook' ? <Loader2 className="w-4 h-4 animate-spin" /> : <FacebookIcon />}
                       Facebook
                     </button>
                     <button
                       onClick={() => { closeLoginModal(); resetState(); }}
-                      className="h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/15 text-[12px] font-medium text-white/90 flex items-center justify-center gap-2 transition-all"
+                      className="h-10 rounded-btn bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/15 text-[12px] font-medium text-white/90 flex items-center justify-center gap-2 transition-all"
                     >
                       👤 Guest
                     </button>

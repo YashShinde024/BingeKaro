@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
-import { Bookmark, Sparkles, Clock, LogOut, ShieldAlert, Heart, Film, Tv } from 'lucide-react';
+import { Bookmark, Sparkles, Clock, LogOut, ShieldAlert, Heart, Film, Tv, Play, Activity, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { MOVIES, MOODS, GENRES } from '../lib/mockData';
 import type { GenreId, MoodId, OTTProviderId } from '../types';
@@ -117,6 +117,21 @@ export const Profile: React.FC = () => {
     ];
   }, [user?.favoriteGenres, user?.favoriteMoods]);
 
+  const personalizedRecs = React.useMemo(() => {
+    const genre = user?.favoriteGenres?.[0] || 'drama';
+    return MOVIES
+      .filter(m => m.genres.includes(genre as GenreId))
+      .slice(0, 4);
+  }, [user?.favoriteGenres]);
+
+  const activityHistory = React.useMemo(() => {
+    return [
+      { text: 'Sync profile preferences updated', time: '2 hours ago' },
+      { text: `Watchlist contains ${watchlist.length} saved titles`, time: '1 day ago' },
+      { text: 'Mapped cinematic identity DNA profile', time: 'Recent' }
+    ];
+  }, [watchlist.length]);
+
   const dna = React.useMemo(() =>
     computeMovieDNA(
       user?.favoriteGenres || [],
@@ -159,7 +174,7 @@ export const Profile: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="border border-white/[0.08] rounded-3xl p-8 bg-[#0c0c0c] shadow-[0_16px_40px_rgba(0,0,0,0.8)]"
+            className="border border-white/[0.08] rounded-card p-8 bg-[#0c0c0c] shadow-[0_16px_40px_rgba(0,0,0,0.8)]"
           >
             <div className="w-16 h-16 mx-auto bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center mb-6">
               <ShieldAlert className="w-7 h-7 text-accent-light" />
@@ -171,12 +186,12 @@ export const Profile: React.FC = () => {
             <div className="space-y-3">
               <button
                 onClick={openLoginModal}
-                className="w-full h-11 rounded-xl bg-accent hover:bg-accent-light text-[13.5px] font-bold text-white transition-all shadow-[0_4px_15px_rgba(139,92,246,0.3)]"
+                className="w-full h-11 rounded-btn bg-accent hover:bg-accent-light text-[13.5px] font-bold text-white transition-all shadow-[0_4px_15px_rgba(139,92,246,0.3)]"
               >
                 Sign In
               </button>
               <Link to="/discover" className="block">
-                <button className="w-full h-11 rounded-xl bg-white/5 border border-white/10 text-[13px] font-bold text-white hover:bg-white/10 transition-all">
+                <button className="w-full h-11 rounded-btn bg-white/5 border border-white/10 text-[13px] font-bold text-white hover:bg-white/10 transition-all">
                   Continue as Guest
                 </button>
               </Link>
@@ -220,7 +235,7 @@ export const Profile: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8 rounded-3xl overflow-hidden border border-white/[0.08] bg-[#0c0c0c] shadow-[0_20px_50px_rgba(0,0,0,0.65)] relative"
+          className="mb-8 rounded-card overflow-hidden border border-white/[0.08] bg-[#0c0c0c] shadow-[0_20px_50px_rgba(0,0,0,0.65)] relative"
         >
           {/* Subtle DNA background glow */}
           <div className={`absolute inset-0 bg-gradient-to-r ${dna.gradient} opacity-5 blur-2xl pointer-events-none`} />
@@ -279,12 +294,73 @@ export const Profile: React.FC = () => {
           ))}
         </motion.div>
 
+        {/* Continue Watching Section */}
+        {recentlyViewed.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="mb-8 p-5 rounded-card bg-[#0c0c0c] border border-white/[0.08] space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Play className="w-4 h-4 text-accent-light" />
+                <h3 className="text-[12.5px] font-bold text-white uppercase tracking-wider">Continue Watching</h3>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {recentlyViewed.slice(0, 2).map(movie => (
+                <div key={movie.id} className="flex items-center gap-3.5 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] transition-all">
+                  <img src={movie.posterPath} alt="" className="w-10 h-14 object-cover rounded-lg bg-white/5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-bold text-white truncate">{movie.title}</p>
+                    <p className="text-[10.5px] text-muted/50 mt-0.5">{movie.year} · {movie.runtime}m</p>
+                  </div>
+                  <Link to={`/movie/${movie.id}`} className="p-2 rounded-full bg-accent/10 text-accent-light hover:bg-accent/20 hover:text-white transition-all shrink-0">
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Personalized Recommendations */}
+        {personalizedRecs.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.19 }}
+            className="mb-8 p-5 rounded-card bg-white/[0.01] border border-white/[0.05] space-y-4"
+          >
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <h3 className="text-[12.5px] font-bold text-white uppercase tracking-wider">Personalized For You</h3>
+            </div>
+            <div className="grid grid-cols-4 gap-2.5">
+              {personalizedRecs.map(movie => (
+                <Link key={movie.id} to={`/movie/${movie.id}`}>
+                  <motion.div
+                    whileHover={{ scale: 1.04, y: -2 }}
+                    className="relative rounded-xl overflow-hidden aspect-poster bg-white/5 border border-white/10 group"
+                  >
+                    <img src={movie.posterPath} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                      <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Recommendation Trends & Insights */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-8 p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-3.5"
+          className="mb-8 p-5 rounded-card bg-white/[0.02] border border-white/[0.06] space-y-3.5"
         >
           <div className="flex items-center gap-1.5">
             <span className="text-sm">📈</span>
@@ -305,7 +381,7 @@ export const Profile: React.FC = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.22 }}
-          className="mb-10 p-5 rounded-3xl bg-[#0c0c0c] border border-white/[0.08] space-y-4"
+          className="mb-8 p-5 rounded-card bg-[#0c0c0c] border border-white/[0.08] space-y-4"
         >
           <div className="flex items-center gap-1.5">
             <span className="text-sm">🏆</span>
@@ -330,6 +406,30 @@ export const Profile: React.FC = () => {
                   )}
                 </div>
                 <span className="text-[11px] text-muted/60 leading-normal">{ach.desc}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Activity History Timeline */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.23 }}
+          className="mb-10 p-5 rounded-card bg-[#0c0c0c] border border-white/[0.08] space-y-4"
+        >
+          <div className="flex items-center gap-1.5">
+            <Activity className="w-4 h-4 text-accent-light" />
+            <h3 className="text-[12.5px] font-bold text-white uppercase tracking-wider">Activity Timeline</h3>
+          </div>
+          <div className="space-y-3.5">
+            {activityHistory.map((act, i) => (
+              <div key={i} className="flex justify-between items-start gap-4 text-[12.5px]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1 shrink-0" />
+                  <span className="text-white/80">{act.text}</span>
+                </div>
+                <span className="text-[11px] text-muted/40 font-semibold shrink-0">{act.time}</span>
               </div>
             ))}
           </div>

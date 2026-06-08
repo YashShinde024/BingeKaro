@@ -93,7 +93,7 @@ export const MovieDetails: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             onClick={() => window.history.back()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[12.5px] font-bold text-white/80 bg-black/40 border border-white/[0.08] hover:bg-black/70 hover:text-white transition-all duration-150 backdrop-blur-md"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-btn text-[12.5px] font-bold text-white/80 bg-black/40 border border-white/[0.08] hover:bg-black/70 hover:text-white transition-all duration-150 backdrop-blur-md"
           >
             <ChevronLeft className="w-4 h-4" />
             Back
@@ -116,7 +116,7 @@ export const MovieDetails: React.FC = () => {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="flex justify-start shrink-0"
           >
-            <div className="w-44 lg:w-full rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.85)] bg-[#121212]">
+            <div className="w-44 lg:w-full rounded-card overflow-hidden border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.85)] bg-[#121212]">
               <img
                 src={posterErr ? FALLBACK_POSTER : movie.posterPath}
                 alt={movie.title}
@@ -268,9 +268,9 @@ export const MovieDetails: React.FC = () => {
                       <motion.div
                         key={member.id}
                         whileHover={{ y: -3, borderColor: 'rgba(255,255,255,0.12)', backgroundColor: 'rgba(255,255,255,0.04)' }}
-                        className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] transition-all"
+                        className="flex items-center gap-3.5 p-3.5 rounded-card bg-white/[0.02] border border-white/[0.06] transition-all"
                       >
-                        <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 shrink-0 overflow-hidden">
+                        <div className="w-11 h-11 rounded-btn bg-white/5 border border-white/10 shrink-0 overflow-hidden">
                           {member.profilePath ? (
                             <img src={member.profilePath} alt={member.name} className="w-full h-full object-cover" />
                           ) : (
@@ -298,8 +298,8 @@ export const MovieDetails: React.FC = () => {
 
                 {activeTab === 'ai' && (
                   <div className="max-w-2xl">
-                    <div className="rounded-2xl p-5 border border-accent/20 bg-accent/[0.02] shadow-[0_4px_30px_rgba(139,92,246,0.05)] flex items-start gap-4">
-                      <div className="w-10 h-10 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center shrink-0">
+                    <div className="rounded-card p-5 border border-accent/20 bg-accent/[0.02] shadow-[0_4px_30px_rgba(139,92,246,0.05)] flex items-start gap-4">
+                      <div className="w-10 h-10 bg-accent/10 border border-accent/20 rounded-btn flex items-center justify-center shrink-0">
                         <Sparkles className="w-5 h-5 text-accent-light" />
                       </div>
                       <div className="space-y-2">
@@ -336,7 +336,7 @@ export const MovieDetails: React.FC = () => {
               initial={{ scale: 0.92, y: 16 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.92, y: 16 }}
-              className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_0_80px_rgba(139,92,246,0.4)]"
+              className="relative w-full max-w-4xl aspect-video rounded-card overflow-hidden border border-white/10 bg-black shadow-[0_0_80px_rgba(139,92,246,0.4)]"
               onClick={e => e.stopPropagation()}
             >
               <button 
@@ -371,7 +371,7 @@ export const MovieDetails: React.FC = () => {
               initial={{ y: 80, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 80, opacity: 0 }}
-              className="w-full max-w-sm bg-[#0f0f0f] border border-white/[0.08] rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative"
+              className="w-full max-w-sm bg-[#0f0f0f] border border-white/[0.08] rounded-card p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative"
               onClick={e => e.stopPropagation()}
             >
               <button 
@@ -388,11 +388,11 @@ export const MovieDetails: React.FC = () => {
                   type="text"
                   readOnly
                   value={window.location.href}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[12px] text-muted outline-none"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-input px-3 py-2 text-[12px] text-muted outline-none"
                 />
                 <button
                   onClick={handleCopyLink}
-                  className="px-4 bg-accent hover:bg-accent-dark text-white rounded-xl flex items-center justify-center transition-colors"
+                  className="px-4 bg-accent hover:bg-accent-dark text-white rounded-btn flex items-center justify-center transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
@@ -403,7 +403,7 @@ export const MovieDetails: React.FC = () => {
                   href={`https://twitter.com/intent/tweet?text=Check out ${movie.title} on KyaDekhu! ${window.location.href}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-xl text-[12px] font-bold transition-all"
+                  className="flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-btn text-[12px] font-bold transition-all"
                 >
                   Twitter / X
                 </a>
@@ -411,7 +411,7 @@ export const MovieDetails: React.FC = () => {
                   href={`https://api.whatsapp.com/send?text=Check out ${movie.title} on KyaDekhu! ${window.location.href}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-xl text-[12px] font-bold transition-all"
+                  className="flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-btn text-[12px] font-bold transition-all"
                 >
                   WhatsApp
                 </a>
