@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { motion, useMotionValue, animate } from 'framer-motion';
+import { motion, useMotionValue, animate, AnimatePresence } from 'framer-motion';
 import { Bookmark, Sparkles, Clock, LogOut, ShieldAlert, Heart, Film, Tv, Play, Activity, Star, PieChart, Award, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { MOVIES, MOODS, GENRES } from '../../lib/mockData';
@@ -162,7 +162,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#05070C] pt-24 pb-20 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[#050505] pt-24 pb-20 flex items-center justify-center px-6">
         <div className="text-center space-y-4 max-w-sm">
           <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mx-auto text-muted/30">
             <ShieldAlert className="w-8 h-8" />
@@ -188,7 +188,7 @@ export default function ProfilePage() {
   const visibleHistory = viewAllRecent ? recentlyViewed : recentlyViewed.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-[#05070C] pt-24 pb-28">
+    <div className="min-h-screen bg-[#050505] pt-24 pb-28">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
 
         {/* Header Block */}

@@ -146,7 +146,7 @@ export const CommandPalette: React.FC = () => {
             </div>
 
             {/* Footer tips */}
-            <div className="px-4 py-2 border-t border-white/[0.04] bg-[#05070C] flex items-center justify-between text-[10px] text-muted/40 font-mono">
+            <div className="px-4 py-2 border-t border-white/[0.04] bg-[#050505] flex items-center justify-between text-[10px] text-muted/40 font-mono">
               <div className="flex items-center gap-2">
                 <span>↑↓ navigate</span>
                 <span>•</span>

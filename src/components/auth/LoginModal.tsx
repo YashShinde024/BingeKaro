@@ -275,8 +275,8 @@ export const LoginModal: React.FC = () => {
                       disabled={isSubmitting || otp.some(d => !d)}
                       className="w-full h-11 rounded-btn text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative"
                       style={{
-                        background: 'linear-gradient(135deg, #FF1744, #D50000)',
-                        boxShadow: '0 4px 20px rgba(255,23,68,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+                        background: 'linear-gradient(135deg, #FF3B30, #D32F2F)',
+                        boxShadow: '0 4px 20px rgba(255,59,48,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                       }}
                     >
                       {isSubmitting ? (
@@ -439,8 +439,8 @@ export const LoginModal: React.FC = () => {
                       type="submit"
                       className="w-full h-11 rounded-btn text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 group transition-all overflow-hidden relative"
                       style={{
-                        background: 'linear-gradient(135deg, #FF1744, #D50000)',
-                        boxShadow: '0 4px 20px rgba(255,23,68,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+                        background: 'linear-gradient(135deg, #FF3B30, #D32F2F)',
+                        boxShadow: '0 4px 20px rgba(255,59,48,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                       }}
                     >
                       {step === 'signin' ? 'Send One-Time Code' : 'Create Account'}

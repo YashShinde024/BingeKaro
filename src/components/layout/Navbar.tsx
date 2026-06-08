@@ -67,7 +67,7 @@ export const Navbar: React.FC = () => {
         <div 
           className="w-full mx-auto max-w-[1400px] rounded-2xl transition-all duration-300 px-6 h-16 mt-4 flex items-center justify-between border relative"
           style={{
-            backgroundColor: scrolled ? 'rgba(12, 14, 23, 0.85)' : 'rgba(12, 14, 23, 0.35)',
+            backgroundColor: scrolled ? 'rgba(5, 5, 5, 0.85)' : 'rgba(5, 5, 5, 0.35)',
             backdropFilter: 'blur(24px) saturate(180%)',
             WebkitBackdropFilter: 'blur(24px) saturate(180%)',
             borderColor: scrolled ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
@@ -307,10 +307,9 @@ export const MobileNav: React.FC = () => {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-        className="fixed bottom-0 inset-x-0 z-50 md:hidden"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="fixed bottom-4 inset-x-4 z-50 md:hidden"
       >
-        <div className="glass border-t border-white/[0.06] shadow-[0_-8px_32px_rgba(0,0,0,0.6)] bg-black/85 backdrop-blur-2xl">
+        <div className="glass border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.7)] bg-black/75 backdrop-blur-2xl rounded-2xl">
           <div className="flex items-center h-16 px-4">
             {MOBILE_TABS.map(({ to, label, Icon }) => {
               const active = isActive(to);

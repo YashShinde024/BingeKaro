@@ -18,6 +18,7 @@ import { OTTBadgeList } from '../components/badges/OTTBadge';
 import { useHistory } from '../context/HistoryContext';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useToast } from '../context/ToastContext';
+import { PROVIDER_REGISTRY } from '../lib/providers';
 
 const HERO_MOVIES = [MOVIES[0], MOVIES[2], MOVIES[4], MOVIES[7], MOVIES[9]].filter(Boolean);
 const TONIGHT = MOVIES[5]; // 12th Fail
@@ -124,7 +125,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070C]">
+    <div className="min-h-screen bg-[#050505]">
 
       {/* ══════════════════════════════════════
           HERO — Cinematic Rotating Backdrop
@@ -148,8 +149,8 @@ export default function Home() {
               onError={() => setImgErrors(p => ({ ...p, [HERO.id]: true }))}
             />
             {/* Cinematic Overlay Gradients */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#05070C] via-[#05070C]/50 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#05070C]/90 via-[#05070C]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/90 via-[#050505]/40 to-transparent" />
           </motion.div>
         </AnimatePresence>
 
@@ -157,6 +158,30 @@ export default function Home() {
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-1">
           <div className="aurora-orb aurora-orb-1" style={{ left: '-10%', bottom: '-10%' }} />
           <div className="aurora-orb aurora-orb-2" style={{ right: '5%', top: '5%' }} />
+        </div>
+
+        {/* Floating Particles */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full bg-accent/25"
+              style={{
+                left: `${10 + i * 12}%`,
+                top: `${15 + (i % 3) * 25}%`,
+              }}
+              animate={{
+                y: [0, -20, 0],
+                x: [0, (i % 2 === 0 ? 10 : -10), 0],
+                opacity: [0.1, 0.45, 0.1],
+              }}
+              transition={{
+                duration: 6 + i * 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
         </div>
 
         {/* Hero Content */}
@@ -226,27 +251,37 @@ export default function Home() {
 
                 {/* Actions */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <Link href={`/movie/${HERO.id}`}>
+                  <Link href="/discover">
                     <motion.button
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="btn-primary px-7 py-3 text-[13px] uppercase tracking-wider font-extrabold"
+                      whileHover={{ scale: 1.03, y: -1, boxShadow: '0 8px 30px rgba(139,92,246,0.4)' }}
+                      whileTap={{ scale: 0.97 }}
+                      className="btn-primary px-7 py-3 text-[13px] uppercase tracking-wider font-extrabold flex items-center gap-2"
                     >
-                      <Play className="w-3.5 h-3.5 fill-white" />
-                      View Details
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Find My Pick
                     </motion.button>
                   </Link>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleHeroWatchlist}
-                    className={`btn-secondary px-6 py-3 text-[13px] uppercase tracking-wider font-extrabold ${
-                      isSaved ? 'border-accent/40 bg-accent/10 text-accent-light' : ''
-                    }`}
+
+                  <button
+                    onClick={() => {
+                      document.getElementById('trending-row')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="btn-secondary px-6 py-3 text-[13px] uppercase tracking-wider font-extrabold flex items-center gap-2"
                   >
-                    {isSaved ? <Check className="w-3.5 h-3.5 text-accent-light" /> : <Plus className="w-3.5 h-3.5" />}
-                    Watchlist
-                  </motion.button>
+                    <Flame className="w-3.5 h-3.5 text-orange-400" />
+                    Browse Trending
+                  </button>
+
+                  <Link href={`/movie/${HERO.id}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="h-11 w-11 rounded-xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 flex items-center justify-center transition-all"
+                      title="View details of this spotlight"
+                    >
+                      <Info className="w-4 h-4" />
+                    </motion.button>
+                  </Link>
                 </div>
               </div>
 
@@ -306,8 +341,34 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════
-          CONTENT ROWS
+          OTT PLATFORMS ROW
       ══════════════════════════════════════ */}
+      <div className="relative border-b border-white/[0.04] bg-white/[0.005] backdrop-blur-md z-20">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-4.5">
+          <div className="flex items-center gap-5 overflow-x-auto scroll-row fade-edges-sm">
+            <span className="text-[10px] font-extrabold text-muted/50 uppercase tracking-widest shrink-0 flex items-center gap-1.5">
+              Available Channels:
+            </span>
+            <div className="flex items-center gap-3.5">
+              {Object.values(PROVIDER_REGISTRY).map(prov => (
+                <Link key={prov.id} href={`/discover?provider=${prov.id}`}>
+                  <motion.div
+                    whileHover={{ scale: 1.08, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.02] border border-white/[0.06] hover:border-accent/40 hover:bg-white/[0.06] hover:shadow-[0_0_15px_rgba(139,92,246,0.35)] transition-all duration-300 relative group shrink-0 cursor-pointer"
+                  >
+                    <img src={prov.logo} alt={prov.name} className="w-5 h-5 object-contain" onError={(e) => { (e.target as any).style.display = 'none'; }} />
+                    <span className="text-[10px] font-bold text-white/70 group-hover:text-white absolute">{prov.name.charAt(0)}</span>
+                    <span className="absolute bottom-[-32px] left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 bg-black/90 border border-white/10 text-[9px] font-bold px-2 py-0.5 rounded text-white whitespace-nowrap transition-all duration-200 z-50">
+                      {prov.name}
+                    </span>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="max-w-[1400px] mx-auto pt-10 pb-20">
 
         {/* Continue Watching / Recent */}
@@ -322,14 +383,16 @@ export default function Home() {
         )}
 
         {/* Popular this Week */}
-        <Section
-          title="Popular This Week"
-          subtitle="Trending across primary streaming platforms"
-          badge={<Flame className="w-4 h-4 text-orange-400" />}
-          viewAllTo="/discover"
-        >
-          {trending.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
-        </Section>
+        <div id="trending-row">
+          <Section
+            title="Popular This Week"
+            subtitle="Trending across primary streaming platforms"
+            badge={<Flame className="w-4 h-4 text-orange-400" />}
+            viewAllTo="/discover"
+          >
+            {trending.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
+          </Section>
+        </div>
 
         {/* Available Free Section */}
         <Section

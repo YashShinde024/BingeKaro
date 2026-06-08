@@ -20,10 +20,10 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     logo: '/providers/prime-video.png',
     type: 'subscription'
   },
-  'jiohotstar': {
-    id: 'jiohotstar',
-    name: 'JioHotstar',
-    logo: '/providers/jiohotstar.png',
+  'disney-hotstar': {
+    id: 'disney-hotstar',
+    name: 'Disney+ Hotstar',
+    logo: '/providers/disney-hotstar.png',
     type: 'subscription'
   },
   'sonyliv': {
@@ -32,10 +32,10 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     logo: '/providers/sonyliv.png',
     type: 'subscription'
   },
-  'zee5': {
-    id: 'zee5',
-    name: 'Zee5',
-    logo: '/providers/zee5.png',
+  'jiohotstar': {
+    id: 'jiohotstar',
+    name: 'JioHotstar',
+    logo: '/providers/jiohotstar.png',
     type: 'subscription'
   },
   'apple-tv': {
@@ -44,10 +44,10 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     logo: '/providers/apple-tv.png',
     type: 'rent'
   },
-  'crunchyroll': {
-    id: 'crunchyroll',
-    name: 'Crunchyroll',
-    logo: '/providers/crunchyroll.png',
+  'zee5': {
+    id: 'zee5',
+    name: 'Zee5',
+    logo: '/providers/zee5.png',
     type: 'subscription'
   },
   'mx-player': {
@@ -56,10 +56,16 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     logo: '/providers/mx-player.png',
     type: 'free'
   },
-  'youtube': {
-    id: 'youtube',
-    name: 'YouTube',
-    logo: '/providers/youtube.png',
-    type: 'free'
+  'crunchyroll': {
+    id: 'crunchyroll',
+    name: 'Crunchyroll',
+    logo: '/providers/crunchyroll.png',
+    type: 'subscription'
+  },
+  'lionsgate-play': {
+    id: 'lionsgate-play',
+    name: 'Lionsgate Play',
+    logo: '/providers/lionsgate-play.png',
+    type: 'subscription'
   }
 };

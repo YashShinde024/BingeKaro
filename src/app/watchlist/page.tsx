@@ -142,7 +142,7 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070C] pt-24 pb-28">
+    <div className="min-h-screen bg-[#050505] pt-24 pb-28">
       {/* ── Header ── */}
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/[0.05]">

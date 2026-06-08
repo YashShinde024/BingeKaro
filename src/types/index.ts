@@ -5,13 +5,14 @@
 export type OTTProviderId =
   | 'netflix'
   | 'prime-video'
-  | 'jiohotstar'
+  | 'disney-hotstar'
   | 'sonyliv'
-  | 'zee5'
+  | 'jiohotstar'
   | 'apple-tv'
-  | 'crunchyroll'
+  | 'zee5'
   | 'mx-player'
-  | 'youtube';
+  | 'crunchyroll'
+  | 'lionsgate-play';
 
 export interface OTTProvider {
   id: OTTProviderId;

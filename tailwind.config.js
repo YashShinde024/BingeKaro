@@ -7,14 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#07111F',
-        surface: '#0d1a2d',
-        card: '#12233c',
+        bg: '#050505',
+        surface: '#0F0F0F',
+        card: '#141414',
         accent: {
-          DEFAULT: '#FF1744',
-          light: '#FF5252',
-          dark: '#D50000',
+          DEFAULT: '#8B5CF6',
+          light: '#A78BFA',
+          dark: '#7C3AED',
         },
+        brandRed: '#FF3B30',
         muted: '#A1A1AA',
       },
       fontFamily: {

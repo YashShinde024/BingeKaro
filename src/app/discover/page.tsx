@@ -111,11 +111,11 @@ function DiscoverContent() {
     : 'Perfect match profile!';
 
   return (
-    <div className="min-h-screen bg-[#05070C] pt-24 pb-32 md:pb-20">
+    <div className="min-h-screen bg-[#050505] pt-24 pb-32 md:pb-20">
       <div className="max-w-2xl mx-auto px-6">
 
         {/* Sticky progress bar */}
-        <div className="sticky top-[64px] z-30 py-4 mb-10 bg-[#05070C]/80 backdrop-blur-xl border-b border-white/[0.05]">
+        <div className="sticky top-[64px] z-30 py-4 mb-10 bg-[#050505]/80 backdrop-blur-xl border-b border-white/[0.05]">
           <div className="flex items-center justify-between text-[11px] font-bold mb-2">
             <span className="text-muted/40 uppercase tracking-widest">Taste Match Profile</span>
             <motion.span

@@ -50,7 +50,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
   if (!movie) {
     return (
-      <div className="min-h-screen bg-[#05070C] flex items-center justify-center">
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl font-black text-white mb-3">Scene not found</p>
           <Link href="/" className="text-muted hover:text-white transition-colors text-sm">← Back home</Link>
@@ -76,7 +76,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   };
 
   return (
-    <div className="min-h-screen bg-[#05070C]">
+    <div className="min-h-screen bg-[#050505]">
       {/* ── Hero backdrop ── */}
       <div className="relative h-[65vh] min-h-[440px] overflow-hidden">
         <motion.img
@@ -90,8 +90,8 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           onError={() => setBgErr(true)}
         />
         {/* Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#05070C] via-[#05070C]/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#05070C]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/40 to-transparent" />
 
         {/* Back button */}
         <div className="absolute top-20 left-6 lg:left-10 z-10">

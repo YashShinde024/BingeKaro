@@ -73,7 +73,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: Math.min(index * 0.03, 0.3), ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ scale: 1.03, y: -4 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className={`flex-shrink-0 ${width} group cursor-pointer relative select-none`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

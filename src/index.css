@@ -8,21 +8,21 @@
    MIDNIGHT CINEMA — Design Tokens
 ───────────────────────────────────────── */
 :root {
-  --bg:           #05070C;
-  --surface:      #0C0E17;
-  --surface-2:    #121624;
-  --card:         #0E121E;
-  --card-hover:   #161B2E;
+  --bg:           #050505;
+  --surface:      rgba(15, 15, 15, 0.75);
+  --surface-2:    rgba(20, 20, 20, 0.85);
+  --card:         rgba(20, 20, 20, 0.6);
+  --card-hover:   rgba(26, 26, 26, 0.75);
   --accent:       #8B5CF6;
   --accent-light: #A78BFA;
   --accent-dark:  #7C3AED;
   --accent-glow:  rgba(139, 92, 246, 0.25);
   --text:         #FFFFFF;
-  --text-secondary: #E4E4E7;
-  --muted:        #94A3B8;
-  --muted-dark:   #64748B;
+  --text-secondary: #FFFFFF;
+  --muted:        #A1A1AA;
+  --muted-dark:   #71717A;
   --border:       rgba(255, 255, 255, 0.05);
-  --border-light: rgba(255, 255, 255, 0.1);
+  --border-light: rgba(255, 255, 255, 0.12);
 
   /* Cinematic shadows */
   --shadow-card:  0 4px 20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
@@ -427,18 +427,18 @@
            text-white font-semibold
            px-6 py-3 rounded-btn
            select-none cursor-pointer overflow-hidden;
-    background: linear-gradient(135deg, #E11D48 0%, #BE123C 40%, #9F1239 100%);
+    background: linear-gradient(135deg, #FF3B30 0%, #D32F2F 100%);
     box-shadow: 
       inset 0 1px 0 rgba(255,255,255,0.12),
-      0 2px 8px rgba(225,29,72,0.25);
+      0 2px 8px rgba(255,59,48,0.25);
     transition: all var(--duration-base) var(--ease-premium);
   }
   .btn-danger:hover {
-    background: linear-gradient(135deg, #BE123C 0%, #9F1239 40%, #881337 100%);
+    background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%);
     box-shadow: 
       inset 0 1px 0 rgba(255,255,255,0.15),
-      0 8px 32px rgba(225,29,72,0.4),
-      0 0 40px rgba(225,29,72,0.12);
+      0 8px 32px rgba(255,59,48,0.4),
+      0 0 40px rgba(255,59,48,0.12);
     transform: translateY(-2px);
   }
   .btn-danger:active { 

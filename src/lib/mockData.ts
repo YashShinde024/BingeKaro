@@ -575,7 +575,7 @@ export const MOVIES: Movie[] = [
     backdropPath: 'https://image.tmdb.org/t/p/original/vb3jXhkPnilV7tXZq1hMPeJfYt0.jpg',
     genres: ['drama'],
     language: 'hindi',
-    providers: ['prime-video', 'youtube'],
+    providers: ['prime-video', 'mx-player'],
     isFree: true,
     director: 'Aamir Khan',
     isBollywood: true,

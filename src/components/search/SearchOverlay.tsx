@@ -22,13 +22,14 @@ const TRENDING_SEARCHES = [
 const FILTER_PROVIDERS: { id: OTTProviderId; label: string }[] = [
   { id: 'netflix', label: 'Netflix' },
   { id: 'prime-video', label: 'Prime Video' },
-  { id: 'jiohotstar', label: 'JioHotstar' },
+  { id: 'disney-hotstar', label: 'Disney+ Hotstar' },
   { id: 'sonyliv', label: 'SonyLIV' },
-  { id: 'zee5', label: 'ZEE5' },
+  { id: 'jiohotstar', label: 'JioHotstar' },
   { id: 'apple-tv', label: 'Apple TV' },
-  { id: 'crunchyroll', label: 'Crunchyroll' },
+  { id: 'zee5', label: 'Zee5' },
   { id: 'mx-player', label: 'MX Player' },
-  { id: 'youtube', label: 'YouTube' },
+  { id: 'crunchyroll', label: 'Crunchyroll' },
+  { id: 'lionsgate-play', label: 'Lionsgate Play' },
 ];
 
 const FALLBACK = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=200&q=80';
@@ -171,7 +172,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[100] flex flex-col justify-start bg-[#05070C]/95 backdrop-blur-2xl"
+          className="fixed inset-0 z-[100] flex flex-col justify-start bg-[#050505]/95 backdrop-blur-2xl"
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <div className="max-w-xl w-full mx-auto px-4 pt-16 sm:pt-24">
