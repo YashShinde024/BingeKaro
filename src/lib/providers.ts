@@ -61,29 +61,5 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     name: 'MX Player',
     logo: '/providers/mx-player.png',
     type: 'free'
-  },
-  'hulu': {
-    id: 'hulu',
-    name: 'Hulu',
-    logo: '/providers/hulu.svg',
-    type: 'subscription'
-  },
-  'max': {
-    id: 'max',
-    name: 'Max',
-    logo: '/providers/max.svg',
-    type: 'subscription'
-  },
-  'paramount-plus': {
-    id: 'paramount-plus',
-    name: 'Paramount+',
-    logo: '/providers/paramount-plus.svg',
-    type: 'subscription'
-  },
-  'lionsgate-play': {
-    id: 'lionsgate-play',
-    name: 'Lionsgate Play',
-    logo: '/providers/lionsgate-play.svg',
-    type: 'subscription'
   }
 };

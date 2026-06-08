@@ -30,12 +30,9 @@ const FOOTER_PLATFORMS: { id: OTTProviderId; href: string }[] = [
   { id: 'sonyliv', href: 'https://sonyliv.com' },
   { id: 'zee5', href: 'https://zee5.com' },
   { id: 'apple-tv', href: 'https://tv.apple.com' },
+  { id: 'youtube', href: 'https://youtube.com' },
   { id: 'mx-player', href: '#' },
-  { id: 'crunchyroll', href: '#' },
-  { id: 'hulu', href: '#' },
-  { id: 'max', href: '#' },
-  { id: 'paramount-plus', href: '#' },
-  { id: 'lionsgate-play', href: '#' },
+  { id: 'crunchyroll', href: 'https://crunchyroll.com' },
 ];
 
 const FOOTER_PRODUCT = [
@@ -55,6 +52,12 @@ const FOOTER_LEGAL = [
   { to: '/terms', label: 'Terms of Service' },
 ];
 
+const FOOTER_RESOURCES = [
+  { to: '/about', label: 'How It Works' },
+  { to: '/about', label: 'Blog' },
+  { to: '/about', label: 'Changelog' },
+];
+
 export const Footer: React.FC = () => {
   return (
     <footer className="relative mt-32 pb-28 md:pb-12 bg-[#050505] border-t border-white/[0.04]">
@@ -69,7 +72,7 @@ export const Footer: React.FC = () => {
           <p className="text-[10px] font-bold text-muted/30 uppercase tracking-widest mb-6 text-center">
             Tracks availability across
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3.5 max-w-4xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-3 max-w-4xl mx-auto">
             {FOOTER_PLATFORMS.map((p, i) => (
               <motion.a
                 key={p.id}
@@ -90,7 +93,7 @@ export const Footer: React.FC = () => {
         <div className="h-px bg-white/[0.05] mb-14" />
 
         {/* Main columns */}
-        <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-10 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-10 mb-16">
           {/* Brand Col */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
@@ -118,7 +121,11 @@ export const Footer: React.FC = () => {
               <motion.div
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12.5px] font-semibold text-white cursor-pointer bg-gradient-to-r from-accent to-accent-light shadow-[0_4px_20px_rgba(139,92,246,0.35)]"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12.5px] font-semibold text-white cursor-pointer overflow-hidden relative"
+                style={{
+                  background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+                  boxShadow: '0 4px 20px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                }}
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Start Discovering
@@ -168,6 +175,20 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
+          {/* Resources Col */}
+          <div>
+            <p className="text-[10px] font-bold tracking-widest text-muted/30 uppercase mb-5">Resources</p>
+            <ul className="space-y-3">
+              {FOOTER_RESOURCES.map(({ to, label }) => (
+                <li key={label}>
+                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Legal Col */}
           <div>
             <p className="text-[10px] font-bold tracking-widest text-muted/30 uppercase mb-5">Legal</p>
@@ -189,26 +210,28 @@ export const Footer: React.FC = () => {
             <p className="text-[11.5px] text-muted/40">
               © {new Date().getFullYear()} KyaDekhu. All rights reserved.
             </p>
-            <p className="text-[11.5px] text-muted/30 flex items-center gap-1">
-              Made with <Heart className="w-3 h-3 text-rose-500 fill-rose-500" /> by{' '}
-              <span className="text-muted/50 font-semibold hover:text-white transition-colors cursor-default">Nyxen</span>
-            </p>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+              <p className="text-[11px] text-muted/40 flex items-center gap-1">
+                Made with <Heart className="w-3 h-3 text-rose-500 fill-rose-500" /> by{' '}
+                <span className="text-accent-light/70 font-bold hover:text-accent-light transition-colors cursor-default tracking-wide">Nyxen</span>
+              </p>
+            </div>
           </div>
 
           {/* Social Links */}
           <div className="flex items-center gap-3">
             {[
-              { Icon: GithubIcon, href: '#', label: 'GitHub', hoverColor: 'hover:border-white/30 hover:text-white' },
-              { Icon: TwitterIcon, href: '#', label: 'Twitter/X', hoverColor: 'hover:border-[#1DA1F2]/30 hover:text-white' },
-              { Icon: InstagramIcon, href: '#', label: 'Instagram', hoverColor: 'hover:border-pink-500/30 hover:text-white' },
-            ].map(({ Icon, href, label, hoverColor }) => (
+              { Icon: GithubIcon, href: '#', label: 'GitHub', hoverBg: 'hover:bg-white/10 hover:border-white/20 hover:text-white hover:shadow-[0_4px_15px_rgba(255,255,255,0.05)]' },
+              { Icon: TwitterIcon, href: '#', label: 'Twitter/X', hoverBg: 'hover:bg-[#1DA1F2]/10 hover:border-[#1DA1F2]/25 hover:text-white hover:shadow-[0_4px_15px_rgba(29,161,242,0.1)]' },
+              { Icon: InstagramIcon, href: '#', label: 'Instagram', hoverBg: 'hover:bg-pink-500/10 hover:border-pink-500/25 hover:text-white hover:shadow-[0_4px_15px_rgba(236,72,153,0.1)]' },
+            ].map(({ Icon, href, label, hoverBg }) => (
               <motion.a
                 key={label}
                 href={href}
                 aria-label={label}
                 whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className={`w-9 h-9 rounded-xl border border-white/[0.07] flex items-center justify-center text-muted transition-all duration-200 ${hoverColor}`}
+                className={`w-9 h-9 rounded-xl border border-white/[0.07] flex items-center justify-center text-muted transition-all duration-200 ${hoverBg}`}
               >
                 <Icon />
               </motion.a>

@@ -70,11 +70,11 @@ export const Navbar: React.FC = () => {
         <div 
           className="w-full rounded-2xl transition-all duration-300 px-6 h-16 flex items-center justify-between border relative"
           style={{
-            backgroundColor: scrolled ? 'rgba(10, 10, 10, 0.7)' : 'rgba(5, 5, 5, 0.3)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            borderColor: scrolled ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-            boxShadow: scrolled ? '0 16px 40px -10px rgba(0, 0, 0, 0.7)' : 'none',
+            backgroundColor: scrolled ? 'rgba(10, 10, 10, 0.75)' : 'rgba(5, 5, 5, 0.35)',
+            backdropFilter: scrolled ? 'blur(40px) saturate(200%)' : 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: scrolled ? 'blur(40px) saturate(200%)' : 'blur(20px) saturate(180%)',
+            borderColor: scrolled ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+            boxShadow: scrolled ? '0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.02)' : 'none',
           }}
         >
           {/* LEFT — Logo */}
@@ -122,9 +122,8 @@ export const Navbar: React.FC = () => {
                   )}
                   {active && (
                     <motion.div
-                      layoutId="nav-underline"
-                      className="absolute bottom-1.5 left-4 right-4 h-[2px] rounded-full"
-                      style={{ background: 'linear-gradient(90deg, #A78BFA, #8B5CF6)' }}
+                      layoutId="nav-dot"
+                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-light"
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -137,16 +136,21 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             {/* Search Trigger */}
             <motion.button
-              whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.06)' }}
+              whileHover={{ 
+                scale: 1.02, 
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                borderColor: 'rgba(139, 92, 246, 0.3)',
+                boxShadow: '0 0 15px rgba(139, 92, 246, 0.1)'
+              }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2.5 h-9 px-3 rounded-xl border border-white/[0.05] text-muted hover:text-white transition-all duration-200 bg-white/[0.02]"
+              className="flex items-center justify-between gap-2.5 h-9 w-36 lg:w-48 px-3 rounded-xl border border-white/[0.06] text-muted hover:text-white transition-all duration-200 bg-white/[0.015]"
             >
-              <Search className="w-4 h-4" />
-              <span className="hidden lg:flex items-center gap-1.5 text-[11px] font-medium tracking-wider">
-                SEARCH
-                <kbd className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-muted/80 font-mono">Ctrl+K</kbd>
-              </span>
+              <div className="flex items-center gap-2">
+                <Search className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-medium tracking-wider">SEARCH</span>
+              </div>
+              <kbd className="hidden lg:inline-block text-[8px] px-1.5 py-0.5 rounded bg-white/10 text-muted/60 font-mono border border-white/[0.05]">Ctrl+K</kbd>
             </motion.button>
 
             {/* Notifications */}
@@ -174,7 +178,7 @@ export const Navbar: React.FC = () => {
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 28 }}
                     className="absolute right-0 mt-3 w-80 rounded-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden z-50 p-4"
-                    style={{ background: 'rgba(15,15,15,0.95)', backdropFilter: 'blur(20px)' }}
+                    style={{ background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(30px)' }}
                   >
                     <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-2">
                       <h4 className="text-[12px] font-bold text-white uppercase tracking-widest">Recent Alerts</h4>
@@ -202,14 +206,17 @@ export const Navbar: React.FC = () => {
             {user ? (
               <div className="relative">
                 <motion.div
-                  whileHover={{ scale: 1.04 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: '0 0 0 3px rgba(139,92,246,0.3), 0 4px 15px rgba(139,92,246,0.2)'
+                  }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setProfileOpen(!profileOpen);
                     setNotifOpen(false);
                   }}
                   className={`w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center cursor-pointer border transition-all ${
-                    profileOpen ? 'border-white/40 shadow-[0_0_15px_rgba(139,92,246,0.4)]' : 'border-white/10 hover:border-white/20'
+                    profileOpen ? 'border-white/40 shadow-[0_0_15px_rgba(139,92,246,0.4)]' : 'border-white/10'
                   }`}
                 >
                   <span className="text-xs font-bold text-white select-none">
@@ -224,8 +231,8 @@ export const Navbar: React.FC = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                      className="absolute right-0 mt-3 w-60 rounded-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden z-50 p-2"
-                      style={{ background: 'rgba(15,15,15,0.95)', backdropFilter: 'blur(20px)' }}
+                      className="absolute right-0 mt-3 w-60 rounded-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03)] overflow-hidden z-50 p-2"
+                      style={{ background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(30px)' }}
                     >
                       <div className="px-3.5 py-3 border-b border-white/[0.06] mb-1.5 flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-bold text-white text-xs">

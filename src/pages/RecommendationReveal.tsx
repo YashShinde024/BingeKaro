@@ -121,6 +121,16 @@ export const RecommendationReveal: React.FC = () => {
     }
   }, [movie?.id]);
 
+  const confidenceScore = React.useMemo(() => {
+    if (!movie) return 0;
+    const scoreParam = searchParams.get('score');
+    if (scoreParam) return Math.min(100, Math.max(50, Number(scoreParam)));
+    // Compute a stable pseudo-random score based on movie rating & ID for consistency
+    const base = Math.floor(movie.rating * 10);
+    const offset = (movie.id * 3) % 15;
+    return Math.min(99, Math.max(75, base + offset));
+  }, [movie?.id]);
+
   const alternatives = React.useMemo(() => {
     if (!movie) return [];
     return MOVIES
@@ -236,10 +246,13 @@ export const RecommendationReveal: React.FC = () => {
 
           {/* RIGHT: Detailed Information */}
           <div className="space-y-6">
-            <motion.div variants={item} className="flex items-center gap-2">
+            <motion.div variants={item} className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 border border-accent/30 text-[10px] font-bold text-accent-light tracking-wider uppercase">
                 <Sparkles className="w-3.5 h-3.5" />
                 AI RECOMMENDATION FOR YOU
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                {confidenceScore}% Match Confidence
               </span>
             </motion.div>
 
@@ -275,9 +288,15 @@ export const RecommendationReveal: React.FC = () => {
             </motion.div>
 
             {/* Why This Movie? (AI Explanation) */}
-            <motion.div variants={item} className="rounded-2xl border border-accent/20 bg-accent/[0.02] overflow-hidden p-5 shadow-[0_4px_30px_rgba(139,92,246,0.05)] relative">
+            <motion.div 
+              variants={item} 
+              className="rounded-2xl border border-accent/20 overflow-hidden p-5 shadow-[0_4px_30px_rgba(139,92,246,0.05)] relative"
+              style={{
+                background: 'linear-gradient(135deg, rgba(139,92,246,0.03), rgba(139,92,246,0.01))'
+              }}
+            >
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0 mt-0.5 animate-pulse">
                   <Sparkles className="w-4.5 h-4.5 text-accent-light" />
                 </div>
                 <div className="flex-1">
@@ -331,58 +350,53 @@ export const RecommendationReveal: React.FC = () => {
             {/* Main Action Bar */}
             <motion.div variants={item} className="flex flex-wrap items-center gap-3 pt-3">
               <Link to={`/movie/${movie.id}`}>
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-[13px] font-bold text-white shadow-[0_4px_20px_rgba(139,92,246,0.4)]"
-                >
+                <button className="btn-primary px-6 py-3 text-[13px]">
                   <Play className="w-4 h-4 fill-white" />
                   Watch Details
-                </motion.button>
+                </button>
               </Link>
 
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleSave}
-                className={`flex items-center gap-2 px-4.5 py-3.5 rounded-xl border text-[13px] font-bold transition-all ${
-                  saved ? 'bg-accent/15 border-accent/40 text-accent-light' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                className={`btn-secondary px-5 py-3 text-[13px] ${
+                  saved ? '!bg-accent/15 !border-accent/40 text-accent-light shadow-[0_0_20px_rgba(139,92,246,0.15)]' : ''
                 }`}
               >
-                {saved ? <CheckCircle2 className="w-4.5 h-4.5" /> : <Bookmark className="w-4.5 h-4.5" />}
+                {saved ? <CheckCircle2 className="w-4 h-4 text-accent-light" /> : <Bookmark className="w-4 h-4" />}
                 {saved ? 'Saved to Watchlist' : 'Add to Watchlist'}
-              </motion.button>
+              </button>
 
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleFavorite}
-                className={`flex items-center justify-center w-12 py-3.5 rounded-xl border transition-all ${
-                  favorited ? 'bg-rose-500/15 border-rose-500/30 text-rose-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                className={`btn-secondary px-3 py-3 w-11 h-11 flex items-center justify-center ${
+                  favorited ? '!bg-rose-500/15 !border-rose-500/30 text-rose-400' : ''
                 }`}
               >
                 <Heart className={`w-4.5 h-4.5 ${favorited ? 'fill-rose-500' : ''}`} />
-              </motion.button>
+              </button>
 
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleShare}
-                className="flex items-center justify-center w-12 py-3.5 rounded-xl border bg-white/5 border-white/10 text-white hover:bg-white/10"
+                className="btn-secondary px-3 py-3 w-11 h-11 flex items-center justify-center"
                 title="Copy Link to Share"
               >
-                <Share2 className="w-4.5 h-4.5" />
-              </motion.button>
+                <Share2 className="w-4 h-4" />
+              </button>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/discover')}
-                className="flex items-center gap-1.5 px-4 py-3.5 rounded-xl text-muted hover:text-white transition-all text-[13px] font-medium"
+              <button
+                onClick={() => document.getElementById('alternatives')?.scrollIntoView({ behavior: 'smooth' })}
+                className="btn-secondary px-5 py-3 text-[13px]"
               >
-                <RotateCcw className="w-4 h-4" />
+                Watch Similar
+              </button>
+
+              <button
+                onClick={() => navigate('/discover')}
+                className="btn-ghost px-4 py-2 text-[13px] flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
                 Recommend Again
-              </motion.button>
+              </button>
             </motion.div>
           </div>
         </motion.div>
@@ -390,13 +404,14 @@ export const RecommendationReveal: React.FC = () => {
         {/* Alternatives — "Why Not These?" */}
         {alternatives.length > 0 && (
           <motion.div
+            id="alternatives"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
-            className="mt-16 border-t border-white/[0.05] pt-12"
+            className="mt-16 border-t border-white/[0.05] pt-12 scroll-mt-24"
           >
             <div className="flex items-center gap-2 mb-6">
-              <span className="text-xl">💡</span>
+              <span className="text-xl animate-bounce">💡</span>
               <div>
                 <h3 className="text-[14px] font-bold text-white uppercase tracking-wider">Alternative Recommendations</h3>
                 <p className="text-[11px] text-muted/50">Other movies that matched your taste map</p>

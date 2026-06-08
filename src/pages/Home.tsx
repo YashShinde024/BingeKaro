@@ -145,7 +145,7 @@ const HeroSpotlightCard: React.FC<{ movie: typeof MOVIES[0]; index: number }> = 
                 <span className="text-[12px] text-white font-semibold">{movie.rating.toFixed(1)}</span>
                 <span className="text-[11px] text-muted">· {movie.year}</span>
               </div>
-              <OTTBadgeList providers={movie.providers} size="xs" max={2} />
+              <span className="text-[10px] text-muted/50 font-medium capitalize">{movie.genres[0]}</span>
             </div>
           </div>
         </motion.div>

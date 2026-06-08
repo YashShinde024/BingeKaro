@@ -191,40 +191,34 @@ export const MovieDetails: React.FC = () => {
             </motion.div>
 
             {/* Action Buttons */}
-            <motion.div variants={fadeUp} className="flex flex-wrap gap-3 pt-2">
+            <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-3 pt-2">
               {movie.trailerKey ? (
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   onClick={() => setShowTrailer(true)}
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-[13px] font-bold text-white shadow-[0_4px_20px_rgba(139,92,246,0.35)]"
+                  className="btn-primary px-6 py-3 text-[13px]"
                 >
                   <Play className="w-4 h-4 fill-white" />
                   Watch Trailer
-                </motion.button>
+                </button>
               ) : null}
 
-              <motion.button
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => saved ? removeFromWatchlist(movie.id) : addToWatchlist(movie)}
-                className={`flex items-center gap-2 px-5 py-3.5 rounded-xl border text-[13px] font-bold transition-all ${
-                  saved ? 'bg-accent/15 border-accent/40 text-accent-light' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                className={`btn-secondary px-5 py-3 text-[13px] ${
+                  saved ? '!bg-accent/15 !border-accent/40 text-accent-light shadow-[0_0_20px_rgba(139,92,246,0.15)]' : ''
                 }`}
               >
-                {saved ? <CheckCircle2 className="w-4.5 h-4.5" /> : <Bookmark className="w-4.5 h-4.5" />}
+                {saved ? <CheckCircle2 className="w-4 h-4 text-accent-light" /> : <Bookmark className="w-4 h-4" />}
                 {saved ? 'Saved to Watchlist' : 'Add to Watchlist'}
-              </motion.button>
+              </button>
 
-              <motion.button
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => setShowShare(true)}
-                className="flex items-center justify-center w-12 py-3.5 rounded-xl border bg-white/5 border-white/10 text-white hover:bg-white/10"
+                className="btn-secondary px-3 py-3 w-11 h-11 flex items-center justify-center"
                 title="Share Movie Details"
               >
-                <Share2 className="w-4.5 h-4.5" />
-              </motion.button>
+                <Share2 className="w-4 h-4" />
+              </button>
             </motion.div>
 
             {/* Tabs content */}

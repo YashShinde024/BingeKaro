@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bookmark, Grid3X3, List, SlidersHorizontal, Star, Clock, Trash2, Sparkles, Heart, Film } from 'lucide-react';
+import { Bookmark, Grid3X3, List, SlidersHorizontal, Star, Clock, Trash2, Heart, Film, Check, PieChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { OTTBadgeList } from '../components/badges/OTTBadge';
 import { useWatchlist } from '../context/WatchlistContext';
@@ -29,6 +29,7 @@ export const Watchlist: React.FC = () => {
   const [sortBy, setSortBy] = React.useState<'added' | 'rating' | 'runtime'>('added');
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [providerFilter, setProviderFilter] = React.useState<string>('all');
+  const [selectedIds, setSelectedIds] = React.useState<number[]>([]);
   const { watchlist, favorites, removeFromWatchlist } = useWatchlist();
 
   // Filter & Sort
@@ -59,34 +60,65 @@ export const Watchlist: React.FC = () => {
     return result;
   }, [watchlist, providerFilter, availabilityFilter, sortBy]);
 
-  // Insights computation
+  // Analytics breakdowns
   const stats = React.useMemo(() => {
     if (watchlist.length === 0) return null;
     const totalRuntime = watchlist.reduce((acc, m) => acc + m.runtime, 0);
     const runtimeHours = Math.floor(totalRuntime / 60);
-    const freeCount = watchlist.filter(m => m.isFree).length;
 
-    // Favorite/top provider
+    // Favorite/top provider counts
     const providerCount: Record<string, number> = {};
     watchlist.forEach(m => m.providers.forEach(p => {
       providerCount[p] = (providerCount[p] || 0) + 1;
     }));
-    const topProviderId = Object.entries(providerCount).sort((a, b) => b[1] - a[1])[0]?.[0] as OTTProviderId | undefined;
-    const topProviderName = topProviderId ? PROVIDER_REGISTRY[topProviderId]?.name : '—';
+    const providerBreakdown = Object.entries(providerCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([id, count]) => `${PROVIDER_REGISTRY[id]?.name || id}: ${count}`)
+      .join(', ');
 
-    // Favorite genre
+    // Top genres counts
     const genreCount: Record<string, number> = {};
     watchlist.forEach(m => m.genres.forEach(g => {
       genreCount[g] = (genreCount[g] || 0) + 1;
     }));
+    const genreBreakdown = Object.entries(genreCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([g, count]) => `${g}: ${count}`)
+      .join(', ');
+
     const topGenre = Object.entries(genreCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—';
+
+    // Availability breakdown percentages
+    let free = 0;
+    let sub = 0;
+    let rentBuy = 0;
+
+    watchlist.forEach(m => {
+      const isFree = m.isFree || m.providers.some(p => PROVIDER_REGISTRY[p]?.type === 'free');
+      const isSub = m.providers.some(p => PROVIDER_REGISTRY[p]?.type === 'subscription');
+      if (isFree) {
+        free++;
+      } else if (isSub) {
+        sub++;
+      } else {
+        rentBuy++;
+      }
+    });
+
+    const total = watchlist.length;
 
     return {
       runtimeHours,
-      freeCount,
-      topProviderName,
-      topProviderId,
       topGenre,
+      providerBreakdown,
+      genreBreakdown,
+      availability: {
+        free: { count: free, pct: Math.round((free / total) * 100) },
+        sub: { count: sub, pct: Math.round((sub / total) * 100) },
+        rentBuy: { count: rentBuy, pct: Math.round((rentBuy / total) * 100) },
+      }
     };
   }, [watchlist]);
 
@@ -149,27 +181,64 @@ export const Watchlist: React.FC = () => {
 
         {/* Stats Grid Insights */}
         {watchlist.length > 0 && stats && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-8"
-          >
-            {[
-              { label: 'Total Saved', value: String(watchlist.length), icon: Bookmark, color: 'text-accent-light' },
-              { label: 'Watch Time', value: `${stats.runtimeHours} hrs`, icon: Clock, color: 'text-violet-400' },
-              { label: 'Free to Stream', value: String(stats.freeCount), icon: Sparkles, color: 'text-emerald-400' },
-              { label: 'Top Genre', value: stats.topGenre, icon: Film, color: 'text-amber-400' },
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                <stat.icon className={`w-5 h-5 ${stat.color} shrink-0`} />
-                <div>
-                  <p className="text-[17px] font-black text-white capitalize leading-none mb-1">{stat.value}</p>
-                  <span className="text-[10px] font-bold text-muted/40 uppercase tracking-wider block">{stat.label}</span>
+          <div className="space-y-4 mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-2 sm:grid-cols-4 gap-3.5"
+            >
+              {[
+                { label: 'Total Saved', value: String(watchlist.length), icon: Bookmark, color: 'text-accent-light' },
+                { label: 'Watch Time', value: `${stats.runtimeHours} hrs`, icon: Clock, color: 'text-violet-400' },
+                { label: 'Top Genre', value: stats.topGenre, icon: Film, color: 'text-amber-400' },
+                { label: 'Breakdowns', value: 'Analytics', icon: PieChart, color: 'text-emerald-400' },
+              ].map((stat, i) => (
+                <div key={i} className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                  <stat.icon className={`w-5 h-5 ${stat.color} shrink-0`} />
+                  <div className="min-w-0">
+                    <p className="text-[17px] font-black text-white capitalize leading-none mb-1 truncate">{stat.value}</p>
+                    <span className="text-[10px] font-bold text-muted/40 uppercase tracking-wider block">{stat.label}</span>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Breakdowns & Bar Chart panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="p-5 rounded-2xl bg-[#0c0c0c] border border-white/[0.07] grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              {/* Provider Breakdown */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-muted/40 uppercase tracking-wider block">Provider Breakdown</span>
+                <p className="text-[12.5px] font-semibold text-white/90 leading-relaxed">{stats.providerBreakdown || 'None'}</p>
+              </div>
+
+              {/* Genre Breakdown */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-muted/40 uppercase tracking-wider block">Genre Breakdown</span>
+                <p className="text-[12.5px] font-semibold text-white/90 leading-relaxed">{stats.genreBreakdown || 'None'}</p>
+              </div>
+
+              {/* Availability chart */}
+              <div className="space-y-2.5">
+                <span className="text-[10px] font-bold text-muted/40 uppercase tracking-wider block">Availability Distribution</span>
+                <div className="flex h-2.5 rounded-full overflow-hidden bg-white/5 border border-white/[0.05]">
+                  <div style={{ width: `${stats.availability.free.pct}%` }} className="bg-emerald-500" title={`Free: ${stats.availability.free.count}`} />
+                  <div style={{ width: `${stats.availability.sub.pct}%` }} className="bg-violet-500" title={`Subscription: ${stats.availability.sub.count}`} />
+                  <div style={{ width: `${stats.availability.rentBuy.pct}%` }} className="bg-amber-500" title={`Rent/Buy: ${stats.availability.rentBuy.count}`} />
+                </div>
+                <div className="flex items-center gap-4 text-[10.5px] font-semibold">
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Free ({stats.availability.free.pct}%)</div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-violet-500" /> Sub ({stats.availability.sub.pct}%)</div>
+                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-amber-500" /> Rent/Buy ({stats.availability.rentBuy.pct}%)</div>
                 </div>
               </div>
-            ))}
-          </motion.div>
+            </motion.div>
+          </div>
         )}
 
         {/* Provider horizontal filter bar */}
@@ -288,24 +357,45 @@ export const Watchlist: React.FC = () => {
           <EmptyWatchlist />
         ) : view === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-            {sorted.map((movie) => (
-              <motion.div
-                key={movie.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="group relative"
-              >
-                <Link to={`/movie/${movie.id}`} className="block space-y-2">
+            {sorted.map((movie) => {
+              const isSelected = selectedIds.includes(movie.id);
+              return (
+                <motion.div
+                  key={movie.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="group relative"
+                >
                   <div className="relative rounded-2xl overflow-hidden aspect-poster bg-[#121212] border border-white/[0.06] group-hover:border-accent-light/30 transition-all shadow-md">
                     <img src={movie.posterPath} alt="" className="w-full h-full object-cover group-hover:scale-104 transition-all duration-300" onError={e => (e.target as any).src = FALLBACK} />
                     
+                    {/* Checkbox select */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedIds(prev =>
+                            prev.includes(movie.id) ? prev.filter(id => id !== movie.id) : [...prev, movie.id]
+                          );
+                        }}
+                        className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
+                          isSelected
+                            ? 'bg-accent border-accent text-white shadow-sm'
+                            : 'bg-black/60 border-white/20 text-white hover:border-white/40'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+
                     <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/75 backdrop-blur-md rounded-lg px-2 py-0.5 border border-white/10">
                       <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
                       <span className="text-[11px] font-bold text-white">{movie.rating.toFixed(1)}</span>
                     </div>
 
                     <button
-                      className="absolute top-2 left-2 w-7 h-7 bg-black/60 hover:bg-rose-500/20 hover:text-rose-400 border border-white/10 rounded-lg flex items-center justify-center text-rose-300 opacity-0 group-hover:opacity-100 transition-all"
+                      className="absolute bottom-2 right-2 w-7 h-7 bg-black/60 hover:bg-rose-500/20 hover:text-rose-400 border border-white/10 rounded-lg flex items-center justify-center text-rose-300 opacity-0 group-hover:opacity-100 transition-all"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -315,56 +405,117 @@ export const Watchlist: React.FC = () => {
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <div>
-                    <h3 className="text-[13px] font-bold text-white/90 truncate group-hover:text-accent-light transition-colors">{movie.title}</h3>
-                    <div className="flex items-center gap-1.5 mt-0.5 text-muted text-[11px]">
-                      <span>{movie.year}</span>
-                      <span>•</span>
-                      <span>{movie.runtime}m</span>
+                  <Link to={`/movie/${movie.id}`} className="block mt-2">
+                    <div>
+                      <h3 className="text-[13px] font-bold text-white/90 truncate group-hover:text-accent-light transition-colors">{movie.title}</h3>
+                      <div className="flex items-center gap-1.5 mt-0.5 text-muted text-[11px]">
+                        <span>{movie.year}</span>
+                        <span>•</span>
+                        <span>{movie.runtime}m</span>
+                      </div>
+                      <div className="mt-1.5">
+                        <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
+                      </div>
                     </div>
-                    <div className="mt-1.5">
-                      <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         ) : (
           <div className="space-y-2">
-            {sorted.map((movie) => (
-              <div
-                key={movie.id}
-                className="flex items-center gap-4 p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all group"
-              >
-                <img src={movie.posterPath} alt="" className="w-12 h-16 object-cover rounded-xl shrink-0 bg-white/5" onError={e => (e.target as any).src = FALLBACK} />
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-[13.5px] font-bold text-white truncate">{movie.title}</h3>
-                  <div className="flex items-center gap-2 text-muted text-[11.5px] mt-1">
-                    <span>{movie.year}</span>
-                    <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
-                    <div className="flex items-center gap-0.5 text-white font-semibold">
-                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                      {movie.rating.toFixed(1)}
+            {sorted.map((movie) => {
+              const isSelected = selectedIds.includes(movie.id);
+              return (
+                <div
+                  key={movie.id}
+                  className="flex items-center gap-4 p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all group"
+                >
+                  <button
+                    onClick={() => {
+                      setSelectedIds(prev =>
+                        prev.includes(movie.id) ? prev.filter(id => id !== movie.id) : [...prev, movie.id]
+                      );
+                    }}
+                    className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-all ${
+                      isSelected
+                        ? 'bg-accent border-accent text-white shadow-sm'
+                        : 'bg-white/5 border-white/10 text-white/40 hover:border-white/30'
+                    }`}
+                  >
+                    {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                  </button>
+
+                  <img src={movie.posterPath} alt="" className="w-12 h-16 object-cover rounded-xl shrink-0 bg-white/5" onError={e => (e.target as any).src = FALLBACK} />
+                  <div className="flex-1 min-w-0">
+                    <Link to={`/movie/${movie.id}`}>
+                      <h3 className="text-[13.5px] font-bold text-white truncate hover:text-accent-light transition-colors">{movie.title}</h3>
+                    </Link>
+                    <div className="flex items-center gap-2 text-muted text-[11.5px] mt-1">
+                      <span>{movie.year}</span>
+                      <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
+                      <div className="flex items-center gap-0.5 text-white font-semibold">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                        {movie.rating.toFixed(1)}
+                      </div>
+                      <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
+                      <span>{movie.runtime}m</span>
                     </div>
-                    <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
-                    <span>{movie.runtime}m</span>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-3">
+                    <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
+                    <button
+                      onClick={() => removeFromWatchlist(movie.id)}
+                      className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
-                <div className="shrink-0 flex items-center gap-3">
-                  <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
-                  <button
-                    onClick={() => removeFromWatchlist(movie.id)}
-                    className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0, x: '-50%' }}
+            animate={{ y: 0, opacity: 1, x: '-50%' }}
+            exit={{ y: 80, opacity: 0, x: '-50%' }}
+            className="fixed bottom-6 left-1/2 z-50 bg-[#0c0c0c]/90 border border-white/[0.08] backdrop-blur-md px-5 py-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex items-center gap-4"
+          >
+            <span className="text-[12.5px] font-semibold text-white/90">
+              {selectedIds.length} Selected
+            </span>
+            <button
+              onClick={() => {
+                if (selectedIds.length === sorted.length) {
+                  setSelectedIds([]);
+                } else {
+                  setSelectedIds(sorted.map(m => m.id));
+                }
+              }}
+              className="text-[12px] font-bold text-accent-light hover:text-white transition-colors"
+            >
+              {selectedIds.length === sorted.length ? 'Deselect All' : 'Select All'}
+            </button>
+            <div className="w-[1px] h-4 bg-white/10" />
+            <button
+              onClick={() => {
+                selectedIds.forEach(id => removeFromWatchlist(id));
+                setSelectedIds([]);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 border border-rose-500/20 text-[12.5px] font-bold text-rose-400 transition-all"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Remove
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

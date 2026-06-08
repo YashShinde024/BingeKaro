@@ -324,6 +324,45 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                       ))}
                     </div>
                   </div>
+
+                  {/* Popular Genre Chips */}
+                  <div>
+                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest mb-2.5 flex items-center gap-1">
+                      🎭 Popular Genres
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Action', 'Drama', 'Thriller', 'Comedy', 'Sci-Fi', 'Romance', 'Horror'].map(genre => (
+                        <button
+                          key={genre}
+                          onClick={() => setQuery(genre.toLowerCase())}
+                          className="px-3 py-1.5 rounded-full bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-accent-light/30 hover:bg-accent/5 transition-all font-medium"
+                        >
+                          {genre}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="pt-2 border-t border-white/[0.04]">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        const random = MOVIES[Math.floor(Math.random() * MOVIES.length)];
+                        navigate(`/movie/${random.id}`);
+                        onClose();
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[12.5px] font-bold text-white/80 hover:text-white transition-all"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(139,92,246,0.08), rgba(109,40,217,0.05))',
+                        border: '1px solid rgba(139,92,246,0.15)',
+                      }}
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-accent-light" />
+                      I'm Feeling Lucky — Surprise Me!
+                    </motion.button>
+                  </div>
                 </div>
               )}
             </motion.div>

@@ -236,10 +236,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
             <span className="w-1 h-1 bg-white/10 rounded-full flex-shrink-0" />
             <span className="text-[11px] font-medium text-muted">{runtimeStr}</span>
           </div>
-          {/* Always display OTT provider pill format below card */}
-          <div className="mt-2 flex flex-wrap gap-1">
-            <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
-          </div>
         </div>
       </Link>
     </motion.div>

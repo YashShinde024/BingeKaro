@@ -11,11 +11,7 @@ export type OTTProviderId =
   | 'apple-tv'
   | 'crunchyroll'
   | 'youtube'
-  | 'mx-player'
-  | 'hulu'
-  | 'max'
-  | 'paramount-plus'
-  | 'lionsgate-play';
+  | 'mx-player';
 
 export interface OTTProvider {
   id: OTTProviderId;
