@@ -4,7 +4,8 @@ import React from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import {
   Sparkles, TrendingUp, ChevronRight, Play, Star, ArrowRight, Clock,
-  Flame, Gem, Film, Globe, Search, Plus, Check, Compass, Info
+  Flame, Gem, Film, Globe, Search, Plus, Check, Compass, Info,
+  Heart, Zap, Laugh, Moon, Sun, Droplets, Coffee, Ghost, Brain, AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { MovieCard } from '../components/cards/MovieCard';
@@ -24,10 +25,10 @@ const HERO_MOVIES = [MOVIES[0], MOVIES[2], MOVIES[4], MOVIES[7], MOVIES[9]].filt
 const TONIGHT = MOVIES[5]; // 12th Fail
 const FALLBACK_BG = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&q=90';
 
-const MOOD_EMOJI: Record<string, string> = {
-  adventurous: '⛰', romantic: '♥', thrilling: '⚡', funny: '☺',
-  dark: '◑', 'feel-good': '☀', emotional: '◎', inspiring: '✦',
-  chill: '◻', scary: '◈', 'mind-bending': '◉', 'action-packed': '▶',
+const MOOD_ICONS: Record<string, React.ComponentType<any>> = {
+  adventurous: Compass, romantic: Heart, thrilling: Zap, funny: Laugh,
+  dark: Moon, 'feel-good': Sun, emotional: Droplets, inspiring: Sparkles,
+  chill: Coffee, scary: Ghost, 'mind-bending': Brain, 'action-packed': Flame,
 };
 
 interface SectionProps {
@@ -73,9 +74,23 @@ const Section: React.FC<SectionProps> = ({ title, subtitle, badge, children, vie
 
 export default function Home() {
   const heroRef = React.useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
+
+  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!heroRef.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = heroRef.current.getBoundingClientRect();
+    const x = (clientX - left - width / 2) / 45;
+    const y = (clientY - top - height / 2) / 45;
+    setMousePos({ x, y });
+  };
 
   const [heroIndex, setHeroIndex] = React.useState(0);
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -130,7 +145,12 @@ export default function Home() {
       {/* ══════════════════════════════════════
           HERO — Cinematic Rotating Backdrop
       ══════════════════════════════════════ */}
-      <div ref={heroRef} className="relative h-[90vh] min-h-[600px] overflow-hidden flex items-end">
+      <div 
+        ref={heroRef} 
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
+        className="relative h-[90vh] min-h-[600px] overflow-hidden flex items-end"
+      >
         {/* Parallax Backdrop Image */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -138,7 +158,12 @@ export default function Home() {
             className="absolute inset-0 z-0"
             style={{ y: heroY }}
             initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: isTransitioning ? 0 : 1, scale: isTransitioning ? 1.05 : 1.01 }}
+            animate={{ 
+              opacity: isTransitioning ? 0 : 1, 
+              scale: isTransitioning ? 1.05 : 1.01,
+              x: mousePos.x,
+              y: mousePos.y
+            }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
@@ -203,15 +228,23 @@ export default function Home() {
                     className="space-y-4"
                   >
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/25 bg-accent/10 backdrop-blur-md">
-                      <Sparkles className="w-3 h-3 text-accent-light" />
-                      <span className="text-[10px] font-black text-accent-light uppercase tracking-wider">
-                        Tonight's Spotlight
-                      </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/25 bg-accent/10 backdrop-blur-md">
+                        <Sparkles className="w-3 h-3 text-accent-light" />
+                        <span className="text-[10px] font-black text-accent-light uppercase tracking-wider">
+                          Tonight's Spotlight
+                        </span>
+                      </div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 backdrop-blur-md">
+                        <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400 animate-pulse" />
+                        <span className="text-[10px] font-black text-orange-400 uppercase tracking-wider">
+                          #1 Trending Now
+                        </span>
+                      </div>
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-4xl sm:text-6xl font-black text-white leading-[1.05] tracking-tight">
+                    <h1 className="text-4.5xl sm:text-6xl font-black leading-[1.05] tracking-tight text-shimmer animate-text-glow">
                       {HERO.title}
                     </h1>
 
@@ -303,7 +336,10 @@ export default function Home() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-[12.5px] font-bold text-white truncate">{movie.title}</p>
-                        <p className="text-[10px] text-muted mt-0.5">★ {movie.rating.toFixed(1)} · {movie.year}</p>
+                        <p className="text-[10px] text-muted mt-0.5 flex items-center gap-1">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                          <span>{movie.rating.toFixed(1)} · {movie.year}</span>
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -324,18 +360,21 @@ export default function Home() {
               <Compass className="w-3.5 h-3.5" />
               Mood Vibe Ribbon:
             </span>
-            {MOODS.map(mood => (
-              <Link key={mood.id} href={`/discover?mood=${mood.id}`}>
-                <motion.div
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="chip border-white/[0.08] hover:border-white/20 hover:text-white py-1.5 shrink-0 flex items-center gap-1.5"
-                >
-                  <span className="text-sm font-mono leading-none">{MOOD_EMOJI[mood.id]}</span>
-                  <span className="text-[12px] font-bold uppercase tracking-wider">{mood.label}</span>
-                </motion.div>
-              </Link>
-            ))}
+            {MOODS.map(mood => {
+              const MoodIcon = MOOD_ICONS[mood.id] || Compass;
+              return (
+                <Link key={mood.id} href={`/discover?mood=${mood.id}`}>
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="chip border-white/[0.08] hover:border-white/20 hover:text-white py-1.5 shrink-0 flex items-center gap-2"
+                  >
+                    <MoodIcon className="w-3.5 h-3.5 text-accent-light" />
+                    <span className="text-[12px] font-bold uppercase tracking-wider">{mood.label}</span>
+                  </motion.div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -355,9 +394,9 @@ export default function Home() {
                   <motion.div
                     whileHover={{ scale: 1.08, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.02] border border-white/[0.06] hover:border-accent/40 hover:bg-white/[0.06] hover:shadow-[0_0_15px_rgba(139,92,246,0.35)] transition-all duration-300 relative group shrink-0 cursor-pointer"
+                    className="w-12 h-12 rounded-full flex items-center justify-center bg-white/[0.02] border border-white/[0.06] hover:border-accent/40 hover:bg-white/[0.06] hover:shadow-[0_0_15px_rgba(139,92,246,0.35)] transition-all duration-300 relative group shrink-0 cursor-pointer"
                   >
-                    <img src={prov.logo} alt={prov.name} className="w-5 h-5 object-contain" onError={(e) => { (e.target as any).style.display = 'none'; }} />
+                    <img src={prov.logo} alt={prov.name} className="w-6 h-6 object-contain" onError={(e) => { (e.target as any).style.display = 'none'; }} />
                     <span className="text-[10px] font-bold text-white/70 group-hover:text-white absolute">{prov.name.charAt(0)}</span>
                     <span className="absolute bottom-[-32px] left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 bg-black/90 border border-white/10 text-[9px] font-bold px-2 py-0.5 rounded text-white whitespace-nowrap transition-all duration-200 z-50">
                       {prov.name}

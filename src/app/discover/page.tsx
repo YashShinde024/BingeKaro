@@ -2,7 +2,10 @@
 
 import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Check, Users, Zap, Palette, Clock, Globe, Film } from 'lucide-react';
+import {
+  Sparkles, ArrowRight, Check, Users, Zap, Palette, Clock, Globe, Film,
+  Tv, Heart, User, Home, Moon, Target, Trophy, Hourglass, Droplets, Laugh, Brain, Flame, Coffee, Ghost, Smile, Compass, AlertCircle
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MOODS, GENRES, LANGUAGES } from '../../lib/mockData';
 import type { MoodId, GenreId, LanguageId, ContentType } from '../../types';
@@ -11,45 +14,45 @@ type WatchingWith = 'alone' | 'partner' | 'friends' | 'family';
 type EnergyLevel = 'relaxed' | 'focused' | 'excited';
 type ContentStyle = 'emotional' | 'mind-bending' | 'funny' | 'dark' | 'inspiring' | 'thrilling';
 
-const CONTENT_TYPES: { id: ContentType; label: string; sub: string; emoji: string }[] = [
-  { id: 'movie', label: 'Movie', sub: 'Feature films', emoji: '🎬' },
-  { id: 'tv', label: 'TV Show', sub: 'Series & episodes', emoji: '📺' },
-  { id: 'anime', label: 'Anime', sub: 'Animation', emoji: '✨' },
+const CONTENT_TYPES: { id: ContentType; label: string; sub: string; icon: React.ComponentType<any> }[] = [
+  { id: 'movie', label: 'Movie', sub: 'Feature films', icon: Film },
+  { id: 'tv', label: 'TV Show', sub: 'Series & episodes', icon: Tv },
+  { id: 'anime', label: 'Anime', sub: 'Animation', icon: Sparkles },
 ];
 
 const RUNTIME_OPTIONS = [
-  { label: 'Under 90 min', value: 90, sub: 'Quick watch', emoji: '⚡' },
-  { label: '90 – 120 min', value: 120, sub: 'Standard', emoji: '🎯' },
-  { label: '2 – 3 hrs', value: 180, sub: 'Epic length', emoji: '🏆' },
-  { label: 'Any length', value: 999, sub: 'No limit', emoji: '∞' },
+  { label: 'Under 90 min', value: 90, sub: 'Quick watch', icon: Zap },
+  { label: '90 – 120 min', value: 120, sub: 'Standard', icon: Target },
+  { label: '2 – 3 hrs', value: 180, sub: 'Epic length', icon: Trophy },
+  { label: 'Any length', value: 999, sub: 'No limit', icon: Hourglass },
 ];
 
-const WATCHING_WITH: { id: WatchingWith; label: string; emoji: string; desc: string }[] = [
-  { id: 'alone', label: 'Solo', emoji: '🎧', desc: 'Just me & the screen' },
-  { id: 'partner', label: 'Partner', emoji: '❤️', desc: 'Date night vibes' },
-  { id: 'friends', label: 'Friends', emoji: '🍿', desc: 'Group watch session' },
-  { id: 'family', label: 'Family', emoji: '🏠', desc: 'All ages welcome' },
+const WATCHING_WITH: { id: WatchingWith; label: string; icon: React.ComponentType<any>; desc: string }[] = [
+  { id: 'alone', label: 'Solo', icon: User, desc: 'Just me & the screen' },
+  { id: 'partner', label: 'Partner', icon: Heart, desc: 'Date night vibes' },
+  { id: 'friends', label: 'Friends', icon: Users, desc: 'Group watch session' },
+  { id: 'family', label: 'Family', icon: Home, desc: 'All ages welcome' },
 ];
 
-const ENERGY_LEVELS: { id: EnergyLevel; label: string; emoji: string; desc: string }[] = [
-  { id: 'relaxed', label: 'Relaxed', emoji: '🌙', desc: 'Low effort viewing' },
-  { id: 'focused', label: 'Focused', emoji: '🎯', desc: 'Ready to engage' },
-  { id: 'excited', label: 'Excited', emoji: '⚡', desc: 'High energy mode' },
+const ENERGY_LEVELS: { id: EnergyLevel; label: string; icon: React.ComponentType<any>; desc: string }[] = [
+  { id: 'relaxed', label: 'Relaxed', icon: Coffee, desc: 'Low effort viewing' },
+  { id: 'focused', label: 'Focused', icon: Target, desc: 'Ready to engage' },
+  { id: 'excited', label: 'Excited', icon: Zap, desc: 'High energy mode' },
 ];
 
-const CONTENT_STYLES: { id: ContentStyle; label: string; emoji: string }[] = [
-  { id: 'emotional', label: 'Emotional', emoji: '💧' },
-  { id: 'mind-bending', label: 'Mind-Bending', emoji: '🧠' },
-  { id: 'funny', label: 'Funny', emoji: '😂' },
-  { id: 'dark', label: 'Dark', emoji: '🌑' },
-  { id: 'inspiring', label: 'Inspiring', emoji: '✨' },
-  { id: 'thrilling', label: 'Thrilling', emoji: '🫀' },
+const CONTENT_STYLES: { id: ContentStyle; label: string; icon: React.ComponentType<any> }[] = [
+  { id: 'emotional', label: 'Emotional', icon: Droplets },
+  { id: 'mind-bending', label: 'Mind-Bending', icon: Brain },
+  { id: 'funny', label: 'Funny', icon: Laugh },
+  { id: 'dark', label: 'Dark', icon: Moon },
+  { id: 'inspiring', label: 'Inspiring', icon: Sparkles },
+  { id: 'thrilling', label: 'Thrilling', icon: Flame },
 ];
 
-const MOOD_ICONS: Record<string, string> = {
-  adventurous: '⛰', romantic: '♥', thrilling: '⚡', funny: '☺',
-  dark: '◑', 'feel-good': '☀', emotional: '◎', inspiring: '✦',
-  chill: '◻', scary: '◈', 'mind-bending': '◉', 'action-packed': '▶',
+const MOOD_ICONS: Record<string, React.ComponentType<any>> = {
+  adventurous: Compass, romantic: Heart, thrilling: Zap, funny: Laugh,
+  dark: Moon, 'feel-good': Smile, emotional: Droplets, inspiring: Sparkles,
+  chill: Coffee, scary: Ghost, 'mind-bending': Brain, 'action-packed': Flame,
 };
 
 function toggle<T extends string>(arr: T[], item: T): T[] {
@@ -180,7 +183,9 @@ function DiscoverContent() {
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span className="text-base leading-none">{MOOD_ICONS[mood.id]}</span>
+                  <span className="text-base leading-none">
+                    {React.createElement(MOOD_ICONS[mood.id] || Compass, { className: "w-4 h-4 text-accent-light shrink-0" })}
+                  </span>
                   <span className="leading-tight capitalize">{mood.label}</span>
                   {active && (
                     <motion.div
@@ -213,7 +218,9 @@ function DiscoverContent() {
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span className="text-2xl">{w.emoji}</span>
+                  <span className="text-xl mb-1">
+                    {React.createElement(w.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
+                  </span>
                   <span className="text-[12.5px] font-bold">{w.label}</span>
                   <span className="text-[9px] opacity-40 font-bold leading-normal mt-0.5">{w.desc}</span>
                 </motion.button>
@@ -239,7 +246,9 @@ function DiscoverContent() {
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span className="text-2xl">{e.emoji}</span>
+                  <span className="text-xl mb-1">
+                    {React.createElement(e.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
+                  </span>
                   <span className="text-[12.5px] font-bold">{e.label}</span>
                   <span className="text-[9px] opacity-40 font-bold leading-normal mt-0.5">{e.desc}</span>
                 </motion.button>
@@ -265,7 +274,9 @@ function DiscoverContent() {
                       : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span>{cs.emoji}</span>
+                  <span>
+                    {React.createElement(cs.icon, { className: "w-4 h-4 text-accent-light shrink-0" })}
+                  </span>
                   {cs.label}
                   {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
                 </motion.button>
@@ -342,7 +353,9 @@ function DiscoverContent() {
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span className="text-xl">{opt.emoji}</span>
+                  <span className="text-xl">
+                    {React.createElement(opt.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
+                  </span>
                   <div>
                     <span className="text-[13px] font-extrabold block leading-none mb-1">{opt.label}</span>
                     <span className="text-[10px] opacity-40 font-bold">{opt.sub}</span>
@@ -370,7 +383,9 @@ function DiscoverContent() {
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span className="text-xl">{opt.emoji}</span>
+                  <span className="text-xl">
+                    {React.createElement(opt.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
+                  </span>
                   <span className="text-[13px] font-bold leading-none mb-0.5">{opt.label}</span>
                   <span className="text-[9.5px] opacity-40 font-bold">{opt.sub}</span>
                 </motion.button>

@@ -24,6 +24,8 @@ export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [scrollDepth, setScrollDepth] = React.useState(0);
+  const [visible, setVisible] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
   const [notifOpen, setNotifOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
   const { user, openLoginModal, logout } = useAuth();
@@ -31,10 +33,23 @@ export const Navbar: React.FC = () => {
   const scrolled = scrollDepth > 10;
 
   React.useEffect(() => {
-    const onScroll = () => setScrollDepth(window.scrollY);
+    const onScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrollDepth(currentScrollY);
+      if (currentScrollY > 70) {
+        if (currentScrollY > lastScrollY) {
+          setVisible(false);
+        } else {
+          setVisible(true);
+        }
+      } else {
+        setVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [lastScrollY]);
 
   // Keyboard shortcut: Cmd/Ctrl+K for search
   React.useEffect(() => {
@@ -60,8 +75,8 @@ export const Navbar: React.FC = () => {
     <>
       <motion.header
         initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        animate={{ y: visible ? 0 : -100, opacity: visible ? 1 : 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="fixed z-50 left-0 right-0 top-0 w-full px-4 sm:px-6 lg:px-10 transition-all duration-300"
       >
         <div 

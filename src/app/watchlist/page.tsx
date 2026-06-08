@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bookmark, Grid3X3, List, SlidersHorizontal, Star, Trash2, Heart, Film, Check, PieChart } from 'lucide-react';
+import { Bookmark, Grid3X3, List, SlidersHorizontal, Star, Trash2, Heart, Film, Check, PieChart, Compass, Play, CheckCircle2, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useWatchlist } from '../../context/WatchlistContext';
 import type { WatchlistStatus } from '../../context/WatchlistContext';
@@ -25,11 +25,11 @@ const AVAILABILITY_FILTERS = [
   { id: 'rent-buy', label: 'Rent/Buy' },
 ];
 
-const STATUS_TABS: { id: WatchlistStatus; label: string; emoji: string }[] = [
-  { id: 'want-to-watch', label: 'Want To Watch', emoji: '🧭' },
-  { id: 'watching', label: 'Watching', emoji: '🎬' },
-  { id: 'completed', label: 'Completed', emoji: '✅' },
-  { id: 'dropped', label: 'Dropped', emoji: '🗑' },
+const STATUS_TABS: { id: WatchlistStatus; label: string; icon: React.ComponentType<any> }[] = [
+  { id: 'want-to-watch', label: 'Want To Watch', icon: Compass },
+  { id: 'watching', label: 'Watching', icon: Play },
+  { id: 'completed', label: 'Completed', icon: CheckCircle2 },
+  { id: 'dropped', label: 'Dropped', icon: Trash2 },
 ];
 
 export default function WatchlistPage() {
@@ -163,8 +163,11 @@ export default function WatchlistPage() {
                 <p className="text-[15px] font-black text-white leading-none mb-1">{stats.hours}h</p>
                 <p className="text-[9px] text-muted/50 uppercase tracking-widest font-extrabold">Runtime</p>
               </div>
-              <div className="glass-card px-4 py-2.5 rounded-2xl text-center min-w-[75px] border-white/5 bg-white/[0.02]">
-                <p className="text-[15px] font-black text-white leading-none mb-1">❤️ {favorites.length}</p>
+              <div className="glass-card px-4 py-2.5 rounded-2xl text-center min-w-[75px] border-white/5 bg-white/[0.02] flex flex-col items-center justify-center">
+                <p className="text-[15px] font-black text-white leading-none mb-1 flex items-center gap-1">
+                  <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500 shrink-0" />
+                  <span>{favorites.length}</span>
+                </p>
                 <p className="text-[9px] text-muted/50 uppercase tracking-widest font-extrabold">Loved</p>
               </div>
             </div>
@@ -249,7 +252,7 @@ export default function WatchlistPage() {
                       : 'text-muted hover:text-white hover:bg-white/[0.02]'
                   }`}
                 >
-                  <span>{tab.emoji}</span>
+                  {React.createElement(tab.icon, { className: "w-3.5 h-3.5 text-accent-light shrink-0" })}
                   {tab.label}
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${active ? 'bg-white/20 text-white' : 'bg-white/5 text-muted'}`}>{count}</span>
                 </button>
@@ -393,7 +396,7 @@ export default function WatchlistPage() {
                         (movieStatuses[movie.id] || 'want-to-watch') === tab.id ? 'text-accent-light' : 'text-white/70'
                       }`}
                     >
-                      <span>{tab.emoji}</span>
+                      {React.createElement(tab.icon, { className: "w-3.5 h-3.5 shrink-0" })}
                     </button>
                   ))}
                 </div>
@@ -441,10 +444,10 @@ export default function WatchlistPage() {
                       onChange={(e) => updateMovieStatus(movie.id, e.target.value as WatchlistStatus)}
                       className="bg-[#0C0E17] border border-white/10 text-white rounded-lg text-[11.5px] py-1 px-2 focus:outline-none cursor-pointer outline-none font-bold"
                     >
-                      <option value="want-to-watch">🧭 Want Watch</option>
-                      <option value="watching">🎬 Watching</option>
-                      <option value="completed">✅ Completed</option>
-                      <option value="dropped">🗑 Dropped</option>
+                      <option value="want-to-watch">Want Watch</option>
+                      <option value="watching">Watching</option>
+                      <option value="completed">Completed</option>
+                      <option value="dropped">Dropped</option>
                     </select>
 
                     <button
