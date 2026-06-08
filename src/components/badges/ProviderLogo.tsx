@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { OTTProviderId } from '../../types';
 import { PROVIDER_REGISTRY } from '../../lib/providers';
@@ -16,21 +16,37 @@ const LOGO_HEIGHT_MAP = {
   lg: 'h-9',
 };
 
+const LOGO_TEXT_SIZE_MAP = {
+  xs: 'text-[9px]',
+  sm: 'text-[10px]',
+  md: 'text-[11px]',
+  lg: 'text-[13px]',
+};
+
 export const ProviderLogo: React.FC<ProviderLogoProps> = ({ 
   provider, 
   className = '', 
   size = 'sm' 
 }) => {
   const p = PROVIDER_REGISTRY[provider];
+  const [imgError, setImgError] = useState(false);
+
   if (!p) return null;
-  
+
   return (
     <div className={`inline-flex items-center justify-center shrink-0 select-none ${LOGO_HEIGHT_MAP[size]} ${className}`}>
-      <img 
-        src={p.logo} 
-        alt={p.name} 
-        className="h-full w-auto object-contain max-w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
-      />
+      {imgError ? (
+        <span className={`font-semibold text-white/80 whitespace-nowrap ${LOGO_TEXT_SIZE_MAP[size]}`}>
+          {p.name}
+        </span>
+      ) : (
+        <img 
+          src={p.logo} 
+          alt={p.name} 
+          className="h-full w-auto object-contain max-w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
+          onError={() => setImgError(true)}
+        />
+      )}
     </div>
   );
 };

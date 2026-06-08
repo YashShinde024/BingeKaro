@@ -11,55 +11,55 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
   'netflix': {
     id: 'netflix',
     name: 'Netflix',
-    logo: '/providers/netflix.svg',
+    logo: '/providers/netflix.png',
     type: 'subscription'
   },
   'prime-video': {
     id: 'prime-video',
     name: 'Prime Video',
-    logo: '/providers/prime-video.svg',
+    logo: '/providers/prime-video.png',
     type: 'subscription'
   },
   'jiohotstar': {
     id: 'jiohotstar',
     name: 'JioHotstar',
-    logo: '/providers/jiohotstar.svg',
+    logo: '/providers/jiohotstar.png',
     type: 'subscription'
   },
   'sonyliv': {
     id: 'sonyliv',
     name: 'SonyLIV',
-    logo: '/providers/sonyliv.svg',
+    logo: '/providers/sonyliv.png',
     type: 'subscription'
   },
   'zee5': {
     id: 'zee5',
     name: 'Zee5',
-    logo: '/providers/zee5.svg',
+    logo: '/providers/zee5.png',
     type: 'subscription'
   },
   'apple-tv': {
     id: 'apple-tv',
     name: 'Apple TV',
-    logo: '/providers/apple-tv.svg',
+    logo: '/providers/apple-tv.png',
     type: 'rent'
   },
   'crunchyroll': {
     id: 'crunchyroll',
     name: 'Crunchyroll',
-    logo: '/providers/crunchyroll.svg',
+    logo: '/providers/crunchyroll.png',
     type: 'subscription'
   },
   'youtube': {
     id: 'youtube',
     name: 'YouTube',
-    logo: '/providers/youtube.svg',
+    logo: '/providers/youtube.png',
     type: 'buy'
   },
   'mx-player': {
     id: 'mx-player',
     name: 'MX Player',
-    logo: '/providers/mx-player.svg',
+    logo: '/providers/mx-player.png',
     type: 'free'
   },
   'hulu': {
