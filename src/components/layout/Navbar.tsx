@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Home, Compass, Bookmark, User, LogIn, LogOut } from 'lucide-react';
+import { Search, Bell, Home, Compass, Bookmark, User, LogIn, LogOut, Settings } from 'lucide-react';
 import { SearchOverlay } from '../search/SearchOverlay';
 import { useAuth } from '../../context/AuthContext';
 
@@ -227,13 +227,17 @@ export const Navbar: React.FC = () => {
                     setProfileOpen(!profileOpen);
                     setNotifOpen(false);
                   }}
-                  className={`w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center cursor-pointer border transition-all ${
+                  className={`w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center cursor-pointer border overflow-hidden transition-all ${
                     profileOpen ? 'border-white/40 shadow-[0_0_15px_rgba(139,92,246,0.4)]' : 'border-white/10'
                   }`}
                 >
-                  <span className="text-xs font-bold text-white select-none">
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold text-white select-none">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </motion.div>
 
                 <AnimatePresence>
@@ -247,8 +251,12 @@ export const Navbar: React.FC = () => {
                       style={{ background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(30px)' }}
                     >
                       <div className="px-3.5 py-3 border-b border-white/[0.06] mb-1.5 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-bold text-white text-xs">
-                          {user.name.charAt(0).toUpperCase()}
+                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden font-bold text-white text-xs">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            user.name.charAt(0).toUpperCase()
+                          )}
                         </div>
                         <div className="flex flex-col min-w-0">
                           <p className="text-[13px] font-bold text-white truncate">{user.name}</p>
@@ -259,6 +267,7 @@ export const Navbar: React.FC = () => {
                       {[
                         { label: 'My Profile', to: '/profile', icon: User },
                         { label: 'Watchlist', to: '/watchlist', icon: Bookmark },
+                        { label: 'Settings', to: '/settings', icon: Settings },
                       ].map((item) => (
                         <Link key={item.to} href={item.to}>
                           <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] text-muted hover:text-white hover:bg-white/[0.04] transition-all text-left">
@@ -280,15 +289,27 @@ export const Navbar: React.FC = () => {
                 </AnimatePresence>
               </div>
             ) : (
-              <motion.button
-                whileHover={{ scale: 1.03, boxShadow: '0 4px 15px rgba(139,92,246,0.3)' }}
-                whileTap={{ scale: 0.97 }}
-                onClick={openLoginModal}
-                className="flex items-center gap-1.5 h-8.5 px-3.5 rounded-xl bg-accent text-[12px] font-semibold text-white ml-1.5 transition-all"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                Sign In
-              </motion.button>
+              <div className="flex items-center gap-2">
+                <Link href="/sign-in">
+                  <motion.button
+                    whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-1.5 h-9 px-4 rounded-xl border border-white/[0.08] text-[12.5px] font-semibold text-white transition-all bg-white/[0.02]"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    Sign In
+                  </motion.button>
+                </Link>
+                <Link href="/sign-up">
+                  <motion.button
+                    whileHover={{ scale: 1.02, boxShadow: '0 4px 15px rgba(139,92,246,0.3)' }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[#8B5CF6] text-[12.5px] font-semibold text-white transition-all"
+                  >
+                    Get Started
+                  </motion.button>
+                </Link>
+              </div>
             )}
           </div>
         </div>

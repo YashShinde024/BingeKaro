@@ -1,7 +1,10 @@
 "use client";
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import type { UserProfile, GenreId, MoodId, OTTProviderId } from '../types';
 import { useToast } from './ToastContext';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -27,51 +30,63 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const { showToast } = useToast();
+  const router = useRouter();
 
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  // Sync Clerk user profile with BingeKaro custom settings stored locally
   useEffect(() => {
-    // Load from localStorage
-    const savedUser = localStorage.getItem('kd_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error('Failed to parse user data', e);
+    if (!isLoaded) return;
+
+    if (clerkUser) {
+      const storageKey = `kd_user_${clerkUser.id}`;
+      const savedPrefs = localStorage.getItem(storageKey);
+      let favoriteGenres: GenreId[] = ['thriller', 'drama', 'sci-fi'];
+      let favoriteMoods: MoodId[] = ['thrilling', 'mind-bending', 'dark'];
+      let favoriteProviders: OTTProviderId[] = ['netflix', 'prime-video', 'apple-tv'];
+
+      if (savedPrefs) {
+        try {
+          const parsed = JSON.parse(savedPrefs);
+          favoriteGenres = parsed.favoriteGenres || favoriteGenres;
+          favoriteMoods = parsed.favoriteMoods || favoriteMoods;
+          favoriteProviders = parsed.favoriteProviders || favoriteProviders;
+        } catch (e) {
+          console.error('Failed to parse user preferences', e);
+        }
       }
+
+      setUserProfile({
+        id: clerkUser.id,
+        name: clerkUser.fullName || clerkUser.username || 'Cinephile',
+        email: clerkUser.primaryEmailAddress?.emailAddress || '',
+        avatarUrl: clerkUser.imageUrl,
+        favoriteGenres,
+        favoriteMoods,
+        favoriteProviders,
+        joinedAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'June 2026',
+      });
+    } else {
+      setUserProfile(null);
     }
-    setIsLoading(false);
-  }, []);
+  }, [clerkUser, isLoaded]);
 
+  // login redirects to custom clerk sign-in page
   const login = async (name: string, email: string) => {
-    setIsLoading(true);
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    const newUser: UserProfile = {
-      id: Math.random().toString(36).substring(2, 9),
-      name: name || 'Yash Shinde',
-      email: email || 'yash@nyxen.in',
-      avatarUrl: undefined,
-      favoriteGenres: ['thriller', 'drama', 'sci-fi'],
-      favoriteMoods: ['thrilling', 'mind-bending', 'dark'],
-      favoriteProviders: ['netflix', 'prime-video', 'apple-tv'],
-      joinedAt: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-    };
-
-    setUser(newUser);
-    localStorage.setItem('kd_user', JSON.stringify(newUser));
-    setIsLoading(false);
-    setIsLoginModalOpen(false);
-    showToast(`Welcome back, ${newUser.name}!`, 'success');
+    router.push('/sign-in');
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('kd_user');
-    showToast('Signed out successfully.', 'info');
+  const logout = async () => {
+    try {
+      await signOut();
+      showToast('Signed out successfully.', 'info');
+      router.push('/');
+    } catch (e) {
+      console.error('Failed to logout', e);
+    }
   };
 
   const updatePreferences = (
@@ -79,32 +94,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     moods: MoodId[],
     providers: OTTProviderId[]
   ) => {
-    if (!user) return;
+    if (!clerkUser || !userProfile) return;
+
     const updated = {
-      ...user,
+      ...userProfile,
       favoriteGenres: genres,
       favoriteMoods: moods,
       favoriteProviders: providers,
     };
-    setUser(updated);
-    localStorage.setItem('kd_user', JSON.stringify(updated));
+    
+    setUserProfile(updated);
+    localStorage.setItem(`kd_user_${clerkUser.id}`, JSON.stringify(updated));
     showToast('Preferences updated successfully!', 'success');
   };
 
-  const openLoginModal = () => setIsLoginModalOpen(true);
-  const closeLoginModal = () => setIsLoginModalOpen(false);
+  const openLoginModal = () => {
+    router.push('/sign-in');
+  };
+
+  const closeLoginModal = () => {
+    // No-op since we use pages
+  };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isLoading,
+        user: userProfile,
+        isLoading: !isLoaded,
         login,
         logout,
         updatePreferences,
         openLoginModal,
         closeLoginModal,
-        isLoginModalOpen,
+        isLoginModalOpen: false,
       }}
     >
       {children}
