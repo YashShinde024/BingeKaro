@@ -62,20 +62,14 @@ export const Navbar: React.FC = () => {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed z-50 left-0 right-0 mx-auto transition-all duration-300"
-        style={{
-          top: scrolled ? '16px' : '0px',
-          maxWidth: scrolled ? '1280px' : '100%',
-          paddingLeft: scrolled ? '24px' : '40px',
-          paddingRight: scrolled ? '24px' : '40px',
-        }}
+        className="fixed z-50 left-0 right-0 top-0 w-full px-4 sm:px-6 lg:px-10 transition-all duration-300"
       >
         <div 
-          className="w-full rounded-2xl transition-all duration-300 px-6 h-16 flex items-center justify-between border relative"
+          className="w-full mx-auto max-w-[1400px] rounded-2xl transition-all duration-300 px-6 h-16 mt-4 flex items-center justify-between border relative"
           style={{
-            backgroundColor: scrolled ? 'rgba(10, 10, 10, 0.75)' : 'rgba(5, 5, 5, 0.35)',
-            backdropFilter: scrolled ? 'blur(40px) saturate(200%)' : 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: scrolled ? 'blur(40px) saturate(200%)' : 'blur(20px) saturate(180%)',
+            backgroundColor: scrolled ? 'rgba(12, 14, 23, 0.85)' : 'rgba(12, 14, 23, 0.35)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
             borderColor: scrolled ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
             boxShadow: scrolled ? '0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.02)' : 'none',
           }}

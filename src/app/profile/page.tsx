@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
-import { Bookmark, Sparkles, Clock, LogOut, ShieldAlert, Heart, Film, Tv, Play, Activity, Star } from 'lucide-react';
+import { Bookmark, Sparkles, Clock, LogOut, ShieldAlert, Heart, Film, Tv, Play, Activity, Star, PieChart, Award, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { MOVIES, MOODS, GENRES } from '../../lib/mockData';
 import type { GenreId, MoodId, OTTProviderId } from '../../types';
@@ -11,12 +11,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useWatchlist } from '../../context/WatchlistContext';
 import { useHistory } from '../../context/HistoryContext';
 import { PROVIDER_REGISTRY } from '../../lib/providers';
-
-const MOOD_EMOJI: Record<string, string> = {
-  adventurous: '⛰', romantic: '♥', thrilling: '⚡', funny: '☺',
-  dark: '◑', 'feel-good': '☀', emotional: '◎', inspiring: '✦',
-  chill: '◻', scary: '◈', 'mind-bending': '◉', 'action-packed': '▶',
-};
 
 const ALL_PROVIDERS = Object.values(PROVIDER_REGISTRY).map(p => ({
   id: p.id as OTTProviderId,
@@ -39,19 +33,19 @@ function computeMovieDNA(
   const hasMood = (m: string) => favoriteMoods.includes(m as MoodId);
 
   if (hasMood('mind-bending') || (hasGenre('sci-fi') && hasGenre('thriller')))
-    return { label: 'Mind-Bending Explorer', emoji: '🧠', description: 'You crave narratives that challenge reality. Puzzle-boxes and cerebral universes are your comfort zone.', gradient: 'from-indigo-600 via-purple-600 to-pink-600' };
+    return { label: 'Mind-Bending Explorer', emoji: '🧠', description: 'You crave narratives that challenge reality. Puzzle-boxes, cosmic anomalies, and cerebral thrillers are your home turf.', gradient: 'from-indigo-500 via-purple-500 to-pink-500' };
   if (hasGenre('sci-fi') || hasGenre('fantasy'))
-    return { label: 'Sci-Fi Enthusiast', emoji: '🚀', description: 'Timelines, cosmic worlds, and advanced futures — you view cinema as a window to the impossible.', gradient: 'from-cyan-500 to-blue-600' };
+    return { label: 'Sci-Fi Visionary', emoji: '🚀', description: 'Timelines, space travel, and high-concept tech — you view film as a portal to speculative futures.', gradient: 'from-cyan-500 to-blue-600' };
   if (hasMood('thrilling') || hasGenre('thriller') || hasGenre('crime'))
-    return { label: 'Thriller Hunter', emoji: '🫀', description: 'Suspense and high stakes keep you hooked. You live for the twists no one saw coming.', gradient: 'from-red-500 to-rose-700' };
+    return { label: 'Thriller Specialist', emoji: '🫀', description: 'Suspense, tension, and high stakes keep your pulse racing. You live for plot twists.', gradient: 'from-red-500 to-rose-600' };
   if (hasMood('romantic') || hasGenre('romance'))
-    return { label: 'Romantic Dreamer', emoji: '🥀', description: 'Love and interpersonal depth drive your choices. You love connection and drama.', gradient: 'from-pink-500 via-rose-500 to-amber-500' };
+    return { label: 'Heartfelt Dreamer', emoji: '🥀', description: 'Emotional depth, human connections, and rich character relationships form your watch history.', gradient: 'from-pink-500 via-rose-500 to-orange-500' };
   if (hasMood('funny') || hasGenre('comedy'))
-    return { label: 'Comedy Connoisseur', emoji: '🃏', description: 'Life is better laughing. You prefer high spirits, slapstick, and quick wit.', gradient: 'from-amber-400 to-orange-600' };
-  if (watchCount > 15)
-    return { label: 'Ultimate Cinephile', emoji: '👑', description: 'You watch everything. Film is your language. An absolute catalog explorer.', gradient: 'from-yellow-500 via-amber-500 to-red-600' };
+    return { label: 'Comedy Aficionado', emoji: '🃏', description: 'Life is better with a dose of humor. You seek high spirits, sharp wit, and lighthearted releases.', gradient: 'from-amber-400 to-orange-500' };
+  if (watchCount > 10)
+    return { label: 'Ultimate Cinephile', emoji: '👑', description: 'Film is your second language. Your catalog contains everything from independent classics to commercial blockbusters.', gradient: 'from-violet-500 via-purple-500 to-red-500' };
 
-  return { label: 'Casual Explorer', emoji: '🧭', description: 'You enjoy a solid story. Your cinematic journey is just beginning to take shape.', gradient: 'from-muted-dark to-white' };
+  return { label: 'Casual Explorer', emoji: '🧭', description: 'Your cinematic footprint is emerging. Explore more moods and genres to unlock customized recommendations.', gradient: 'from-slate-500 to-slate-300' };
 }
 
 interface Achievement {
@@ -69,14 +63,14 @@ const Counter: React.FC<{ value: number }> = ({ value }) => {
 
   React.useEffect(() => {
     const controls = animate(count, value, {
-      duration: 1.5,
+      duration: 1.2,
       ease: [0.16, 1, 0.3, 1],
       onUpdate: (latest) => setDisplayValue(Math.floor(latest)),
     });
     return () => controls.stop();
   }, [value]);
 
-  return <span className="num font-bold text-3xl sm:text-4.5xl text-white tracking-tight">{displayValue}</span>;
+  return <span className="num font-black text-3xl sm:text-4xl text-white tracking-tight">{displayValue}</span>;
 };
 
 export default function ProfilePage() {
@@ -100,7 +94,7 @@ export default function ProfilePage() {
 
   const stats = useMemo(() => {
     const totalRuntime = watchlist.reduce((acc, m) => acc + m.runtime, 0);
-    const completedCount = watchlist.filter(m => m.rating >= 8).length; // Mock completed as rating high
+    const completedCount = watchlist.length; // Mock completed as rating high
     const favoriteGenre = user?.favoriteGenres?.[0] || 'Drama';
     return {
       hours: Math.floor(totalRuntime / 60),
@@ -109,6 +103,22 @@ export default function ProfilePage() {
       score: watchlist.length ? (watchlist.reduce((acc, m) => acc + m.rating, 0) / watchlist.length).toFixed(1) : '0.0',
     };
   }, [watchlist, user]);
+
+  const platformDistribution = useMemo(() => {
+    if (watchlist.length === 0) return [];
+    const counts: Record<string, number> = {};
+    watchlist.forEach(m => {
+      m.providers.forEach(p => {
+        counts[p] = (counts[p] || 0) + 1;
+      });
+    });
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    return Object.entries(counts).map(([prov, count]) => ({
+      provider: prov as OTTProviderId,
+      name: PROVIDER_REGISTRY[prov]?.name || prov,
+      percentage: Math.round((count / total) * 100)
+    })).sort((a, b) => b.percentage - a.percentage).slice(0, 3);
+  }, [watchlist]);
 
   const favoriteDecade = useMemo(() => {
     if (watchlist.length === 0) return 'None';
@@ -152,13 +162,13 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#07111F] pt-24 pb-20 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[#05070C] pt-24 pb-20 flex items-center justify-center px-6">
         <div className="text-center space-y-4 max-w-sm">
           <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mx-auto text-muted/30">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-bold text-white">Guest Mode Profile</h2>
-          <p className="text-[13px] text-muted/60 leading-relaxed">
+          <p className="text-[13.5px] text-muted/60 leading-relaxed">
             Please sign in to compute your personalized Binge Profile, track watch achievements, and customize providers.
           </p>
         </div>
@@ -178,7 +188,7 @@ export default function ProfilePage() {
   const visibleHistory = viewAllRecent ? recentlyViewed : recentlyViewed.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-[#07111F] pt-24 pb-28">
+    <div className="min-h-screen bg-[#05070C] pt-24 pb-28">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
 
         {/* Header Block */}
@@ -188,16 +198,16 @@ export default function ProfilePage() {
               <span className="text-2xl font-black text-white">{user.name.charAt(0).toUpperCase()}</span>
             </div>
             <div>
-              <h1 className="text-[22px] font-bold text-white tracking-tight leading-snug">{user.name}</h1>
-              <p className="text-[12.5px] text-muted">Member since {user.joinedAt}</p>
+              <h1 className="text-[20px] font-bold text-white tracking-tight leading-snug">{user.name}</h1>
+              <p className="text-[12px] text-muted">Member since {user.joinedAt}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setEditPreferences(!editPreferences)}
-              className="px-4 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[12.5px] font-bold hover:bg-white/10 transition-colors"
+              className="px-4.5 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[12px] font-bold hover:bg-white/10 transition-colors"
             >
-              {editPreferences ? 'Cancel' : 'Edit Preferences'}
+              {editPreferences ? 'Cancel' : 'Edit Blueprint'}
             </button>
             <button
               onClick={logout}
@@ -218,10 +228,9 @@ export default function ProfilePage() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden mb-8"
             >
-              <div className="glass-card p-6 rounded-2xl space-y-6">
-                {/* Genres */}
+              <div className="glass-card p-6 rounded-3xl space-y-6">
                 <div className="space-y-3">
-                  <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Your Taste</h4>
+                  <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Your Taste Blueprint</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {GENRES.map(g => {
                       const active = selectedGenres.includes(g.id);
@@ -240,9 +249,8 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Providers */}
                 <div className="space-y-3">
-                  <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Streaming Subscriptions</h4>
+                  <h4 className="text-[11px] font-extrabold text-white uppercase tracking-wider">Active OTT Networks</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {ALL_PROVIDERS.map(p => {
                       const active = selectedProviders.includes(p.id);
@@ -264,7 +272,7 @@ export default function ProfilePage() {
                 <div className="pt-4 border-t border-white/5">
                   <button
                     onClick={handleSavePreferences}
-                    className="btn-primary px-5 py-2.5 text-[12.5px] font-bold"
+                    className="btn-primary px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider"
                   >
                     Save Preference Blueprint
                   </button>
@@ -274,136 +282,133 @@ export default function ProfilePage() {
           )}
         </AnimatePresence>
 
-        {/* ── BENTO GRID LAYOUT ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* ── BENTO DASHBOARD GRID ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
-          {/* DNA Identity (Bento Widget 1 - Large) */}
-          <div className="md:col-span-2 glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[200px] border border-white/[0.07]">
-            <div className={`absolute top-0 right-0 w-80 h-80 rounded-full bg-gradient-to-br ${dna.gradient} opacity-10 blur-[80px] pointer-events-none`} />
+          {/* Bento Widget 1: Taste DNA (Large) */}
+          <div className="md:col-span-2 glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[220px] border border-white/[0.05]">
+            <div className={`absolute top-0 right-0 w-72 h-72 rounded-full bg-gradient-to-br ${dna.gradient} opacity-10 blur-[75px] pointer-events-none`} />
             <div className="space-y-3 relative z-10">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-accent-light uppercase tracking-widest">
                 <Sparkles className="w-3.5 h-3.5" />
-                Binge Profile
+                Entertainment Taste DNA
               </div>
-              <h2 className="text-2xl sm:text-[28px] font-black text-white leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
                 {dna.emoji} {dna.label}
               </h2>
-              <p className="text-[13px] text-muted max-w-md leading-relaxed">{dna.description}</p>
+              <p className="text-[13.5px] text-muted max-w-md leading-relaxed font-medium">{dna.description}</p>
             </div>
 
-            {/* Profile DNA Stats Badge */}
-            <div className="flex flex-wrap gap-3 pt-6 border-t border-white/5 mt-6 relative z-10">
-              <div className="dna-badge px-3 py-1.5 rounded-xl text-[11px] font-bold text-accent-light">
-                🎞 Decade: {favoriteDecade}
-              </div>
-              <div className="dna-badge px-3 py-1.5 rounded-xl text-[11px] font-bold text-accent-light">
-                🗣 Lang: {favoriteLanguage}
-              </div>
+            <div className="flex flex-wrap gap-3 pt-5 border-t border-white/5 mt-6 relative z-10">
+              <span className="dna-badge px-3 py-1.5 rounded-xl text-[10.5px] font-bold text-accent-light flex items-center gap-1.5">
+                🎞 Era Focus: {favoriteDecade}
+              </span>
+              <span className="dna-badge px-3 py-1.5 rounded-xl text-[10.5px] font-bold text-accent-light flex items-center gap-1.5">
+                🗣 Languages: {favoriteLanguage}
+              </span>
             </div>
           </div>
 
-          {/* Watch Stats (Bento Widget 2) */}
-          <div className="glass-card p-6 rounded-3xl flex flex-col justify-between gap-6 border border-white/[0.07]">
+          {/* Bento Widget 2: Queue Stats */}
+          <div className="glass-card p-6 rounded-3xl flex flex-col justify-between gap-6 border border-white/[0.05]">
             <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-white/40 uppercase tracking-widest">
               <Activity className="w-3.5 h-3.5" />
-              Watch Statistics
+              Watch Queue Stats
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-muted/50 uppercase tracking-wider">Time Tracked</p>
-                <p className="text-white"><Counter value={stats.hours} /> <span className="text-xs text-muted">hrs</span></p>
+                <p className="text-[10px] font-extrabold text-muted/50 uppercase tracking-wider">Hours Saved</p>
+                <p className="text-white"><Counter value={stats.hours} /> <span className="text-xs text-muted/60 font-semibold">h</span></p>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-muted/50 uppercase tracking-wider">Queue Total</p>
-                <p className="text-white"><Counter value={watchlist.length} /> <span className="text-xs text-muted">saved</span></p>
+                <p className="text-[10px] font-extrabold text-muted/50 uppercase tracking-wider">Queue Total</p>
+                <p className="text-white"><Counter value={stats.completed} /> <span className="text-xs text-muted/60 font-semibold">titles</span></p>
               </div>
             </div>
-            <div className="text-[11px] text-muted/40 font-semibold border-t border-white/5 pt-3">
-              Average score across lists: <span className="text-white font-bold">{stats.score} ★</span>
+            <div className="text-[11px] text-muted/50 font-bold border-t border-white/5 pt-3.5 flex items-center justify-between">
+              <span>Avg Rating across watchlist:</span>
+              <span className="text-white font-extrabold flex items-center gap-0.5">
+                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                {stats.score}
+              </span>
             </div>
           </div>
 
         </div>
 
-        {/* ── SECOND BENTO TIER ── */}
+        {/* ── BENTO SECOND TIER ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
-          {/* Achievements Grid (Bento Widget 3) */}
-          <div className="glass-card p-6 rounded-3xl space-y-5 border border-white/[0.07] flex flex-col justify-between">
+          {/* Bento Widget 3: Platform Breakdown */}
+          <div className="glass-card p-6 rounded-3xl space-y-4 border border-white/[0.05] flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="flex justify-between items-center text-[10px] font-extrabold text-white/40 uppercase tracking-widest">
-                <span>Achievements Progress</span>
-                <span className="text-accent-light font-bold">{achievementsProgress}%</span>
-              </div>
-              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-accent rounded-full" style={{ width: `${achievementsProgress}%` }} />
+              <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <PieChart className="w-3.5 h-3.5" />
+                Platform Distribution
+              </p>
+              <div className="space-y-3">
+                {platformDistribution.length > 0 ? platformDistribution.map(item => (
+                  <div key={item.provider} className="space-y-1.5">
+                    <div className="flex justify-between text-[11.5px] font-bold text-white/90">
+                      <span>{item.name}</span>
+                      <span className="text-accent-light">{item.percentage}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-accent" style={{ width: `${item.percentage}%` }} />
+                    </div>
+                  </div>
+                )) : (
+                  <p className="text-xs text-muted/50 py-3">No stats compiled yet.</p>
+                )}
               </div>
             </div>
+          </div>
 
+          {/* Bento Widget 4: Achievements Progress */}
+          <div className="glass-card p-6 rounded-3xl space-y-4 border border-white/[0.05]">
+            <div className="flex justify-between items-center text-[10px] font-extrabold text-white/40 uppercase tracking-widest">
+              <span className="flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5" />
+                Achievements
+              </span>
+              <span className="text-accent-light font-black">{achievementsProgress}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-3">
+              <div className="h-full bg-accent rounded-full" style={{ width: `${achievementsProgress}%` }} />
+            </div>
             <div className="space-y-2">
-              {achievements.map(ach => (
-                <div key={ach.id} className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.01] border border-white/[0.03] transition-all">
-                  <div className="text-xl shrink-0">{ach.icon}</div>
-                  <div className="min-w-0">
-                    <p className="text-[12px] font-bold text-white leading-none">{ach.title}</p>
+              {achievements.slice(0, 3).map(ach => (
+                <div key={ach.id} className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.01] border border-white/[0.03]">
+                  <span className="text-lg shrink-0">{ach.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11.5px] font-bold text-white truncate leading-none">{ach.title}</p>
                     <p className="text-[9.5px] text-muted/50 truncate mt-0.5">{ach.description}</p>
                   </div>
                   {ach.unlocked ? (
-                    <span className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold px-1.5 py-0.5 rounded-md ml-auto shrink-0">
-                      UNLOCKED
-                    </span>
+                    <span className="text-[8px] bg-emerald-500/10 text-emerald-400 font-extrabold px-1.5 py-0.5 rounded border border-emerald-500/10">UNLOCKED</span>
                   ) : (
-                    <span className="text-[9px] bg-white/5 border border-white/10 text-muted/40 font-bold px-1.5 py-0.5 rounded-md ml-auto shrink-0">
-                      LOCKED
-                    </span>
+                    <span className="text-[8px] bg-white/5 text-muted/40 font-extrabold px-1.5 py-0.5 rounded border border-white/5">LOCKED</span>
                   )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Active preferences blueprint (Bento Widget 4) */}
-          <div className="glass-card p-6 rounded-3xl space-y-4 border border-white/[0.07]">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest">Preferences Blueprint</p>
-            </div>
-            <div className="space-y-3.5">
-              {/* Genres */}
-              <div className="space-y-1.5">
-                <p className="text-[9px] font-bold text-muted/40 uppercase">Top Genre Nodes</p>
-                <div className="flex flex-wrap gap-1">
-                  {user.favoriteGenres.map(g => (
-                    <span key={g} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10.5px] text-white/80 font-semibold capitalize">
-                      {g}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Providers */}
-              <div className="space-y-1.5">
-                <p className="text-[9px] font-bold text-muted/40 uppercase">Linked Subscriptions</p>
-                <div className="flex flex-wrap gap-1">
-                  {user.favoriteProviders.map(p => (
-                    <ProviderPill key={p} provider={p} size="sm" />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recommendation History Widget (Bento Widget 5) */}
-          <div className="glass-card p-6 rounded-3xl space-y-4 border border-white/[0.07] flex flex-col justify-between">
+          {/* Bento Widget 5: Discovery Journey logs */}
+          <div className="glass-card p-6 rounded-3xl space-y-4 border border-white/[0.05] flex flex-col justify-between">
             <div className="space-y-3">
-              <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest">Your Journey</p>
-              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+              <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5" />
+                Taste DNA Scans
+              </p>
+              <div className="space-y-2.5 max-h-[160px] overflow-y-auto pr-1">
                 {recommendationHistory.length === 0 ? (
                   <p className="text-[11.5px] text-muted/50 leading-normal py-4">
-                    No recommendation history yet. Your next obsession is waiting.
+                    No recommendation history yet. Run a taste blueprint discovers.
                   </p>
                 ) : (
                   recommendationHistory.slice(0, 3).map((rec, i) => (
-                    <div key={rec.movie.id} className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-center gap-2">
+                    <div key={rec.movie.id} className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-center gap-2.5">
                       <span className="text-xs shrink-0">💡</span>
                       <Link href={`/movie/${rec.movie.id}`} className="min-w-0 flex-1 hover:text-accent-light transition-colors">
                         <p className="text-[11.5px] font-bold text-white truncate leading-none mb-1">{rec.movie.title}</p>
@@ -424,12 +429,12 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.18 }}
-            className="mb-8 p-6 rounded-3xl bg-white/[0.01] border border-white/[0.05] space-y-4"
+            className="mb-8 p-6 rounded-3xl bg-white/[0.01] border border-white/[0.04] space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-accent-light" />
-                <h3 className="text-[12.5px] font-bold text-white uppercase tracking-wider">Recently Viewed scans</h3>
+                <h3 className="text-[11.5px] font-extrabold text-white uppercase tracking-wider">Recently Viewed scans</h3>
               </div>
               <button
                 onClick={() => setViewAllRecent(!viewAllRecent)}
@@ -438,21 +443,21 @@ export default function ProfilePage() {
                 {viewAllRecent ? 'View Less' : 'View All'}
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {visibleHistory.map(movie => (
                 <div key={movie.id} className="relative rounded-2xl overflow-hidden aspect-poster bg-white/5 border border-white/10 group">
                   <img src={movie.posterPath} alt="" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex flex-col justify-end p-3.5 transition-all">
-                    <p className="text-[12px] font-bold text-white truncate mb-1">{movie.title}</p>
-                    <div className="flex gap-2 mb-3">
+                    <p className="text-[12px] font-bold text-white truncate mb-1.5">{movie.title}</p>
+                    <div className="flex gap-2">
                       <Link href={`/movie/${movie.id}`} className="flex-1">
-                        <button className="w-full bg-accent hover:bg-accent-dark text-white rounded-lg py-1 text-[10px] font-bold transition-all">
+                        <button className="w-full bg-accent hover:bg-accent-dark text-white rounded-lg py-1.5 text-[10px] font-bold transition-all">
                           Watch
                         </button>
                       </Link>
                       <button
                         onClick={() => removeFromContinueWatching(movie.id)}
-                        className="p-1 rounded bg-white/10 hover:bg-white/20 text-white transition-all text-[10px]"
+                        className="p-1.5 rounded bg-white/10 hover:bg-white/20 text-white transition-all text-[10px]"
                         title="Dismiss scan"
                       >
                         ✕

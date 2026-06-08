@@ -35,12 +35,12 @@ const FALLBACK = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w
 const FEATURED = MOVIES.filter(m => m.rating >= 8.2).slice(0, 4);
 
 const SearchSkeleton = () => (
-  <div className="p-3 space-y-2.5">
-    <div className="h-4 bg-white/5 rounded w-1/4 animate-pulse mb-2" />
+  <div className="p-4 space-y-3">
+    <div className="h-4 bg-white/5 rounded w-1/4 animate-pulse mb-3" />
     {[1, 2, 3].map(i => (
-      <div key={i} className="flex items-center gap-3.5 p-2.5 rounded-btn bg-white/[0.01] border border-white/[0.02] animate-pulse">
+      <div key={i} className="flex items-center gap-4 p-3 rounded-2xl bg-white/[0.01] border border-white/[0.03] animate-pulse">
         <div className="w-10 h-14 bg-white/5 rounded-lg shrink-0" />
-        <div className="flex-1 space-y-2 min-w-0">
+        <div className="flex-1 space-y-2.5 min-w-0">
           <div className="h-3.5 bg-white/10 rounded w-1/2" />
           <div className="h-3 bg-white/5 rounded w-1/3" />
         </div>
@@ -171,12 +171,12 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[100] flex flex-col justify-start bg-black/90 backdrop-blur-2xl"
+          className="fixed inset-0 z-[100] flex flex-col justify-start bg-[#05070C]/95 backdrop-blur-2xl"
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-          <div className="max-w-xl w-full mx-auto px-4 pt-16 sm:pt-20">
+          <div className="max-w-xl w-full mx-auto px-4 pt-16 sm:pt-24">
             {/* Search Input Bar */}
-            <div className="relative flex items-center rounded-input overflow-hidden border border-white/[0.1] bg-[#0c0c0c] shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+            <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0C0E17] shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
               <Search className="absolute left-4 w-4.5 h-4.5 text-muted/60" />
               <input
                 ref={inputRef}
@@ -185,7 +185,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search movies, TV shows, genres..."
-                className="flex-1 bg-transparent text-white placeholder-muted/30 text-[14.5px] py-4 pl-12 pr-4 outline-none"
+                className="flex-1 bg-transparent text-white placeholder-muted/30 text-[14.5px] py-4.5 pl-12 pr-4 outline-none font-medium"
               />
               {query && (
                 <button onClick={() => setQuery('')} className="pr-3 text-muted hover:text-white transition-colors">
@@ -195,8 +195,8 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
             </div>
 
             {/* Provider Filter bar */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-3 scrollbar-none mt-2">
-              <span className="text-[10px] font-bold text-muted/40 uppercase shrink-0 mr-1.5 flex items-center gap-1">
+            <div className="flex items-center gap-1.5 overflow-x-auto py-3.5 scrollbar-none mt-2">
+              <span className="text-[10px] font-black text-muted/40 uppercase shrink-0 mr-1.5 flex items-center gap-1 select-none">
                 <Filter className="w-3 h-3" />
                 Filter:
               </span>
@@ -208,7 +208,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setSelectedProvider(active ? null : prov.id)}
-                    className={`px-3 py-1.5 rounded-btn text-[11px] font-bold border shrink-0 transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl text-[11px] font-bold border shrink-0 transition-all ${
                       active 
                         ? 'bg-accent border-accent text-white shadow-[0_0_12px_rgba(139,92,246,0.35)]'
                         : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:text-white'
@@ -224,16 +224,16 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 max-h-[60vh] overflow-y-auto rounded-card border border-white/[0.07] bg-[#0c0c0c]/95"
+              className="mt-2 max-h-[60vh] overflow-y-auto rounded-3xl border border-white/[0.07] bg-[#0C0E17]/95 shadow-2xl"
             >
               {isLoading && <SearchSkeleton />}
 
               {/* Show Results List */}
               {showResults && results.length > 0 && (
                 <div className="p-2 space-y-0.5">
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.04] mb-1">
-                    <span className="text-[9.5px] font-bold text-muted/30 uppercase tracking-widest">Search Matches</span>
-                    <span className="text-[9.5px] text-muted/30">Use Arrow Keys & Enter</span>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.04] mb-1.5 select-none">
+                    <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest">Search Matches</span>
+                    <span className="text-[9.5px] text-muted/40 font-mono">Use Arrow Keys & Enter</span>
                   </div>
 
                   {results.map((movie, i) => (
@@ -241,21 +241,21 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                       key={movie.id}
                       href={`/movie/${movie.id}`}
                       onClick={() => handleResultClick(movie.title)}
-                      className={`flex items-center gap-3.5 p-2.5 rounded-btn border border-transparent transition-all ${
+                      className={`flex items-center gap-4 p-2.5 rounded-2xl border border-transparent transition-all ${
                         i === selectedIndex
-                          ? 'bg-accent/15 border-accent/20 text-white'
-                          : 'hover:bg-white/[0.03]'
+                          ? 'bg-accent/10 border-accent/20 text-white'
+                          : 'hover:bg-white/[0.02]'
                       }`}
                     >
-                      <div className="w-10 h-14 rounded-lg overflow-hidden bg-white/5 shrink-0">
+                      <div className="w-10 h-14 rounded-lg overflow-hidden bg-white/5 shrink-0 border border-white/5">
                         <img src={movie.posterPath} alt="" className="w-full h-full object-cover" onError={e => ((e.target as any).src = FALLBACK)} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-white truncate">{movie.title}</p>
+                        <p className="text-[13.5px] font-bold text-white truncate">{movie.title}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[10.5px] text-muted">{movie.year}</span>
+                          <span className="text-[11px] text-muted/60 font-semibold">{movie.year}</span>
                           <span className="w-1 h-1 bg-white/10 rounded-full" />
-                          <div className="flex items-center gap-0.5 text-white/80 font-bold text-[10.5px]">
+                          <div className="flex items-center gap-0.5 text-white/80 font-bold text-[11px]">
                             <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
                             {movie.rating.toFixed(1)}
                           </div>
@@ -275,30 +275,30 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
 
               {/* Empty state */}
               {showEmpty && (
-                <div className="py-14 text-center px-4">
-                  <div className="w-14 h-14 mx-auto rounded-btn bg-white/[0.02] border border-white/[0.05] flex items-center justify-center mb-4 text-muted/30">
+                <div className="py-16 text-center px-4">
+                  <div className="w-14 h-14 mx-auto rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center mb-4 text-muted/30">
                     <Search className="w-5 h-5" />
                   </div>
-                  <p className="text-[13.5px] font-bold text-white font-sans">No matches found</p>
+                  <p className="text-[14px] font-bold text-white font-sans">No matches found</p>
                   <p className="text-[11.5px] text-muted/50 mt-1 max-w-xs mx-auto leading-relaxed">No movies or TV shows matched your filters. Try checking your spelling or clearing active filters.</p>
                 </div>
               )}
 
               {/* Pre query details */}
               {showPreQuery && (
-                <div className="p-4 space-y-6">
+                <div className="p-5 space-y-6">
                   {recentSearches.length > 0 && (
                     <div>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                      <div className="flex items-center justify-between mb-3 select-none">
+                        <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
                           Recent Searches
                         </span>
-                        <button onClick={clearRecent} className="text-[9.5px] font-semibold text-accent-light hover:underline">
+                        <button onClick={clearRecent} className="text-[9.5px] font-bold text-accent-light hover:underline uppercase tracking-wide">
                           Clear All
                         </button>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {recentSearches.map(term => (
                           <button
                             key={term}
@@ -306,7 +306,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                               setQuery(term);
                               saveRecentSearch(term);
                             }}
-                            className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] text-white/90 text-[11.5px] font-semibold transition-all"
+                            className="px-3.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] text-white/90 text-[11.5px] font-semibold transition-all"
                           >
                             {term}
                           </button>
@@ -316,11 +316,11 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                   )}
 
                   <div>
-                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest flex items-center gap-1 mb-2.5">
-                      <TrendingUp className="w-3 h-3" />
+                    <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1 mb-3 select-none">
+                      <TrendingUp className="w-3.5 h-3.5" />
                       Trending Searches
                     </span>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {TRENDING_SEARCHES.map(term => (
                         <button
                           key={term}
@@ -329,7 +329,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                             setQuery(cleaned);
                             saveRecentSearch(cleaned);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] text-white/90 text-[11.5px] font-semibold transition-all"
+                          className="px-3.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] text-white/90 text-[11.5px] font-semibold transition-all"
                         >
                           {term}
                         </button>
@@ -338,24 +338,24 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                   </div>
 
                   <div>
-                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest flex items-center gap-1 mb-2.5">
-                      <Sparkles className="w-3 h-3" />
+                    <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1 mb-3 select-none">
+                      <Sparkles className="w-3.5 h-3.5" />
                       Curated recommendations
                     </span>
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {FEATURED.map(movie => (
                         <Link
                           key={movie.id}
                           href={`/movie/${movie.id}`}
                           onClick={() => handleResultClick(movie.title)}
-                          className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.01] border border-white/[0.04] hover:bg-white/[0.03] hover:border-white/[0.08] transition-all"
+                          className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/[0.01] border border-white/[0.04] hover:bg-white/[0.03] hover:border-white/[0.08] transition-all"
                         >
-                          <div className="w-8 h-11 rounded bg-white/5 overflow-hidden shrink-0">
+                          <div className="w-8 h-11 rounded-lg bg-white/5 overflow-hidden shrink-0 border border-white/5">
                             <img src={movie.posterPath} alt="" className="w-full h-full object-cover" onError={e => ((e.target as any).src = FALLBACK)} />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11.5px] font-bold text-white truncate leading-tight mb-0.5">{movie.title}</p>
-                            <div className="flex items-center gap-1 text-[9.5px] text-muted">
+                            <p className="text-[12px] font-bold text-white truncate leading-tight mb-0.5">{movie.title}</p>
+                            <div className="flex items-center gap-1.5 text-[10px] text-muted/65 font-semibold">
                               <span>★ {movie.rating.toFixed(1)}</span>
                               <span>·</span>
                               <span>{movie.year}</span>

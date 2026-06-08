@@ -2,7 +2,7 @@
 
 import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Check, Users, Zap, Palette } from 'lucide-react';
+import { Sparkles, ArrowRight, Check, Users, Zap, Palette, Clock, Globe, Film } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MOODS, GENRES, LANGUAGES } from '../../lib/mockData';
 import type { MoodId, GenreId, LanguageId, ContentType } from '../../types';
@@ -111,11 +111,11 @@ function DiscoverContent() {
     : 'Perfect match profile!';
 
   return (
-    <div className="min-h-screen bg-[#060606] pt-24 pb-32 md:pb-20">
+    <div className="min-h-screen bg-[#05070C] pt-24 pb-32 md:pb-20">
       <div className="max-w-2xl mx-auto px-6">
 
         {/* Sticky progress bar */}
-        <div className="sticky top-[64px] z-30 py-4 mb-10 bg-[#060606]/80 backdrop-blur-xl border-b border-white/[0.05]">
+        <div className="sticky top-[64px] z-30 py-4 mb-10 bg-[#05070C]/80 backdrop-blur-xl border-b border-white/[0.05]">
           <div className="flex items-center justify-between text-[11px] font-bold mb-2">
             <span className="text-muted/40 uppercase tracking-widest">Taste Match Profile</span>
             <motion.span
@@ -158,30 +158,30 @@ function DiscoverContent() {
             How are you feeling{' '}
             <span className="text-gradient-accent">tonight?</span>
           </h1>
-          <p className="text-[14.5px] text-muted/80 max-w-sm mx-auto leading-relaxed">
+          <p className="text-[14.5px] text-muted/80 max-w-sm mx-auto leading-relaxed font-medium">
             Configure your mood and context, and our AI will search OTT catalogs to map the perfect movie.
           </p>
         </motion.div>
 
         {/* ── 01. Mood ── */}
-        <FilterBlock step="01" title="Pick your mood" hint="Select multiple if you like">
+        <FilterBlock step="01" title="Pick your mood" hint="Select multiple vibe matches">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {MOODS.map((mood) => {
               const active = moods.includes(mood.id);
               return (
                 <motion.button
                   key={mood.id}
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setMoods(prev => toggle(prev, mood.id))}
-                  className={`relative flex items-center gap-2.5 px-4 py-3.5 rounded-2xl text-left text-sm font-semibold border transition-all duration-200 ${
+                  className={`relative flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl text-left text-[13px] font-bold border transition-all duration-250 ${
                     active
                       ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span className="text-[16px] leading-none">{MOOD_ICONS[mood.id]}</span>
-                  <span className="leading-tight">{mood.label}</span>
+                  <span className="text-base leading-none">{MOOD_ICONS[mood.id]}</span>
+                  <span className="leading-tight capitalize">{mood.label}</span>
                   {active && (
                     <motion.div
                       layoutId={`check-mood-${mood.id}`}
@@ -204,18 +204,18 @@ function DiscoverContent() {
               return (
                 <motion.button
                   key={w.id}
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setWatchingWith(prev => toggleSingle(prev, w.id))}
-                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-200 ${
+                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-250 ${
                     active
                       ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
                   <span className="text-2xl">{w.emoji}</span>
-                  <span className="text-[12px] font-bold">{w.label}</span>
-                  <span className="text-[9.5px] opacity-40 leading-normal">{w.desc}</span>
+                  <span className="text-[12.5px] font-bold">{w.label}</span>
+                  <span className="text-[9px] opacity-40 font-bold leading-normal mt-0.5">{w.desc}</span>
                 </motion.button>
               );
             })}
@@ -230,10 +230,10 @@ function DiscoverContent() {
               return (
                 <motion.button
                   key={e.id}
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setEnergyLevel(prev => toggleSingle(prev, e.id))}
-                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-200 ${
+                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-250 ${
                     active
                       ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
@@ -241,7 +241,7 @@ function DiscoverContent() {
                 >
                   <span className="text-2xl">{e.emoji}</span>
                   <span className="text-[12.5px] font-bold">{e.label}</span>
-                  <span className="text-[9.5px] opacity-40 leading-normal">{e.desc}</span>
+                  <span className="text-[9px] opacity-40 font-bold leading-normal mt-0.5">{e.desc}</span>
                 </motion.button>
               );
             })}
@@ -256,10 +256,10 @@ function DiscoverContent() {
               return (
                 <motion.button
                   key={cs.id}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setContentStyles(prev => toggle(prev, cs.id))}
-                  className={`px-4 py-2 rounded-full border text-[12px] font-semibold flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+                  className={`px-4.5 py-2.5 rounded-full border text-[12px] font-bold flex items-center gap-2 transition-all duration-200 cursor-pointer ${
                     active 
                       ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
                       : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
@@ -282,10 +282,10 @@ function DiscoverContent() {
               return (
                 <motion.button
                   key={g.id}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setGenres(prev => toggle(prev, g.id))}
-                  className={`px-4 py-2 rounded-full border text-[12px] font-semibold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                  className={`px-4.5 py-2.5 rounded-full border text-[12px] font-bold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
                     active
                       ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
                       : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
@@ -300,24 +300,24 @@ function DiscoverContent() {
         </FilterBlock>
 
         {/* ── 06. Language ── */}
-        <FilterBlock step="06" title="Languages" hint="Optional Filter">
+        <FilterBlock step="06" title="Languages" hint="Optional Filter" icon={<Globe className="w-4 h-4 text-muted/40" />}>
           <div className="flex flex-wrap gap-2">
             {LANGUAGES.map((lang) => {
               const active = languages.includes(lang.id);
               return (
                 <motion.button
                   key={lang.id}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setLanguages(prev => toggle(prev, lang.id))}
-                  className={`px-4 py-2 rounded-full border text-[12px] font-semibold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                  className={`px-4.5 py-2.5 rounded-full border text-[12px] font-bold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
                     active
                       ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
                       : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
                   {lang.label}
-                  <span className="text-muted/40 text-[10px] font-normal">({lang.nativeLabel})</span>
+                  <span className="text-muted/40 text-[10px] font-semibold">({lang.nativeLabel})</span>
                   {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
                 </motion.button>
               );
@@ -326,7 +326,7 @@ function DiscoverContent() {
         </FilterBlock>
 
         {/* ── 07. Runtime ── */}
-        <FilterBlock step="07" title="Preferred duration">
+        <FilterBlock step="07" title="Preferred duration" icon={<Clock className="w-4 h-4 text-muted/40" />}>
           <div className="grid grid-cols-2 gap-2.5">
             {RUNTIME_OPTIONS.map(opt => {
               const active = runtime === opt.value;
@@ -336,7 +336,7 @@ function DiscoverContent() {
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setRuntime(opt.value)}
-                  className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl border text-left transition-all duration-200 ${
+                  className={`flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl border text-left transition-all duration-200 ${
                     active
                       ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
                       : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
@@ -344,8 +344,8 @@ function DiscoverContent() {
                 >
                   <span className="text-xl">{opt.emoji}</span>
                   <div>
-                    <span className="text-[13px] font-bold block leading-none mb-1">{opt.label}</span>
-                    <span className="text-[10px] opacity-40 font-medium">{opt.sub}</span>
+                    <span className="text-[13px] font-extrabold block leading-none mb-1">{opt.label}</span>
+                    <span className="text-[10px] opacity-40 font-bold">{opt.sub}</span>
                   </div>
                 </motion.button>
               );
@@ -354,7 +354,7 @@ function DiscoverContent() {
         </FilterBlock>
 
         {/* ── 08. Content Type ── */}
-        <FilterBlock step="08" title="Content format">
+        <FilterBlock step="08" title="Content format" icon={<Film className="w-4 h-4 text-muted/40" />}>
           <div className="grid grid-cols-3 gap-2.5">
             {CONTENT_TYPES.map(opt => {
               const active = types.includes(opt.id);
@@ -372,7 +372,7 @@ function DiscoverContent() {
                 >
                   <span className="text-xl">{opt.emoji}</span>
                   <span className="text-[13px] font-bold leading-none mb-0.5">{opt.label}</span>
-                  <span className="text-[9.5px] opacity-40 font-medium">{opt.sub}</span>
+                  <span className="text-[9.5px] opacity-40 font-bold">{opt.sub}</span>
                 </motion.button>
               );
             })}
@@ -387,11 +387,11 @@ function DiscoverContent() {
           className="mt-12"
         >
           <motion.button
-            whileHover={canDiscover ? { scale: 1.02, y: -2 } : {}}
+            whileHover={canDiscover ? { scale: 1.02, y: -1 } : {}}
             whileTap={canDiscover ? { scale: 0.98 } : {}}
             onClick={handleDiscover}
             disabled={!canDiscover}
-            className={`w-full relative flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-[14.5px] tracking-wide transition-all duration-300 select-none overflow-hidden ${
+            className={`w-full relative flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-[14px] tracking-wide transition-all duration-300 select-none overflow-hidden ${
               canDiscover
                 ? 'text-white cursor-pointer'
                 : 'text-muted/40 cursor-not-allowed bg-white/[0.02] border border-white/[0.05]'
@@ -409,7 +409,7 @@ function DiscoverContent() {
               />
             )}
             <Sparkles className="w-4.5 h-4.5 relative z-10" />
-            <span className="relative z-10 font-bold uppercase tracking-wider">
+            <span className="relative z-10 font-black uppercase tracking-widest">
               {canDiscover ? 'Find My Perfect Watch' : 'Select a mood to continue'}
             </span>
             {canDiscover && <ArrowRight className="w-4.5 h-4.5 relative z-10" />}
@@ -434,13 +434,13 @@ const FilterBlock: React.FC<{
     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     className="mb-12 border-b border-white/[0.03] pb-10 last:border-0 last:pb-0"
   >
-    <div className="flex items-center gap-3 mb-5">
+    <div className="flex items-center gap-3 mb-5 select-none">
       <span className="text-[11px] font-extrabold text-accent/50 font-mono tracking-widest shrink-0">{step}</span>
       <h3 className="text-[14.5px] font-bold text-white flex items-center gap-2">
         {icon}
         {title}
       </h3>
-      {hint && <span className="text-[11.5px] font-medium text-muted/40 ml-auto">{hint}</span>}
+      {hint && <span className="text-[11.5px] font-bold text-muted/40 ml-auto">{hint}</span>}
     </div>
     {children}
   </motion.div>
@@ -448,7 +448,7 @@ const FilterBlock: React.FC<{
 
 export default function Discover() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center">Loading discover wizard...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-bold">Loading discover wizard...</div>}>
       <DiscoverContent />
     </Suspense>
   );

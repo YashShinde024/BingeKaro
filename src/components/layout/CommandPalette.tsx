@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Compass, Bookmark, User, Settings, Film, Sparkles, X } from "lucide-react";
+import { Search, Compass, Bookmark, User, Film, Sparkles, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MOVIES } from "../../lib/mockData";
 
@@ -86,7 +86,7 @@ export const CommandPalette: React.FC = () => {
             exit={{ scale: 0.95, y: -20 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-[#0d1a2d] border border-white/[0.08] rounded-card shadow-[0_32px_64px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col"
+            className="w-full max-w-lg bg-[#0C0E17] border border-white/[0.08] rounded-2xl shadow-[0_32px_64px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col"
           >
             {/* Search Input */}
             <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/[0.06] relative">
@@ -101,7 +101,7 @@ export const CommandPalette: React.FC = () => {
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-white placeholder-muted/50 text-[13.5px] outline-none"
+                className="w-full bg-transparent text-white placeholder-muted/50 text-[13.5px] outline-none font-medium"
               />
               <button
                 onClick={() => setIsOpen(false)}
@@ -124,14 +124,14 @@ export const CommandPalette: React.FC = () => {
                         setIsOpen(false);
                       }}
                       onMouseEnter={() => setSelectedIndex(i)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-btn text-left transition-all text-[12.5px] ${
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all text-[12.5px] font-bold ${
                         active
                           ? "bg-accent/15 text-white border border-accent/20"
                           : "bg-transparent text-muted hover:text-white border border-transparent"
                       }`}
                     >
                       <item.icon className={`w-4 h-4 shrink-0 ${active ? "text-accent-light" : "text-muted/60"}`} />
-                      <span className="flex-1 font-medium">{item.label}</span>
+                      <span className="flex-1 font-bold">{item.label}</span>
                       {active && (
                         <span className="text-[10px] text-accent-light font-mono bg-accent/10 px-1.5 py-0.5 rounded uppercase tracking-wider">
                           ENTER
@@ -141,12 +141,12 @@ export const CommandPalette: React.FC = () => {
                   );
                 })
               ) : (
-                <div className="p-4 text-center text-muted/50 text-xs">No matching commands or movies.</div>
+                <div className="p-4 text-center text-muted/55 text-xs">No matching commands or movies.</div>
               )}
             </div>
 
             {/* Footer tips */}
-            <div className="px-4 py-2 border-t border-white/[0.04] bg-[#07111F] flex items-center justify-between text-[10px] text-muted/40 font-mono">
+            <div className="px-4 py-2 border-t border-white/[0.04] bg-[#05070C] flex items-center justify-between text-[10px] text-muted/40 font-mono">
               <div className="flex items-center gap-2">
                 <span>↑↓ navigate</span>
                 <span>•</span>
