@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       avatarUrl: undefined,
       favoriteGenres: ['thriller', 'drama', 'sci-fi'],
       favoriteMoods: ['thrilling', 'mind-bending', 'dark'],
-      favoriteProviders: ['netflix', 'prime', 'appletv'],
+      favoriteProviders: ['netflix', 'prime-video', 'apple-tv'],
       joinedAt: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     };
 

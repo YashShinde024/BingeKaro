@@ -1,27 +1,30 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Star, Clock, Bookmark, Play, RotateCcw, Sparkles, CheckCircle2, ExternalLink, Heart, ChevronRight } from 'lucide-react';
+import { Star, Clock, Bookmark, Play, RotateCcw, Sparkles, CheckCircle2, Heart, Share2, Award, PiggyBank } from 'lucide-react';
 import { getMovieById, MOVIES } from '../lib/mockData';
+import { PROVIDER_REGISTRY } from '../lib/providers';
 import { OTTBadge, OTTBadgeList } from '../components/badges/OTTBadge';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useHistory } from '../context/HistoryContext';
 import { useToast } from '../context/ToastContext';
+import type { Movie, OTTProviderId } from '../types';
 
 const FALLBACK_BACKDROP = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&q=90';
 const FALLBACK_POSTER = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&q=80';
 
 const container = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1, delayChildren: 0.4 } },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
 };
+
 const item = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
 };
 
 /* Typewriter Effect */
-const TypewriterText: React.FC<{ text: string; speed?: number }> = ({ text, speed = 12 }) => {
+const TypewriterText: React.FC<{ text: string; speed?: number }> = ({ text, speed = 8 }) => {
   const [displayText, setDisplayText] = React.useState('');
 
   React.useEffect(() => {
@@ -39,25 +42,23 @@ const TypewriterText: React.FC<{ text: string; speed?: number }> = ({ text, spee
   return <span>{displayText}</span>;
 };
 
-/* Alternative mini card */
-const AlternativeCard: React.FC<{ movie: NonNullable<ReturnType<typeof getMovieById>>; delay: number }> = ({ movie, delay }) => {
+/* Alternative Recommendation mini card */
+const AlternativeCard: React.FC<{ movie: any; reason: string; delay: number }> = ({ movie, reason, delay }) => {
   const [imgErr, setImgErr] = React.useState(false);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5 }}
+      className="h-full"
     >
       <Link to={`/movie/${movie.id}`}>
         <motion.div
-          whileHover={{ y: -3, scale: 1.02 }}
-          transition={{ duration: 0.25 }}
-          className="group flex gap-3 p-3 rounded-2xl border border-white/[0.07] bg-white/[0.03]
-                     hover:bg-white/[0.06] hover:border-white/[0.12] transition-all cursor-pointer"
+          whileHover={{ y: -4, borderColor: 'rgba(139,92,246,0.35)', backgroundColor: 'rgba(255,255,255,0.05)' }}
+          className="flex gap-3.5 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] transition-all cursor-pointer h-full"
         >
-          {/* Poster */}
-          <div className="w-12 flex-shrink-0 rounded-xl overflow-hidden" style={{ aspectRatio: '2/3' }}>
+          <div className="w-14 shrink-0 rounded-xl overflow-hidden aspect-poster">
             <img
               src={imgErr ? FALLBACK_POSTER : movie.posterPath}
               alt={movie.title}
@@ -65,20 +66,25 @@ const AlternativeCard: React.FC<{ movie: NonNullable<ReturnType<typeof getMovieB
               onError={() => setImgErr(true)}
             />
           </div>
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-semibold text-white/85 truncate group-hover:text-white transition-colors">
-              {movie.title}
-            </p>
-            <div className="flex items-center gap-1.5 mt-0.5 mb-1.5">
-              <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-              <span className="text-[10px] text-white/60">{movie.rating.toFixed(1)}</span>
-              <span className="text-[10px] text-white/30">·</span>
-              <span className="text-[10px] text-white/50 capitalize">{movie.genres[0]}</span>
+          <div className="flex-1 min-w-0 flex flex-col justify-between">
+            <div>
+              <p className="text-[12.5px] font-bold text-white truncate">
+                {movie.title}
+              </p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                <span className="text-[10px] font-bold text-white/75">{movie.rating.toFixed(1)}</span>
+                <span className="text-[10px] text-white/30">•</span>
+                <span className="text-[10px] text-muted capitalize truncate">{movie.genres[0]}</span>
+              </div>
             </div>
-            <OTTBadgeList providers={movie.providers} size="xs" max={2} />
+            <div className="pt-2 flex flex-col gap-1.5">
+              <span className="text-[9px] font-bold text-accent-light bg-accent/10 border border-accent/20 rounded-md px-1.5 py-0.5 self-start">
+                {reason}
+              </span>
+              <OTTBadgeList providers={movie.providers} size="xs" max={1} variant="pill" />
+            </div>
           </div>
-          <ChevronRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-colors flex-shrink-0 self-center" />
         </motion.div>
       </Link>
     </motion.div>
@@ -95,7 +101,7 @@ export const RecommendationReveal: React.FC = () => {
   const [bgErr, setBgErr] = React.useState(false);
 
   const dataParam = searchParams.get('data');
-  let movie = null;
+  let movie: any = null;
   let aiExplanation = '';
 
   try {
@@ -115,7 +121,6 @@ export const RecommendationReveal: React.FC = () => {
     }
   }, [movie?.id]);
 
-  // Generate 3 alternative picks (different genres or similar)
   const alternatives = React.useMemo(() => {
     if (!movie) return [];
     return MOVIES
@@ -125,12 +130,33 @@ export const RecommendationReveal: React.FC = () => {
       .slice(0, 3);
   }, [movie?.id]);
 
+  // Dynamic Provider Analysis
+  const providerAnalysis = React.useMemo(() => {
+    if (!movie || !movie.providers || movie.providers.length === 0) return null;
+    
+    const providerObjs = movie.providers.map((id: string) => PROVIDER_REGISTRY[id]).filter(Boolean);
+    
+    // Sort logic: free > subscription > rent > buy
+    const sorted = [...providerObjs].sort((a, b) => {
+      const rank: Record<string, number> = { free: 1, subscription: 2, rent: 3, buy: 4 };
+      return (rank[a.type] || 99) - (rank[b.type] || 99);
+    });
+
+    const best = sorted[0]; // Free or Subscription is always best
+    const cheapest = sorted.find(p => p.type === 'free') || sorted.find(p => p.type === 'subscription') || sorted[sorted.length - 1];
+
+    return {
+      best,
+      cheapest,
+    };
+  }, [movie?.id]);
+
   if (!movie) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted mb-4">Something went wrong. No recommendation found.</p>
-          <Link to="/discover" className="btn-primary">Try Again</Link>
+          <p className="text-muted mb-4">No recommendations compiled. Please re-run the discovery flow.</p>
+          <Link to="/discover" className="btn-primary">Try Discover</Link>
         </div>
       </div>
     );
@@ -140,287 +166,258 @@ export const RecommendationReveal: React.FC = () => {
 
   const handleSave = () => {
     if (saved) {
-      removeFromWatchlist(movie!.id);
+      removeFromWatchlist(movie.id);
       showToast('Removed from watchlist', 'info');
     } else {
-      addToWatchlist(movie!);
+      addToWatchlist(movie);
       showToast('Saved to watchlist!', 'success');
     }
   };
 
   const handleFavorite = () => {
     if (favorited) {
-      removeFromFavorites(movie!.id);
+      removeFromFavorites(movie.id);
+      showToast('Removed from favorites', 'info');
     } else {
-      addToFavorites(movie!);
+      addToFavorites(movie);
       showToast('Added to favorites ♥', 'success');
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#080808] relative overflow-hidden">
+  const handleShare = () => {
+    navigator.clipboard?.writeText(`${window.location.origin}/movie/${movie.id}`);
+    showToast('Link copied to clipboard!', 'success');
+  };
 
-      {/* Full bleed backdrop — dramatic entrance */}
+  return (
+    <div className="min-h-screen bg-[#050505] relative overflow-hidden pt-20 pb-24">
+      {/* Background Poster/Backdrop */}
       <motion.div
-        initial={{ opacity: 0, scale: 1.12 }}
+        initial={{ opacity: 0, scale: 1.05 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed inset-0 z-0"
+        transition={{ duration: 1.8, ease: 'easeOut' }}
+        className="absolute inset-0 z-0 pointer-events-none"
       >
         <img
           src={bgErr ? FALLBACK_BACKDROP : movie.backdropPath}
-          alt={movie.title}
-          className="w-full h-full object-cover"
+          alt=""
+          className="w-full h-full object-cover filter blur-[2px] brightness-[0.4]"
           onError={() => setBgErr(true)}
         />
-        {/* Multi-layer cinematic overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[rgba(8,8,8,0.82)] to-[rgba(8,8,8,0.35)]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[rgba(8,8,8,0.6)] to-transparent" />
-        <div className="absolute inset-0 bg-[rgba(8,8,8,0.2)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-transparent" />
       </motion.div>
 
-      {/* Ambient purple glow from bottom */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
-           style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-
-      {/* Back navigation */}
-      <div className="relative z-20 pt-8 px-6 lg:px-10">
-        <motion.button
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-[13px] text-muted hover:text-white transition-colors duration-150 group"
+      {/* Main Grid Wrapper */}
+      <div className="relative z-10 max-w-[1280px] mx-auto px-6 lg:px-8 mt-6">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10 lg:gap-14 items-start"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="group-hover:-translate-x-0.5 transition-transform">
-            <path d="M10 4L6 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Discover
-        </motion.button>
-      </div>
-
-      {/* Main content */}
-      <div className="relative z-10 min-h-screen flex flex-col justify-end pb-12 pt-16">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 w-full">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-start"
+          {/* LEFT: Massive Poster */}
+          <motion.div 
+            variants={item}
+            className="hidden lg:block shrink-0"
           >
-
-            {/* Poster — 3D tilt on hover */}
-            <motion.div
-              initial={{ opacity: 0, y: 50, rotateY: -18, scale: 0.92 }}
-              animate={{ opacity: 1, y: 0, rotateY: 0, scale: 1 }}
-              whileHover={{ rotateY: 10, rotateX: -5, scale: 1.04 }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-              style={{ perspective: 1000 }}
-              className="hidden lg:block cursor-pointer"
+            <motion.div 
+              whileHover={{ scale: 1.03 }}
+              className="rounded-3xl overflow-hidden border border-white/[0.08] shadow-[0_30px_70px_rgba(0,0,0,0.85)] bg-[#121212] aspect-poster"
             >
-              <div className="w-56 rounded-[22px] overflow-hidden ring-1 ring-white/[0.08]"
-                   style={{ boxShadow: '0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.06)' }}>
-                <img
-                  src={posterErr ? FALLBACK_POSTER : movie.posterPath}
-                  alt={movie.title}
-                  className="w-full aspect-poster object-cover"
-                  onError={() => setPosterErr(true)}
-                />
-              </div>
-              {/* Shadow cast under poster */}
-              <div className="mt-4 mx-4 h-6 bg-black/40 rounded-full blur-xl" />
+              <img
+                src={posterErr ? FALLBACK_POSTER : movie.posterPath}
+                alt={movie.title}
+                className="w-full h-full object-cover"
+                onError={() => setPosterErr(true)}
+              />
+            </motion.div>
+          </motion.div>
+
+          {/* RIGHT: Detailed Information */}
+          <div className="space-y-6">
+            <motion.div variants={item} className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 border border-accent/30 text-[10px] font-bold text-accent-light tracking-wider uppercase">
+                <Sparkles className="w-3.5 h-3.5" />
+                AI RECOMMENDATION FOR YOU
+              </span>
             </motion.div>
 
-            {/* Info */}
-            <div>
-              {/* AI label */}
-              <motion.div variants={item}>
-                <motion.div
-                  animate={{ boxShadow: ['0 0 0 rgba(139,92,246,0)', '0 0 20px rgba(139,92,246,0.3)', '0 0 0 rgba(139,92,246,0)'] }}
-                  transition={{ duration: 2.5, repeat: Infinity }}
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/12 border border-accent/30 mb-5"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-accent-light animate-spin-slow" />
-                  <span className="text-[11px] font-bold text-accent-light uppercase tracking-wider">
-                    Your AI Recommendation
-                  </span>
-                </motion.div>
-              </motion.div>
+            {/* Title */}
+            <motion.h1 variants={item} className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-none">
+              {movie.title}
+            </motion.h1>
 
-              {/* Title */}
-              <motion.h1
-                variants={item}
-                className="text-4xl sm:text-5xl lg:text-[58px] font-black text-white tracking-[-0.03em] leading-[1.02] mb-4"
-              >
-                {movie.title}
-              </motion.h1>
+            {/* Meta Row */}
+            <motion.div variants={item} className="flex flex-wrap items-center gap-2.5 text-white/60 text-[13px] font-medium">
+              <span>{movie.year}</span>
+              <span className="w-1 h-1 bg-white/10 rounded-full" />
+              <span className="capitalize">{movie.type}</span>
+              <span className="w-1 h-1 bg-white/10 rounded-full" />
+              <div className="flex items-center gap-1 text-white font-semibold">
+                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                {movie.rating.toFixed(1)}
+              </div>
+              <span className="w-1 h-1 bg-white/10 rounded-full" />
+              <div className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 opacity-60" />
+                {runtimeStr}
+              </div>
+            </motion.div>
 
-              {/* Meta row */}
-              <motion.div variants={item} className="flex flex-wrap items-center gap-2.5 mb-5">
-                <span className="text-[13px] text-white/55">{movie.year}</span>
-                <span className="w-1 h-1 bg-white/20 rounded-full" />
-                <span className="text-[13px] text-white/55 capitalize">
-                  {movie.type === 'tv' ? 'TV Show' : movie.type === 'anime' ? 'Anime' : 'Film'}
+            {/* Genres */}
+            <motion.div variants={item} className="flex flex-wrap gap-1.5">
+              {movie.genres.map((g: string) => (
+                <span key={g} className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11.5px] text-white/85 font-medium capitalize">
+                  {g}
                 </span>
-                <span className="w-1 h-1 bg-white/20 rounded-full" />
-                <div className="flex items-center gap-1">
-                  <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  <span className="text-[13px] font-bold text-white">{movie.rating.toFixed(1)}</span>
-                </div>
-                <span className="w-1 h-1 bg-white/20 rounded-full" />
-                <div className="flex items-center gap-1 text-white/55">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span className="text-[13px]">{runtimeStr}</span>
-                </div>
-                {movie.isFree && (
-                  <>
-                    <span className="w-1 h-1 bg-white/20 rounded-full" />
-                    <span className="text-[11px] font-bold text-accent-light bg-accent/15 border border-accent/30 px-2 py-0.5 rounded-md">
-                      FREE
-                    </span>
-                  </>
-                )}
-              </motion.div>
+              ))}
+            </motion.div>
 
-              {/* Genres */}
-              <motion.div variants={item} className="flex flex-wrap gap-2 mb-7">
-                {movie.genres.map(g => (
-                  <span key={g}
-                    className="px-3 py-1 rounded-full text-[12px] font-medium capitalize
-                               bg-white/[0.06] border border-white/[0.08] text-white/65">
-                    {g}
-                  </span>
+            {/* Why This Movie? (AI Explanation) */}
+            <motion.div variants={item} className="rounded-2xl border border-accent/20 bg-accent/[0.02] overflow-hidden p-5 shadow-[0_4px_30px_rgba(139,92,246,0.05)] relative">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <Sparkles className="w-4.5 h-4.5 text-accent-light" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-accent-light uppercase tracking-widest mb-1">
+                    Why This Movie?
+                  </p>
+                  <p className="text-[14.5px] text-white/95 leading-relaxed font-medium min-h-[50px]">
+                    <TypewriterText text={aiExplanation || movie.aiInsight || movie.overview} />
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Available On (Registry Cards) */}
+            <motion.div variants={item} className="space-y-3">
+              <p className="text-[10px] font-bold text-muted/40 uppercase tracking-widest">
+                Available On
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {movie.providers.map((p: string) => (
+                  <OTTBadge key={p} provider={p as OTTProviderId} size="sm" showLabel variant="badge" />
                 ))}
-              </motion.div>
+              </div>
+            </motion.div>
 
-              {/* AI Insight card — typewriter */}
-              <motion.div variants={item} className="mb-7">
-                <div className="rounded-2xl border border-white/[0.08] overflow-hidden"
-                     style={{ background: 'rgba(12,8,24,0.8)', backdropFilter: 'blur(24px)' }}>
-                  <div className="flex items-start gap-4 p-5">
-                    <motion.div
-                      animate={{ scale: [1, 1.15, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="w-10 h-10 bg-accent/15 rounded-xl border border-accent/25 flex items-center justify-center flex-shrink-0 mt-0.5"
-                    >
-                      <Sparkles className="w-4.5 h-4.5 text-accent-light" />
-                    </motion.div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-bold text-accent/70 uppercase tracking-widest mb-2">
-                        Why we picked this for you
-                      </p>
-                      <p className="text-[14px] text-white/85 leading-relaxed min-h-[60px]">
-                        <TypewriterText text={aiExplanation || movie.aiInsight || movie.overview} speed={10} />
-                      </p>
-                    </div>
+            {/* Best place / Cheapest Option Insights */}
+            {providerAnalysis && (
+              <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                    <Award className="w-4.5 h-4.5" />
+                  </div>
+                  <div>
+                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-wider block">Best Place to Watch</span>
+                    <span className="text-[13px] font-bold text-white">{providerAnalysis.best?.name || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                    <PiggyBank className="w-4.5 h-4.5" />
+                  </div>
+                  <div>
+                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-wider block">Cheapest Tier Available</span>
+                    <span className="text-[13px] font-bold text-white capitalize">{providerAnalysis.cheapest?.name} ({providerAnalysis.cheapest?.type})</span>
                   </div>
                 </div>
               </motion.div>
+            )}
 
-              {/* Streaming providers */}
-              <motion.div variants={item} className="mb-7">
-                <p className="text-[11px] font-bold text-muted/50 uppercase tracking-widest mb-3">
-                  Available on
-                </p>
-                <div className="flex items-center gap-3 flex-wrap">
-                  {movie.providers.map((p, i) => (
-                    <motion.div
-                      key={p}
-                      initial={{ opacity: 0, scale: 0.7, y: 8 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ delay: 1.2 + i * 0.1, type: 'spring', stiffness: 300, damping: 20 }}
-                    >
-                      <OTTBadge provider={p} size="lg" showLabel />
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Actions */}
-              <motion.div variants={item} className="flex flex-wrap gap-3 mb-10">
-                <Link to={`/movie/${movie.id}`}>
-                  <motion.div
-                    whileHover={{ scale: 1.03, y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center gap-2.5 text-white font-bold px-7 py-3.5 rounded-xl cursor-pointer select-none"
-                    style={{
-                      background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-                      boxShadow: '0 8px 32px rgba(139,92,246,0.5)',
-                    }}
-                  >
-                    <Play className="w-4 h-4 fill-white" />
-                    View Details
-                    <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-                  </motion.div>
-                </Link>
-
+            {/* Main Action Bar */}
+            <motion.div variants={item} className="flex flex-wrap items-center gap-3 pt-3">
+              <Link to={`/movie/${movie.id}`}>
                 <motion.button
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleSave}
-                  className={`inline-flex items-center gap-2.5 font-semibold px-6 py-3.5 rounded-xl border transition-all duration-200 ${
-                    saved
-                      ? 'bg-accent/12 border-accent/40 text-accent-light'
-                      : 'bg-white/[0.06] border-white/[0.12] text-white hover:bg-white/[0.09]'
-                  }`}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-[13px] font-bold text-white shadow-[0_4px_20px_rgba(139,92,246,0.4)]"
                 >
-                  {saved ? <CheckCircle2 className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                  {saved ? 'Saved' : 'Save'}
+                  <Play className="w-4 h-4 fill-white" />
+                  Watch Details
                 </motion.button>
+              </Link>
 
-                <motion.button
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={handleFavorite}
-                  className={`inline-flex items-center gap-2 font-semibold px-5 py-3.5 rounded-xl border transition-all duration-200 ${
-                    favorited
-                      ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
-                      : 'bg-white/[0.06] border-white/[0.12] text-white hover:bg-white/[0.09]'
-                  }`}
-                >
-                  <Heart className={`w-4 h-4 ${favorited ? 'fill-rose-400' : ''}`} />
-                </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSave}
+                className={`flex items-center gap-2 px-4.5 py-3.5 rounded-xl border text-[13px] font-bold transition-all ${
+                  saved ? 'bg-accent/15 border-accent/40 text-accent-light' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                }`}
+              >
+                {saved ? <CheckCircle2 className="w-4.5 h-4.5" /> : <Bookmark className="w-4.5 h-4.5" />}
+                {saved ? 'Saved to Watchlist' : 'Add to Watchlist'}
+              </motion.button>
 
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate('/discover')}
-                  className="inline-flex items-center gap-2 text-muted hover:text-white
-                             font-medium px-5 py-3.5 rounded-xl hover:bg-white/[0.05] transition-all duration-150"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Try Another
-                </motion.button>
-              </motion.div>
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleFavorite}
+                className={`flex items-center justify-center w-12 py-3.5 rounded-xl border transition-all ${
+                  favorited ? 'bg-rose-500/15 border-rose-500/30 text-rose-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                }`}
+              >
+                <Heart className={`w-4.5 h-4.5 ${favorited ? 'fill-rose-500' : ''}`} />
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleShare}
+                className="flex items-center justify-center w-12 py-3.5 rounded-xl border bg-white/5 border-white/10 text-white hover:bg-white/10"
+                title="Copy Link to Share"
+              >
+                <Share2 className="w-4.5 h-4.5" />
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate('/discover')}
+                className="flex items-center gap-1.5 px-4 py-3.5 rounded-xl text-muted hover:text-white transition-all text-[13px] font-medium"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Recommend Again
+              </motion.button>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Alternatives — "Why Not These?" */}
+        {alternatives.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="mt-16 border-t border-white/[0.05] pt-12"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-xl">💡</span>
+              <div>
+                <h3 className="text-[14px] font-bold text-white uppercase tracking-wider">Alternative Recommendations</h3>
+                <p className="text-[11px] text-muted/50">Other movies that matched your taste map</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {alternatives.map((alt, i) => (
+                <AlternativeCard key={alt.id} movie={alt} reason={getAlternativeReason(alt, movie!)} delay={1 + i * 0.08} />
+              ))}
             </div>
           </motion.div>
-
-          {/* ─── WHY NOT THESE? — Alternative picks ─── */}
-          {alternatives.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.6, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-10 max-w-3xl"
-            >
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-7 h-7 bg-white/[0.06] rounded-lg border border-white/[0.08] flex items-center justify-center">
-                  <span className="text-[12px]">🤔</span>
-                </div>
-                <div>
-                  <h3 className="text-[14px] font-bold text-white">Why not these?</h3>
-                  <p className="text-[11px] text-muted/60">Alternatives we considered for you</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {alternatives.map((alt, i) => (
-                  <AlternativeCard key={alt.id} movie={alt} delay={1.8 + i * 0.1} />
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
+};
+
+const getAlternativeReason = (alt: Movie, primary: Movie) => {
+  if (alt.runtime < primary.runtime - 20) return "Shorter Watch Time";
+  if (alt.rating > primary.rating) return "Higher Critic Rating";
+  if (alt.isFree && !primary.isFree) return "Free Streaming Option";
+  if (alt.year > primary.year) return "More Recent Release";
+  return "Similar Mood & Style";
 };

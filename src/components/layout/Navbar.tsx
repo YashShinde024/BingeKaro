@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Home, Compass, BookmarkPlus, User, LogIn, LogOut, Bookmark } from 'lucide-react';
+import { Search, Bell, Home, Compass, Bookmark, User, LogIn, LogOut } from 'lucide-react';
 import { SearchOverlay } from '../search/SearchOverlay';
 import { useAuth } from '../../context/AuthContext';
 
@@ -25,8 +25,7 @@ export const Navbar: React.FC = () => {
   const [profileOpen, setProfileOpen] = React.useState(false);
   const { user, openLoginModal, logout } = useAuth();
 
-  const scrolled = scrollDepth > 24;
-  const scrolledFull = scrollDepth > 80;
+  const scrolled = scrollDepth > 10;
 
   React.useEffect(() => {
     const onScroll = () => setScrollDepth(window.scrollY);
@@ -49,7 +48,6 @@ export const Navbar: React.FC = () => {
   const isActive = (to: string) =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
 
-  // Close dropdowns on route changes
   React.useEffect(() => {
     setNotifOpen(false);
     setProfileOpen(false);
@@ -58,81 +56,76 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <motion.header
-        initial={{ y: -72, opacity: 0 }}
+        initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 inset-x-0 z-50 transition-all duration-400"
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed z-50 left-0 right-0 mx-auto transition-all duration-300"
         style={{
-          background: scrolledFull
-            ? 'rgba(8,8,8,0.92)'
-            : scrolled
-            ? 'rgba(8,8,8,0.7)'
-            : 'linear-gradient(to bottom, rgba(8,8,8,0.85), transparent)',
-          backdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
-          borderBottom: scrolledFull ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
-          boxShadow: scrolledFull ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
+          top: scrolled ? '16px' : '0px',
+          maxWidth: scrolled ? '1280px' : '100%',
+          paddingLeft: scrolled ? '24px' : '40px',
+          paddingRight: scrolled ? '24px' : '40px',
         }}
       >
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between relative">
-          {/* LEFT — Logo + Nyxen */}
+        <div 
+          className="w-full rounded-2xl transition-all duration-300 px-6 h-16 flex items-center justify-between border relative"
+          style={{
+            backgroundColor: scrolled ? 'rgba(10, 10, 10, 0.7)' : 'rgba(5, 5, 5, 0.3)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            borderColor: scrolled ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+            boxShadow: scrolled ? '0 16px 40px -10px rgba(0, 0, 0, 0.7)' : 'none',
+          }}
+        >
+          {/* LEFT — Logo */}
           <Link to="/" className="flex items-center gap-3 group shrink-0">
             <motion.div
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               className="flex items-center gap-2.5"
             >
-              {/* Logo mark */}
-              <div className="relative w-8 h-8 rounded-[10px] bg-accent flex items-center justify-center glow-accent-sm">
+              <div className="relative w-8 h-8 rounded-[10px] bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)]">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
                   <path d="M15 10L19.553 7.724A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
-                    stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[15px] font-bold text-white tracking-[-0.01em]">
+                <span className="text-[15px] font-bold text-white tracking-tight">
                   Kya<span className="text-accent-light">Dekhu</span>
                 </span>
-                <span className="text-[9px] text-muted/50 font-medium tracking-wide mt-0.5 hidden sm:block">
+                <span className="text-[9px] text-muted/40 font-semibold tracking-widest mt-0.5 uppercase hidden sm:block">
                   by Nyxen
                 </span>
               </div>
             </motion.div>
           </Link>
 
-          {/* CENTER — Nav links (desktop only) */}
-          <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          {/* CENTER — Nav Links */}
+          <nav className="hidden md:flex items-center gap-1.5 absolute left-1/2 -translate-x-1/2">
             {NAV_CENTER.map(({ to, label }) => {
               const active = isActive(to);
               return (
-                <Link key={to} to={to} className="relative group px-4 py-2 rounded-xl">
-                  <span className={`relative z-10 text-[13.5px] font-medium transition-colors duration-200 ${
-                    active ? 'text-white' : 'text-muted group-hover:text-white/90'
+                <Link key={to} to={to} className="relative px-4 py-2 rounded-xl transition-all duration-200">
+                  <span className={`relative z-10 text-[13.5px] font-semibold tracking-wide transition-colors duration-300 ${
+                    active ? 'text-white' : 'text-muted hover:text-white/95'
                   }`}>
                     {label}
                   </span>
-                  {/* Hover background */}
-                  <motion.div
-                    className="absolute inset-0 rounded-xl bg-white/[0.06] opacity-0 group-hover:opacity-100"
-                    transition={{ duration: 0.15 }}
-                    style={{ opacity: active ? 0 : undefined }}
-                  />
-                  {/* Active background */}
                   {active && (
                     <motion.div
                       layoutId="nav-pill"
                       className="absolute inset-0 rounded-xl"
-                      style={{ background: 'rgba(139,92,246,0.1)' }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                      style={{ background: 'rgba(255, 255, 255, 0.05)' }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
-                  {/* Active glow underline */}
                   {active && (
                     <motion.div
                       layoutId="nav-underline"
-                      className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-[2.5px] w-5 rounded-full"
-                      style={{ background: '#A78BFA', boxShadow: '0 0 8px rgba(167,139,250,0.6)' }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                      className="absolute bottom-1.5 left-4 right-4 h-[2px] rounded-full"
+                      style={{ background: 'linear-gradient(90deg, #A78BFA, #8B5CF6)' }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
                 </Link>
@@ -141,66 +134,62 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* RIGHT — Actions */}
-          <div className="flex items-center gap-1.5 relative">
-            {/* Search button */}
+          <div className="flex items-center gap-2">
+            {/* Search Trigger */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.93 }}
+              whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.06)' }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 h-9 px-3 rounded-xl text-muted hover:text-white hover:bg-white/[0.07] transition-all duration-150"
-              aria-label="Search (⌘K)"
+              className="flex items-center gap-2.5 h-9 px-3 rounded-xl border border-white/[0.05] text-muted hover:text-white transition-all duration-200 bg-white/[0.02]"
             >
               <Search className="w-4 h-4" />
-              <span className="hidden lg:flex items-center gap-1.5 text-xs">
-                Search
-                <kbd className="text-[10px] px-1 py-0.5 rounded bg-white/10 text-muted/70 font-mono">⌘K</kbd>
+              <span className="hidden lg:flex items-center gap-1.5 text-[11px] font-medium tracking-wider">
+                SEARCH
+                <kbd className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-muted/80 font-mono">Ctrl+K</kbd>
               </span>
             </motion.button>
 
             {/* Notifications */}
             <div className="relative">
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.93 }}
+                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.06)' }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   setNotifOpen(!notifOpen);
                   setProfileOpen(false);
                 }}
-                className={`relative w-9 h-9 rounded-xl transition-all duration-150 flex items-center justify-center ${
-                  notifOpen ? 'bg-white/10 text-white' : 'text-muted hover:text-white hover:bg-white/[0.07]'
+                className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 border border-white/[0.05] ${
+                  notifOpen ? 'bg-white/10 text-white border-white/10' : 'bg-white/[0.02] text-muted hover:text-white'
                 }`}
-                aria-label="Notifications"
               >
                 <Bell className="w-4 h-4" />
-                {/* Notification dot */}
-                <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-accent rounded-full" />
+                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
               </motion.button>
 
-              {/* Notification Popover */}
               <AnimatePresence>
                 {notifOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 12, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    className="absolute right-0 mt-2.5 w-80 rounded-2xl glass-card border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.65)] overflow-hidden z-50 p-4"
-                    style={{ background: 'rgba(12,12,12,0.92)' }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                    className="absolute right-0 mt-3 w-80 rounded-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden z-50 p-4"
+                    style={{ background: 'rgba(15,15,15,0.95)', backdropFilter: 'blur(20px)' }}
                   >
-                    <div className="flex items-center justify-between pb-3 border-b border-white/[0.07] mb-2">
-                      <h4 className="text-[12.5px] font-bold text-white uppercase tracking-wider">Recent Alerts</h4>
-                      <span className="text-[10px] bg-accent/20 text-accent-light px-1.5 py-0.5 rounded font-bold">New</span>
+                    <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-2">
+                      <h4 className="text-[12px] font-bold text-white uppercase tracking-widest">Recent Alerts</h4>
+                      <span className="text-[9px] bg-accent/20 text-accent-light px-2 py-0.5 rounded-full font-bold">New</span>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {MOCK_NOTIFICATIONS.map((notif) => (
                         <div
                           key={notif.id}
-                          className="p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer group flex flex-col gap-1"
+                          className="p-2.5 rounded-xl hover:bg-white/[0.03] border border-transparent hover:border-white/[0.04] transition-all cursor-pointer group flex flex-col gap-1"
                         >
-                          <p className="text-[12px] text-white/80 group-hover:text-white leading-snug">
+                          <p className="text-[12px] text-white/80 group-hover:text-white leading-normal">
                             {notif.text}
                           </p>
-                          <span className="text-[9px] text-muted">{notif.time}</span>
+                          <span className="text-[9px] text-muted/50 font-semibold">{notif.time}</span>
                         </div>
                       ))}
                     </div>
@@ -209,39 +198,43 @@ export const Navbar: React.FC = () => {
               </AnimatePresence>
             </div>
 
-            {/* Avatar or Sign In Dropdown */}
+            {/* Profile Menu */}
             {user ? (
               <div className="relative">
                 <motion.div
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setProfileOpen(!profileOpen);
                     setNotifOpen(false);
                   }}
-                  className={`w-8 h-8 rounded-full bg-gradient-to-br from-accent via-accent to-accent-light ring-1 flex items-center justify-center cursor-pointer ml-1 transition-shadow ${
-                    profileOpen ? 'ring-white/40 shadow-glow-accent' : 'ring-white/10 hover:ring-white/20'
+                  className={`w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center cursor-pointer border transition-all ${
+                    profileOpen ? 'border-white/40 shadow-[0_0_15px_rgba(139,92,246,0.4)]' : 'border-white/10 hover:border-white/20'
                   }`}
                 >
-                  <span className="text-xs font-bold text-white">
+                  <span className="text-xs font-bold text-white select-none">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 </motion.div>
 
-                {/* Profile User Dropdown */}
                 <AnimatePresence>
                   {profileOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 12, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      className="absolute right-0 mt-2.5 w-56 rounded-2xl glass-card border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.65)] overflow-hidden z-50 p-2"
-                      style={{ background: 'rgba(12,12,12,0.92)' }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                      className="absolute right-0 mt-3 w-60 rounded-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden z-50 p-2"
+                      style={{ background: 'rgba(15,15,15,0.95)', backdropFilter: 'blur(20px)' }}
                     >
-                      <div className="px-3.5 py-3 border-b border-white/[0.07] mb-1">
-                        <p className="text-[13px] font-bold text-white truncate">{user.name}</p>
-                        <p className="text-[10px] text-muted truncate mt-0.5">{user.email}</p>
+                      <div className="px-3.5 py-3 border-b border-white/[0.06] mb-1.5 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-bold text-white text-xs">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <p className="text-[13px] font-bold text-white truncate">{user.name}</p>
+                          <p className="text-[10px] text-muted/60 truncate">{user.email}</p>
+                        </div>
                       </div>
 
                       {[
@@ -249,7 +242,7 @@ export const Navbar: React.FC = () => {
                         { label: 'Watchlist', to: '/watchlist', icon: Bookmark },
                       ].map((item) => (
                         <Link key={item.to} to={item.to}>
-                          <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] text-muted hover:text-white hover:bg-white/[0.05] transition-all text-left">
+                          <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] text-muted hover:text-white hover:bg-white/[0.04] transition-all text-left">
                             <item.icon className="w-3.5 h-3.5" />
                             {item.label}
                           </button>
@@ -258,7 +251,7 @@ export const Navbar: React.FC = () => {
 
                       <button
                         onClick={logout}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all text-left mt-1 border-t border-white/[0.05] pt-2"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all text-left mt-1.5 border-t border-white/[0.05] pt-2"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         Sign Out
@@ -269,10 +262,10 @@ export const Navbar: React.FC = () => {
               </div>
             ) : (
               <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.03, boxShadow: '0 4px 15px rgba(139,92,246,0.3)' }}
+                whileTap={{ scale: 0.97 }}
                 onClick={openLoginModal}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-accent text-[12px] font-semibold text-white ml-2 glow-accent-sm transition-all"
+                className="flex items-center gap-1.5 h-8.5 px-3.5 rounded-xl bg-accent text-[12px] font-semibold text-white ml-1.5 transition-all"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 Sign In
@@ -293,7 +286,7 @@ export const Navbar: React.FC = () => {
 const MOBILE_TABS = [
   { to: '/', label: 'Home', Icon: Home },
   { to: '/discover', label: 'Discover', Icon: Compass },
-  { to: '/watchlist', label: 'Saved', Icon: BookmarkPlus },
+  { to: '/watchlist', label: 'Saved', Icon: Bookmark },
   { to: '/profile', label: 'Profile', Icon: User },
 ];
 
@@ -309,37 +302,29 @@ export const MobileNav: React.FC = () => {
       <motion.nav
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         className="fixed bottom-0 inset-x-0 z-50 md:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {/* Blur background */}
-        <div className="glass border-t border-white/[0.07] shadow-[0_-8px_32px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center h-16 px-2">
+        <div className="glass border-t border-white/[0.06] shadow-[0_-8px_32px_rgba(0,0,0,0.6)] bg-black/85 backdrop-blur-2xl">
+          <div className="flex items-center h-16 px-4">
             {MOBILE_TABS.map(({ to, label, Icon }) => {
               const active = isActive(to);
               return (
                 <Link key={to} to={to} className="flex-1">
                   <motion.div
-                    whileTap={{ scale: 0.88 }}
-                    className="flex flex-col items-center gap-1 py-2"
+                    whileTap={{ scale: 0.9 }}
+                    className="flex flex-col items-center gap-1 py-1"
                   >
-                    <div className={`relative flex items-center justify-center w-10 h-7 rounded-full transition-all duration-200 ${
-                      active ? 'bg-accent/20' : 'bg-transparent'
+                    <div className={`relative flex items-center justify-center w-12 h-8 rounded-xl transition-all duration-300 ${
+                      active ? 'bg-accent/15 border border-accent/20' : 'bg-transparent'
                     }`}>
-                      <Icon className={`w-5 h-5 transition-colors duration-200 ${
-                        active ? 'text-accent-light' : 'text-muted'
+                      <Icon className={`w-5 h-5 transition-colors duration-300 ${
+                        active ? 'text-accent-light' : 'text-muted/70'
                       }`} />
-                      {active && (
-                        <motion.div
-                          layoutId="mobile-indicator"
-                          className="absolute inset-0 rounded-full bg-accent/15 ring-1 ring-accent/30"
-                          transition={{ type: 'spring', stiffness: 500, damping: 40 }}
-                        />
-                      )}
                     </div>
-                    <span className={`text-[10px] font-medium transition-colors duration-200 ${
-                      active ? 'text-accent-light' : 'text-muted/60'
+                    <span className={`text-[10px] font-semibold tracking-wide transition-colors duration-300 ${
+                      active ? 'text-accent-light font-bold' : 'text-muted/50'
                     }`}>
                       {label}
                     </span>
@@ -348,13 +333,13 @@ export const MobileNav: React.FC = () => {
               );
             })}
 
-            {/* Search tab */}
+            {/* Search Tab */}
             <button className="flex-1" onClick={() => setSearchOpen(true)}>
-              <div className="flex flex-col items-center gap-1 py-2">
-                <div className="flex items-center justify-center w-10 h-7 rounded-full">
-                  <Search className="w-5 h-5 text-muted" />
+              <div className="flex flex-col items-center gap-1 py-1">
+                <div className="flex items-center justify-center w-12 h-8 rounded-xl bg-transparent">
+                  <Search className="w-5 h-5 text-muted/70" />
                 </div>
-                <span className="text-[10px] font-medium text-muted/60">Search</span>
+                <span className="text-[10px] font-semibold tracking-wide text-muted/50">Search</span>
               </div>
             </button>
           </div>

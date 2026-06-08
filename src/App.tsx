@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar, MobileNav } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { Home } from './pages/Home';
@@ -21,6 +21,17 @@ import { LoginModal } from './components/auth/LoginModal';
 // Pages that don't use the standard layout
 const FULL_SCREEN_ROUTES = ['/discover/loading', '/discover/result'];
 
+const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -12 }}
+    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+  >
+    {children}
+  </motion.div>
+);
+
 const AppLayout: React.FC = () => {
   const location = useLocation();
   const isFullScreen = FULL_SCREEN_ROUTES.some(r => location.pathname.startsWith(r));
@@ -30,18 +41,18 @@ const AppLayout: React.FC = () => {
       {!isFullScreen && <Navbar />}
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Home />} />
-          <Route path="/discover" element={<Discover />} />
+          <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+          <Route path="/discover" element={<PageTransition><Discover /></PageTransition>} />
           <Route path="/discover/loading" element={<RecommendationLoading />} />
           <Route path="/discover/result" element={<RecommendationReveal />} />
-          <Route path="/movie/:id" element={<MovieDetails />} />
-          <Route path="/watchlist" element={<Watchlist />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/movie/:id" element={<PageTransition><MovieDetails /></PageTransition>} />
+          <Route path="/watchlist" element={<PageTransition><Watchlist /></PageTransition>} />
+          <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+          <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+          <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
+          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
       {!isFullScreen && <Footer />}

@@ -4,26 +4,24 @@
 
 export type OTTProviderId =
   | 'netflix'
-  | 'prime'
-  | 'disney'
+  | 'prime-video'
   | 'jiohotstar'
   | 'sonyliv'
   | 'zee5'
-  | 'appletv'
-  | 'mxplayer'
+  | 'apple-tv'
+  | 'crunchyroll'
   | 'youtube'
+  | 'mx-player'
   | 'hulu'
   | 'max'
-  | 'paramount'
-  | 'peacock'
-  | 'crunchyroll'
-  | 'lionsgate';
+  | 'paramount-plus'
+  | 'lionsgate-play';
 
 export interface OTTProvider {
   id: OTTProviderId;
   name: string;
-  color: string;
-  isFree: boolean;
+  logo: string;
+  type: 'free' | 'subscription' | 'rent' | 'buy';
   link?: string;
 }
 

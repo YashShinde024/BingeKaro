@@ -1,11 +1,10 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, Check, Users, Zap, Palette } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MOODS, GENRES, LANGUAGES } from '../lib/mockData';
 import type { MoodId, GenreId, LanguageId, ContentType } from '../types';
 
-/* ─── Types ─── */
 type WatchingWith = 'alone' | 'partner' | 'friends' | 'family';
 type EnergyLevel = 'relaxed' | 'focused' | 'excited';
 type ContentStyle = 'emotional' | 'mind-bending' | 'funny' | 'dark' | 'inspiring' | 'thrilling';
@@ -89,8 +88,7 @@ export const Discover: React.FC = () => {
 
   const progressPercent = calculateProgress();
 
-  const selectionCount = moods.length + genres.length + languages.length +
-    (watchingWith ? 1 : 0) + (energyLevel ? 1 : 0) + contentStyles.length;
+
 
   const handleDiscover = () => {
     const params = new URLSearchParams({
@@ -113,199 +111,163 @@ export const Discover: React.FC = () => {
     : 'Perfect match profile!';
 
   return (
-    <div className="min-h-screen bg-[#080808] pt-24 pb-32 md:pb-16">
+    <div className="min-h-screen bg-[#060606] pt-24 pb-32 md:pb-20">
       <div className="max-w-2xl mx-auto px-6">
 
         {/* Sticky progress bar */}
-        <div className="sticky top-[64px] z-30 py-3 mb-8 bg-[#080808]/90 backdrop-blur-md border-b border-white/[0.04]">
+        <div className="sticky top-[64px] z-30 py-4 mb-10 bg-[#060606]/80 backdrop-blur-xl border-b border-white/[0.05]">
           <div className="flex items-center justify-between text-[11px] font-bold mb-2">
-            <span className="text-muted/50 uppercase tracking-widest">Match Profile</span>
+            <span className="text-muted/40 uppercase tracking-widest">Taste Match Profile</span>
             <motion.span
               key={progressLabel}
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-accent-light font-mono"
+              className="text-accent-light font-bold"
             >
               {progressLabel}
             </motion.span>
           </div>
-          <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-to-r from-accent via-violet-500 to-accent-light rounded-full"
+              className="h-full bg-gradient-to-r from-accent via-violet-500 to-accent-light rounded-full shadow-[0_0_12px_rgba(139,92,246,0.5)]"
               animate={{ width: `${progressPercent}%` }}
-              transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+              transition={{ type: 'spring', damping: 24, stiffness: 120 }}
             />
           </div>
-          {selectionCount > 0 && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-[10px] text-muted/40 mt-1.5 text-right"
-            >
-              {selectionCount} preference{selectionCount > 1 ? 's' : ''} selected
-            </motion.p>
-          )}
         </div>
 
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-12"
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-14"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.15 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/25 bg-accent/10 mb-5"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-accent/20 bg-accent/5 mb-6"
           >
-            <Sparkles className="w-3 h-3 text-accent-light" />
-            <span className="text-[11px] font-semibold text-accent-light uppercase tracking-wider">
-              AI Recommendation Engine
+            <Sparkles className="w-3.5 h-3.5 text-accent-light" />
+            <span className="text-[10px] font-bold text-accent-light uppercase tracking-widest">
+              AI Taste-Mapping Engine
             </span>
           </motion.div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-[-0.025em] mb-3">
+          <h1 className="text-3xl sm:text-4.5xl font-black text-white tracking-tight mb-4">
             How are you feeling{' '}
             <span className="text-gradient-accent">tonight?</span>
           </h1>
-          <p className="text-[15px] text-muted max-w-sm mx-auto leading-relaxed">
-            Tell us what you're in the mood for and we'll find the perfect watch in seconds.
+          <p className="text-[14.5px] text-muted/80 max-w-sm mx-auto leading-relaxed">
+            Configure your mood and context, and our AI will search OTT catalogs to map the perfect movie.
           </p>
         </motion.div>
 
         {/* ── 01. Mood ── */}
-        <FilterBlock step="01" title="Pick your mood" hint="Select one or more">
+        <FilterBlock step="01" title="Pick your mood" hint="Select multiple if you like">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {MOODS.map((mood, i) => {
+            {MOODS.map((mood) => {
               const active = moods.includes(mood.id);
               return (
                 <motion.button
                   key={mood.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.02, ease: [0.16, 1, 0.3, 1] }}
-                  whileHover={{ scale: 1.04, y: -1 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setMoods(prev => toggle(prev, mood.id))}
-                  className={`relative flex items-center gap-2.5 px-4 py-3 rounded-xl text-left text-sm font-medium
-                              border transition-all duration-200 ${
+                  className={`relative flex items-center gap-2.5 px-4 py-3.5 rounded-2xl text-left text-sm font-semibold border transition-all duration-200 ${
                     active
-                      ? 'bg-accent/15 border-accent/50 text-white shadow-[0_0_20px_rgba(139,92,246,0.18)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
+                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
+                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
                   <span className="text-[16px] leading-none">{MOOD_ICONS[mood.id]}</span>
                   <span className="leading-tight">{mood.label}</span>
-                  <AnimatePresence>
-                    {active && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        className="ml-auto w-4 h-4 bg-accent rounded-full flex items-center justify-center flex-shrink-0"
-                      >
-                        <Check className="w-2.5 h-2.5 text-white" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {active && (
+                    <motion.div
+                      layoutId={`check-mood-${mood.id}`}
+                      className="ml-auto w-4.5 h-4.5 bg-accent rounded-full flex items-center justify-center flex-shrink-0"
+                    >
+                      <Check className="w-3 h-3 text-white" />
+                    </motion.div>
+                  )}
                 </motion.button>
               );
             })}
           </div>
         </FilterBlock>
 
-        {/* ── 02. Watching With ── (NEW) */}
-        <FilterBlock step="02" title="Watching with?" hint="Optional" icon={<Users className="w-4 h-4 text-muted/60" />}>
+        {/* ── 02. Watching With ── */}
+        <FilterBlock step="02" title="Watching with?" hint="Adapts recommendations for groups" icon={<Users className="w-4 h-4 text-muted/40" />}>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {WATCHING_WITH.map((w, i) => {
+            {WATCHING_WITH.map((w) => {
               const active = watchingWith === w.id;
               return (
                 <motion.button
                   key={w.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.04 }}
-                  whileHover={{ scale: 1.04, y: -1 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setWatchingWith(prev => toggleSingle(prev, w.id))}
-                  className={`flex flex-col items-center gap-2 px-3 py-4 rounded-xl border text-center
-                              transition-all duration-200 ${
+                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-200 ${
                     active
-                      ? 'bg-accent/15 border-accent/50 text-white shadow-[0_0_20px_rgba(139,92,246,0.15)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/12 hover:text-white'
+                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
+                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <motion.span
-                    className="text-2xl"
-                    animate={active ? { scale: [1, 1.2, 1] } : {}}
-                    transition={{ duration: 0.4 }}
-                  >
-                    {w.emoji}
-                  </motion.span>
-                  <span className="text-[12px] font-semibold">{w.label}</span>
-                  <span className="text-[10px] opacity-50 leading-tight">{w.desc}</span>
+                  <span className="text-2xl">{w.emoji}</span>
+                  <span className="text-[12px] font-bold">{w.label}</span>
+                  <span className="text-[9.5px] opacity-40 leading-normal">{w.desc}</span>
                 </motion.button>
               );
             })}
           </div>
         </FilterBlock>
 
-        {/* ── 03. Energy Level ── (NEW) */}
-        <FilterBlock step="03" title="Energy level?" hint="Optional" icon={<Zap className="w-4 h-4 text-muted/60" />}>
+        {/* ── 03. Energy Level ── */}
+        <FilterBlock step="03" title="Energy level?" hint="Controls pacing & complexity" icon={<Zap className="w-4 h-4 text-muted/40" />}>
           <div className="grid grid-cols-3 gap-2.5">
-            {ENERGY_LEVELS.map((e, i) => {
+            {ENERGY_LEVELS.map((e) => {
               const active = energyLevel === e.id;
               return (
                 <motion.button
                   key={e.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileHover={{ scale: 1.04, y: -1 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setEnergyLevel(prev => toggleSingle(prev, e.id))}
-                  className={`flex flex-col items-center gap-2 px-3 py-4 rounded-xl border text-center
-                              transition-all duration-200 ${
+                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-200 ${
                     active
-                      ? 'bg-accent/15 border-accent/50 text-white shadow-[0_0_20px_rgba(139,92,246,0.15)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/12 hover:text-white'
+                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
+                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <motion.span
-                    className="text-2xl"
-                    animate={active ? { rotate: [0, -10, 10, 0] } : {}}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {e.emoji}
-                  </motion.span>
-                  <span className="text-[13px] font-semibold">{e.label}</span>
-                  <span className="text-[10px] opacity-50">{e.desc}</span>
+                  <span className="text-2xl">{e.emoji}</span>
+                  <span className="text-[12.5px] font-bold">{e.label}</span>
+                  <span className="text-[9.5px] opacity-40 leading-normal">{e.desc}</span>
                 </motion.button>
               );
             })}
           </div>
         </FilterBlock>
 
-        {/* ── 04. Content Style ── (NEW) */}
-        <FilterBlock step="04" title="Content style?" hint="Optional" icon={<Palette className="w-4 h-4 text-muted/60" />}>
+        {/* ── 04. Content Style ── */}
+        <FilterBlock step="04" title="Content style?" hint="Filters emotional tone" icon={<Palette className="w-4 h-4 text-muted/40" />}>
           <div className="flex flex-wrap gap-2">
-            {CONTENT_STYLES.map((cs, i) => {
+            {CONTENT_STYLES.map((cs) => {
               const active = contentStyles.includes(cs.id);
               return (
                 <motion.button
                   key={cs.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.03 }}
-                  whileHover={{ scale: 1.06, y: -1 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setContentStyles(prev => toggle(prev, cs.id))}
-                  className={`chip ${active ? 'active' : ''} gap-2`}
+                  className={`px-4 py-2 rounded-full border text-[12px] font-semibold flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+                    active 
+                      ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
+                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
+                  }`}
                 >
                   <span>{cs.emoji}</span>
-                  {active && <Check className="w-3 h-3" />}
                   {cs.label}
+                  {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
                 </motion.button>
               );
             })}
@@ -313,23 +275,24 @@ export const Discover: React.FC = () => {
         </FilterBlock>
 
         {/* ── 05. Genre ── */}
-        <FilterBlock step="05" title="Preferred genre" hint="Optional">
+        <FilterBlock step="05" title="Preferred genres" hint="Optional Filter">
           <div className="flex flex-wrap gap-2">
-            {GENRES.map((g, i) => {
+            {GENRES.map((g) => {
               const active = genres.includes(g.id);
               return (
                 <motion.button
                   key={g.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.02 }}
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setGenres(prev => toggle(prev, g.id))}
-                  className={`chip ${active ? 'active' : ''}`}
+                  className={`px-4 py-2 rounded-full border text-[12px] font-semibold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                    active
+                      ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
+                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
+                  }`}
                 >
-                  {active && <Check className="w-3 h-3" />}
                   {g.label}
+                  {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
                 </motion.button>
               );
             })}
@@ -337,24 +300,25 @@ export const Discover: React.FC = () => {
         </FilterBlock>
 
         {/* ── 06. Language ── */}
-        <FilterBlock step="06" title="Language" hint="Optional">
+        <FilterBlock step="06" title="Languages" hint="Optional Filter">
           <div className="flex flex-wrap gap-2">
-            {LANGUAGES.map((lang, i) => {
+            {LANGUAGES.map((lang) => {
               const active = languages.includes(lang.id);
               return (
                 <motion.button
                   key={lang.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.02 }}
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setLanguages(prev => toggle(prev, lang.id))}
-                  className={`chip ${active ? 'active' : ''}`}
+                  className={`px-4 py-2 rounded-full border text-[12px] font-semibold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                    active
+                      ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
+                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
+                  }`}
                 >
-                  {active && <Check className="w-3 h-3" />}
                   {lang.label}
-                  <span className="text-muted/50 text-[10px]">({lang.nativeLabel})</span>
+                  <span className="text-muted/40 text-[10px] font-normal">({lang.nativeLabel})</span>
+                  {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
                 </motion.button>
               );
             })}
@@ -362,27 +326,26 @@ export const Discover: React.FC = () => {
         </FilterBlock>
 
         {/* ── 07. Runtime ── */}
-        <FilterBlock step="07" title="How much time do you have?">
+        <FilterBlock step="07" title="Preferred duration">
           <div className="grid grid-cols-2 gap-2.5">
             {RUNTIME_OPTIONS.map(opt => {
               const active = runtime === opt.value;
               return (
                 <motion.button
                   key={opt.value}
-                  whileHover={{ scale: 1.03, y: -1 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setRuntime(opt.value)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-left
-                              transition-all duration-200 ${
+                  className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl border text-left transition-all duration-200 ${
                     active
-                      ? 'bg-accent/12 border-accent/45 text-white shadow-[0_0_15px_rgba(139,92,246,0.12)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/12 hover:text-white'
+                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
+                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
-                  <span className="text-lg">{opt.emoji}</span>
+                  <span className="text-xl">{opt.emoji}</span>
                   <div>
-                    <span className="text-sm font-semibold block">{opt.label}</span>
-                    <span className="text-[11px] opacity-50">{opt.sub}</span>
+                    <span className="text-[13px] font-bold block leading-none mb-1">{opt.label}</span>
+                    <span className="text-[10px] opacity-40 font-medium">{opt.sub}</span>
                   </div>
                 </motion.button>
               );
@@ -391,26 +354,25 @@ export const Discover: React.FC = () => {
         </FilterBlock>
 
         {/* ── 08. Content Type ── */}
-        <FilterBlock step="08" title="What do you want to watch?">
+        <FilterBlock step="08" title="Content format">
           <div className="grid grid-cols-3 gap-2.5">
             {CONTENT_TYPES.map(opt => {
               const active = types.includes(opt.id);
               return (
                 <motion.button
                   key={opt.id}
-                  whileHover={{ scale: 1.03, y: -1 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setTypes(prev => toggle(prev, opt.id))}
-                  className={`flex flex-col items-center gap-2 px-4 py-4 rounded-xl border text-center
-                              transition-all duration-200 ${
+                  className={`flex flex-col items-center gap-2 px-4 py-4.5 rounded-2xl border text-center transition-all duration-200 ${
                     active
-                      ? 'bg-accent/12 border-accent/45 text-white shadow-[0_0_15px_rgba(139,92,246,0.12)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/12 hover:text-white'
+                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
+                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
                   }`}
                 >
                   <span className="text-xl">{opt.emoji}</span>
-                  <span className="text-sm font-semibold">{opt.label}</span>
-                  <span className="text-[10px] opacity-50">{opt.sub}</span>
+                  <span className="text-[13px] font-bold leading-none mb-0.5">{opt.label}</span>
+                  <span className="text-[9.5px] opacity-40 font-medium">{opt.sub}</span>
                 </motion.button>
               );
             })}
@@ -421,37 +383,36 @@ export const Discover: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-10"
+          transition={{ delay: 0.4 }}
+          className="mt-12"
         >
           <motion.button
             whileHover={canDiscover ? { scale: 1.02, y: -2 } : {}}
             whileTap={canDiscover ? { scale: 0.98 } : {}}
             onClick={handleDiscover}
             disabled={!canDiscover}
-            className={`w-full relative flex items-center justify-center gap-3 py-4 rounded-2xl
-                        font-bold text-[15px] transition-all duration-300 select-none overflow-hidden ${
+            className={`w-full relative flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-[14.5px] tracking-wide transition-all duration-300 select-none overflow-hidden ${
               canDiscover
                 ? 'text-white cursor-pointer'
-                : 'text-muted/50 cursor-not-allowed bg-white/[0.04] border border-white/[0.07]'
+                : 'text-muted/40 cursor-not-allowed bg-white/[0.02] border border-white/[0.05]'
             }`}
             style={canDiscover ? {
               background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-              boxShadow: '0 8px 40px rgba(139,92,246,0.45), 0 0 0 1px rgba(139,92,246,0.3)',
+              boxShadow: '0 8px 40px rgba(139,92,246,0.4), 0 0 0 1px rgba(139,92,246,0.25)',
             } : {}}
           >
             {canDiscover && (
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent -translate-x-full"
                 animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+                transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.8 }}
               />
             )}
-            <Sparkles className="w-5 h-5 relative z-10" />
-            <span className="relative z-10">
+            <Sparkles className="w-4.5 h-4.5 relative z-10" />
+            <span className="relative z-10 font-bold uppercase tracking-wider">
               {canDiscover ? 'Find My Perfect Watch' : 'Select a mood to continue'}
             </span>
-            {canDiscover && <ArrowRight className="w-5 h-5 relative z-10" />}
+            {canDiscover && <ArrowRight className="w-4.5 h-4.5 relative z-10" />}
           </motion.button>
         </motion.div>
       </div>
@@ -459,7 +420,6 @@ export const Discover: React.FC = () => {
   );
 };
 
-/* ── Filter block wrapper ── */
 const FilterBlock: React.FC<{
   step: string;
   title: string;
@@ -468,19 +428,19 @@ const FilterBlock: React.FC<{
   children: React.ReactNode;
 }> = ({ step, title, hint, icon, children }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 16 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: '-40px' }}
     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-    className="mb-10"
+    className="mb-12 border-b border-white/[0.03] pb-10 last:border-0 last:pb-0"
   >
-    <div className="flex items-center gap-3 mb-4">
-      <span className="text-[11px] font-bold text-accent/50 font-mono tabular-nums shrink-0">{step}</span>
-      <h3 className="text-[15px] font-bold text-white flex items-center gap-2">
+    <div className="flex items-center gap-3 mb-5">
+      <span className="text-[11px] font-extrabold text-accent/50 font-mono tracking-widest shrink-0">{step}</span>
+      <h3 className="text-[14.5px] font-bold text-white flex items-center gap-2">
         {icon}
         {title}
       </h3>
-      {hint && <span className="text-[12px] text-muted/50 ml-auto">{hint}</span>}
+      {hint && <span className="text-[11.5px] font-medium text-muted/40 ml-auto">{hint}</span>}
     </div>
     {children}
   </motion.div>

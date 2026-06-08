@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Heart } from 'lucide-react';
+import { ProviderPill } from '../badges/ProviderLogo';
+import type { OTTProviderId } from '../../types';
 
 const GithubIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
@@ -17,19 +19,23 @@ const TwitterIcon = () => (
 
 const InstagramIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204 0-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
   </svg>
 );
 
-const OTT_PLATFORMS = [
-  { label: 'Netflix', href: 'https://netflix.com', color: '#E50914', bg: 'rgba(229,9,20,0.1)' },
-  { label: 'Prime Video', href: 'https://primevideo.com', color: '#00A8E1', bg: 'rgba(0,168,225,0.1)' },
-  { label: 'Disney+', href: 'https://hotstar.com', color: '#113CCF', bg: 'rgba(17,60,207,0.1)' },
-  { label: 'JioHotstar', href: '#', color: '#2D63ED', bg: 'rgba(45,99,237,0.1)' },
-  { label: 'SonyLIV', href: 'https://sonyliv.com', color: '#003087', bg: 'rgba(0,48,135,0.1)' },
-  { label: 'Zee5', href: 'https://zee5.com', color: '#7B2D8B', bg: 'rgba(123,45,139,0.1)' },
-  { label: 'Apple TV+', href: 'https://tv.apple.com', color: '#888888', bg: 'rgba(136,136,136,0.08)' },
-  { label: 'MX Player', href: '#', color: '#555', bg: 'rgba(85,85,85,0.08)' },
+const FOOTER_PLATFORMS: { id: OTTProviderId; href: string }[] = [
+  { id: 'netflix', href: 'https://netflix.com' },
+  { id: 'prime-video', href: 'https://primevideo.com' },
+  { id: 'jiohotstar', href: '#' },
+  { id: 'sonyliv', href: 'https://sonyliv.com' },
+  { id: 'zee5', href: 'https://zee5.com' },
+  { id: 'apple-tv', href: 'https://tv.apple.com' },
+  { id: 'mx-player', href: '#' },
+  { id: 'crunchyroll', href: '#' },
+  { id: 'hulu', href: '#' },
+  { id: 'max', href: '#' },
+  { id: 'paramount-plus', href: '#' },
+  { id: 'lionsgate-play', href: '#' },
 ];
 
 const FOOTER_PRODUCT = [
@@ -51,41 +57,31 @@ const FOOTER_LEGAL = [
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="relative mt-32 pb-28 md:pb-12 bg-[#050505]">
-      {/* Top glow line */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+    <footer className="relative mt-32 pb-28 md:pb-12 bg-[#050505] border-t border-white/[0.04]">
+      {/* Subtle ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[250px] pointer-events-none"
+           style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 70%)' }} />
 
-      {/* Subtle ambient orb */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] pointer-events-none"
-           style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.05) 0%, transparent 70%)' }} />
-
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 pt-16 pb-10 relative">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-8 pt-16 pb-10 relative">
 
         {/* OTT Platform Pills */}
         <div className="mb-14">
-          <p className="text-[10px] font-bold text-muted/40 uppercase tracking-widest mb-5 text-center">
+          <p className="text-[10px] font-bold text-muted/30 uppercase tracking-widest mb-6 text-center">
             Tracks availability across
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {OTT_PLATFORMS.map((p, i) => (
+          <div className="flex flex-wrap items-center justify-center gap-3.5 max-w-4xl mx-auto">
+            {FOOTER_PLATFORMS.map((p, i) => (
               <motion.a
-                key={p.label}
+                key={p.id}
                 href={p.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                whileHover={{ scale: 1.06, y: -2 }}
-                whileTap={{ scale: 0.96 }}
-                className="px-4 py-2 rounded-xl text-[12px] font-semibold border transition-all duration-200 cursor-pointer"
-                style={{
-                  color: p.color,
-                  background: p.bg,
-                  borderColor: p.color + '30',
-                }}
+                transition={{ delay: i * 0.03 }}
+                className="inline-block"
               >
-                {p.label}
+                <ProviderPill provider={p.id} size="sm" className="bg-white/[0.01] hover:bg-white/[0.05]" />
               </motion.a>
             ))}
           </div>
@@ -95,13 +91,12 @@ export const Footer: React.FC = () => {
 
         {/* Main columns */}
         <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-10 mb-16">
-          {/* Col 1 — Brand */}
+          {/* Brand Col */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
               <motion.div
-                whileHover={{ scale: 1.08, rotate: 3 }}
-                className="w-9 h-9 rounded-[12px] bg-accent flex items-center justify-center"
-                style={{ boxShadow: '0 0 20px rgba(139,92,246,0.4)' }}
+                whileHover={{ scale: 1.05, rotate: 2 }}
+                className="w-9 h-9 rounded-[12px] bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.4)]"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M15 10L19.553 7.724A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
@@ -112,23 +107,18 @@ export const Footer: React.FC = () => {
                 Kya<span className="text-accent-light">Dekhu</span>
               </span>
             </Link>
-            <p className="text-[14px] text-white/70 font-medium mb-2 leading-relaxed max-w-xs">
+            <p className="text-[13.5px] text-white/70 font-medium mb-3.5 leading-relaxed">
               What to watch. Where to watch.<br />Whether it's free.
             </p>
-            <p className="text-xs text-muted/50 max-w-xs leading-relaxed mb-6">
+            <p className="text-[11.5px] text-muted/50 leading-relaxed mb-6">
               AI-powered OTT discovery. Find something worth watching in under 30 seconds.
             </p>
 
-            {/* Discover CTA */}
             <Link to="/discover">
               <motion.div
-                whileHover={{ scale: 1.03, y: -1 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold
-                           text-white cursor-pointer"
-                style={{
-                  background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-                  boxShadow: '0 4px 20px rgba(139,92,246,0.3)',
-                }}
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12.5px] font-semibold text-white cursor-pointer bg-gradient-to-r from-accent to-accent-light shadow-[0_4px_20px_rgba(139,92,246,0.35)]"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Start Discovering
@@ -136,57 +126,56 @@ export const Footer: React.FC = () => {
             </Link>
           </div>
 
-          {/* Col 2 — Product */}
+          {/* Product Col */}
           <div>
-            <p className="section-label mb-5 text-[11px] font-bold tracking-widest text-muted/40 uppercase">Product</p>
-            <ul className="space-y-3.5">
+            <p className="text-[10px] font-bold tracking-widest text-muted/30 uppercase mb-5">Product</p>
+            <ul className="space-y-3">
               {FOOTER_PRODUCT.map(({ to, label }) => (
                 <li key={to}>
-                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 flex items-center gap-1 group">
-                    <motion.span whileHover={{ x: 3 }} className="inline-block">{label}</motion.span>
+                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                    {label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Col 3 — Streamers */}
+          {/* Platforms Col */}
           <div>
-            <p className="section-label mb-5 text-[11px] font-bold tracking-widest text-muted/40 uppercase">Platforms</p>
-            <ul className="space-y-3.5">
-              {OTT_PLATFORMS.slice(0, 5).map(({ href, label }) => (
-                <li key={label}>
-                  <a href={href} target="_blank" rel="noopener noreferrer"
-                     className="text-[13px] text-muted hover:text-white transition-all duration-200">
-                    <motion.span whileHover={{ x: 3 }} className="inline-block">{label}</motion.span>
+            <p className="text-[10px] font-bold tracking-widest text-muted/30 uppercase mb-5">Platforms</p>
+            <ul className="space-y-3">
+              {FOOTER_PLATFORMS.slice(0, 5).map((p) => (
+                <li key={p.id}>
+                  <a href={p.href} target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted hover:text-white transition-all duration-200 block capitalize">
+                    {p.id.replace('-', ' ')}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Col 4 — Company */}
+          {/* Company Col */}
           <div>
-            <p className="section-label mb-5 text-[11px] font-bold tracking-widest text-muted/40 uppercase">Company</p>
-            <ul className="space-y-3.5">
+            <p className="text-[10px] font-bold tracking-widest text-muted/30 uppercase mb-5">Company</p>
+            <ul className="space-y-3">
               {FOOTER_COMPANY.map(({ to, label }) => (
                 <li key={to}>
-                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200">
-                    <motion.span whileHover={{ x: 3 }} className="inline-block">{label}</motion.span>
+                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                    {label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Col 5 — Legal */}
+          {/* Legal Col */}
           <div>
-            <p className="section-label mb-5 text-[11px] font-bold tracking-widest text-muted/40 uppercase">Legal</p>
-            <ul className="space-y-3.5">
+            <p className="text-[10px] font-bold tracking-widest text-muted/30 uppercase mb-5">Legal</p>
+            <ul className="space-y-3">
               {FOOTER_LEGAL.map(({ to, label }) => (
                 <li key={to}>
-                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200">
-                    <motion.span whileHover={{ x: 3 }} className="inline-block">{label}</motion.span>
+                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                    {label}
                   </Link>
                 </li>
               ))}
@@ -194,33 +183,32 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom strip */}
+        {/* Bottom Strip */}
         <div className="pt-8 border-t border-white/[0.05] flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 text-center sm:text-left">
-            <p className="text-[12px] text-muted/40">
+            <p className="text-[11.5px] text-muted/40">
               © {new Date().getFullYear()} KyaDekhu. All rights reserved.
             </p>
-            <p className="text-[12px] text-muted/30 flex items-center gap-1">
+            <p className="text-[11.5px] text-muted/30 flex items-center gap-1">
               Made with <Heart className="w-3 h-3 text-rose-500 fill-rose-500" /> by{' '}
-              <span className="text-muted/60 font-semibold hover:text-white transition-colors cursor-default">Nyxen</span>
+              <span className="text-muted/50 font-semibold hover:text-white transition-colors cursor-default">Nyxen</span>
             </p>
           </div>
 
-          {/* Social icons */}
+          {/* Social Links */}
           <div className="flex items-center gap-3">
             {[
               { Icon: GithubIcon, href: '#', label: 'GitHub', hoverColor: 'hover:border-white/30 hover:text-white' },
-              { Icon: TwitterIcon, href: '#', label: 'Twitter/X', hoverColor: 'hover:border-[#1DA1F2]/40 hover:text-[#1DA1F2]' },
-              { Icon: InstagramIcon, href: '#', label: 'Instagram', hoverColor: 'hover:border-pink-500/40 hover:text-pink-400' },
+              { Icon: TwitterIcon, href: '#', label: 'Twitter/X', hoverColor: 'hover:border-[#1DA1F2]/30 hover:text-white' },
+              { Icon: InstagramIcon, href: '#', label: 'Instagram', hoverColor: 'hover:border-pink-500/30 hover:text-white' },
             ].map(({ Icon, href, label, hoverColor }) => (
               <motion.a
                 key={label}
                 href={href}
                 aria-label={label}
-                whileHover={{ scale: 1.1, y: -2 }}
+                whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className={`w-9 h-9 rounded-xl border border-white/[0.07] flex items-center justify-center
-                            text-muted transition-all duration-200 ${hoverColor}`}
+                className={`w-9 h-9 rounded-xl border border-white/[0.07] flex items-center justify-center text-muted transition-all duration-200 ${hoverColor}`}
               >
                 <Icon />
               </motion.a>
