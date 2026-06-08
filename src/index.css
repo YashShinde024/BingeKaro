@@ -8,15 +8,15 @@
    MIDNIGHT CINEMA — Design Tokens
 ───────────────────────────────────────── */
 :root {
-  --bg:           #080808;
-  --surface:      #111111;
-  --surface-2:    #181818;
-  --card:         #1a1a1a;
-  --card-hover:   #202020;
-  --accent:       #8B5CF6;
-  --accent-light: #A78BFA;
-  --accent-dark:  #7C3AED;
-  --accent-glow:  rgba(139, 92, 246, 0.25);
+  --bg:           #07111F;
+  --surface:      #0d1a2d;
+  --surface-2:    #102138;
+  --card:         #12233c;
+  --card-hover:   #1a3151;
+  --accent:       #FF1744;
+  --accent-light: #FF5252;
+  --accent-dark:  #D50000;
+  --accent-glow:  rgba(255, 23, 68, 0.25);
   --text:         #FFFFFF;
   --text-secondary: #E4E4E7;
   --muted:        #A1A1AA;
@@ -26,8 +26,8 @@
 
   /* Cinematic shadows */
   --shadow-card:  0 2px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
-  --shadow-card-hover: 0 16px 56px rgba(0,0,0,0.8), 0 0 0 1px rgba(139,92,246,0.15), 0 0 40px rgba(139,92,246,0.12);
-  --shadow-glow:  0 0 60px rgba(139,92,246,0.2), 0 0 120px rgba(139,92,246,0.08);
+  --shadow-card-hover: 0 16px 56px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,23,68,0.15), 0 0 40px rgba(255,23,68,0.12);
+  --shadow-glow:  0 0 60px rgba(255,23,68,0.2), 0 0 120px rgba(255,23,68,0.08);
   --shadow-poster: 0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
 
   /* Radius scale */

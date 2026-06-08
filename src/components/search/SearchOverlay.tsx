@@ -1,7 +1,10 @@
+"use client";
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, TrendingUp, Clock, Star, Sparkles, ArrowRight, Filter } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Movie, OTTProviderId } from '../../types';
 import { MOVIES } from '../../lib/mockData';
 import { ProviderLogo } from '../badges/ProviderLogo';
@@ -25,6 +28,7 @@ const FILTER_PROVIDERS: { id: OTTProviderId; label: string }[] = [
   { id: 'apple-tv', label: 'Apple TV' },
   { id: 'crunchyroll', label: 'Crunchyroll' },
   { id: 'mx-player', label: 'MX Player' },
+  { id: 'youtube', label: 'YouTube' },
 ];
 
 const FALLBACK = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=200&q=80';
@@ -54,7 +58,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
   const [isLoading, setIsLoading] = React.useState(false);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   React.useEffect(() => {
     try {
@@ -139,7 +143,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
       const target = selectedIndex >= 0 ? results[selectedIndex] : results[0];
       if (target) {
         saveRecentSearch(query || target.title);
-        navigate(`/movie/${target.id}`);
+        router.push(`/movie/${target.id}`);
         onClose();
       }
     }
@@ -235,7 +239,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                   {results.map((movie, i) => (
                     <Link
                       key={movie.id}
-                      to={`/movie/${movie.id}`}
+                      href={`/movie/${movie.id}`}
                       onClick={() => handleResultClick(movie.title)}
                       className={`flex items-center gap-3.5 p-2.5 rounded-btn border border-transparent transition-all ${
                         i === selectedIndex
@@ -244,7 +248,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                       }`}
                     >
                       <div className="w-10 h-14 rounded-lg overflow-hidden bg-white/5 shrink-0">
-                        <img src={movie.posterPath} alt="" className="w-full h-full object-cover" onError={e => (e.target as any).src = FALLBACK} />
+                        <img src={movie.posterPath} alt="" className="w-full h-full object-cover" onError={e => ((e.target as any).src = FALLBACK)} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-bold text-white truncate">{movie.title}</p>
@@ -298,10 +302,12 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         {recentSearches.map(term => (
                           <button
                             key={term}
-                            onClick={() => setQuery(term)}
-                            className="px-3 py-1.5 rounded-btn bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-white/20 transition-all flex items-center gap-1"
+                            onClick={() => {
+                              setQuery(term);
+                              saveRecentSearch(term);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] text-white/90 text-[11.5px] font-semibold transition-all"
                           >
-                            <Clock className="w-2.5 h-2.5 opacity-55" />
                             {term}
                           </button>
                         ))}
@@ -310,16 +316,20 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                   )}
 
                   <div>
-                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest mb-2.5 flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3 text-accent-light" />
+                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest flex items-center gap-1 mb-2.5">
+                      <TrendingUp className="w-3 h-3" />
                       Trending Searches
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {TRENDING_SEARCHES.map(term => (
                         <button
                           key={term}
-                          onClick={() => setQuery(term.replace(/^[^\s]+\s/, ''))}
-                          className="px-3 py-1.5 rounded-btn bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-accent-light/30 hover:bg-accent/5 transition-all"
+                          onClick={() => {
+                            const cleaned = term.replace(/🔥|🌊|⚡|🎭|🏆|🎬/g, '').trim();
+                            setQuery(cleaned);
+                            saveRecentSearch(cleaned);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] text-white/90 text-[11.5px] font-semibold transition-all"
                         >
                           {term}
                         </button>
@@ -327,67 +337,33 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                     </div>
                   </div>
 
-                  {/* Featured */}
                   <div>
-                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest mb-2.5 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      Top Recommended
+                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest flex items-center gap-1 mb-2.5">
+                      <Sparkles className="w-3 h-3" />
+                      Curated recommendations
                     </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      {FEATURED.map(m => (
-                        <Link key={m.id} to={`/movie/${m.id}`} onClick={onClose}>
-                          <div className="flex items-center gap-2.5 p-2 rounded-btn bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all">
-                            <img src={m.posterPath} alt="" className="w-8 h-11 object-cover rounded-lg shrink-0" onError={e => (e.target as any).src = FALLBACK} />
-                            <div className="min-w-0">
-                              <p className="text-[12px] font-bold text-white truncate">{m.title}</p>
-                              <div className="flex items-center gap-1 mt-0.5 text-white/50 text-[10px]">
-                                <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                                {m.rating.toFixed(1)}
-                              </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {FEATURED.map(movie => (
+                        <Link
+                          key={movie.id}
+                          href={`/movie/${movie.id}`}
+                          onClick={() => handleResultClick(movie.title)}
+                          className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.01] border border-white/[0.04] hover:bg-white/[0.03] hover:border-white/[0.08] transition-all"
+                        >
+                          <div className="w-8 h-11 rounded bg-white/5 overflow-hidden shrink-0">
+                            <img src={movie.posterPath} alt="" className="w-full h-full object-cover" onError={e => ((e.target as any).src = FALLBACK)} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[11.5px] font-bold text-white truncate leading-tight mb-0.5">{movie.title}</p>
+                            <div className="flex items-center gap-1 text-[9.5px] text-muted">
+                              <span>★ {movie.rating.toFixed(1)}</span>
+                              <span>·</span>
+                              <span>{movie.year}</span>
                             </div>
                           </div>
                         </Link>
                       ))}
                     </div>
-                  </div>
-
-                  {/* Popular Genre Chips */}
-                  <div>
-                    <span className="text-[9.5px] font-bold text-muted/40 uppercase tracking-widest mb-2.5 flex items-center gap-1">
-                      🎭 Popular Genres
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {['Action', 'Drama', 'Thriller', 'Comedy', 'Sci-Fi', 'Romance', 'Horror'].map(genre => (
-                        <button
-                          key={genre}
-                          onClick={() => setQuery(genre.toLowerCase())}
-                          className="px-3 py-1.5 rounded-btn bg-white/[0.02] border border-white/[0.06] text-[11.5px] text-muted hover:text-white hover:border-accent-light/30 hover:bg-accent/5 transition-all font-medium"
-                        >
-                          {genre}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Quick Actions */}
-                  <div className="pt-2 border-t border-white/[0.04]">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        const random = MOVIES[Math.floor(Math.random() * MOVIES.length)];
-                        navigate(`/movie/${random.id}`);
-                        onClose();
-                      }}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-btn text-[12.5px] font-bold text-white/80 hover:text-white transition-all"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(139,92,246,0.08), rgba(109,40,217,0.05))',
-                        border: '1px solid rgba(139,92,246,0.15)',
-                      }}
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-accent-light" />
-                      I'm Feeling Lucky — Surprise Me!
-                    </motion.button>
                   </div>
                 </div>
               )}

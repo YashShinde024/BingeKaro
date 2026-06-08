@@ -1,5 +1,8 @@
+"use client";
+
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Bell, Home, Compass, Bookmark, User, LogIn, LogOut } from 'lucide-react';
 import { SearchOverlay } from '../search/SearchOverlay';
@@ -18,7 +21,7 @@ const MOCK_NOTIFICATIONS = [
 ];
 
 export const Navbar: React.FC = () => {
-  const location = useLocation();
+  const pathname = usePathname();
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [scrollDepth, setScrollDepth] = React.useState(0);
   const [notifOpen, setNotifOpen] = React.useState(false);
@@ -46,12 +49,12 @@ export const Navbar: React.FC = () => {
   }, []);
 
   const isActive = (to: string) =>
-    to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
+    to === '/' ? pathname === '/' : pathname.startsWith(to);
 
   React.useEffect(() => {
     setNotifOpen(false);
     setProfileOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   return (
     <>
@@ -78,7 +81,7 @@ export const Navbar: React.FC = () => {
           }}
         >
           {/* LEFT — Logo */}
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
             <motion.div
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
@@ -92,7 +95,7 @@ export const Navbar: React.FC = () => {
               </div>
               <div className="flex flex-col leading-none">
                 <span className="text-[15px] font-bold text-white tracking-tight">
-                  Kya<span className="text-accent-light">Dekhu</span>
+                  Binge<span className="text-accent-light">Karo</span>
                 </span>
                 <span className="text-[9px] text-muted/40 font-semibold tracking-widest mt-0.5 uppercase hidden sm:block">
                   by Nyxen
@@ -106,7 +109,7 @@ export const Navbar: React.FC = () => {
             {NAV_CENTER.map(({ to, label }) => {
               const active = isActive(to);
               return (
-                <Link key={to} to={to} className="relative px-4 py-2 rounded-xl transition-all duration-200">
+                <Link key={to} href={to} className="relative px-4 py-2 rounded-xl transition-all duration-200">
                   <span className={`relative z-10 text-[13.5px] font-semibold tracking-wide transition-colors duration-300 ${
                     active ? 'text-white' : 'text-muted hover:text-white/95'
                   }`}>
@@ -248,7 +251,7 @@ export const Navbar: React.FC = () => {
                         { label: 'My Profile', to: '/profile', icon: User },
                         { label: 'Watchlist', to: '/watchlist', icon: Bookmark },
                       ].map((item) => (
-                        <Link key={item.to} to={item.to}>
+                        <Link key={item.to} href={item.to}>
                           <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] text-muted hover:text-white hover:bg-white/[0.04] transition-all text-left">
                             <item.icon className="w-3.5 h-3.5" />
                             {item.label}
@@ -298,11 +301,11 @@ const MOBILE_TABS = [
 ];
 
 export const MobileNav: React.FC = () => {
-  const location = useLocation();
+  const pathname = usePathname();
   const [searchOpen, setSearchOpen] = React.useState(false);
 
   const isActive = (to: string) =>
-    to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
+    to === '/' ? pathname === '/' : pathname.startsWith(to);
 
   return (
     <>
@@ -318,7 +321,7 @@ export const MobileNav: React.FC = () => {
             {MOBILE_TABS.map(({ to, label, Icon }) => {
               const active = isActive(to);
               return (
-                <Link key={to} to={to} className="flex-1">
+                <Link key={to} href={to} className="flex-1">
                   <motion.div
                     whileTap={{ scale: 0.9 }}
                     className="flex flex-col items-center gap-1 py-1"

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Phone, ArrowRight, ShieldCheck, Film, Eye, EyeOff, Check, Loader2 } from 'lucide-react';
@@ -76,7 +78,7 @@ export const LoginModal: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     await new Promise(r => setTimeout(r, 1200));
-    await login(name || 'Yash Shinde', email || `${phone}@kyadekhu.com`);
+    await login(name || 'Yash Shinde', email || `${phone}@bingekaro.com`);
     setIsSubmitting(false);
     setStep('success');
     setTimeout(() => {
@@ -138,7 +140,7 @@ export const LoginModal: React.FC = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-          className="relative w-full max-w-[840px] h-[560px] bg-[#0c0c0c] border border-white/[0.08] rounded-card overflow-hidden flex shadow-[0_24px_64px_rgba(0,0,0,0.8)] z-10"
+          className="relative w-full max-w-[840px] h-[560px] bg-[#07111F] border border-white/[0.08] rounded-card overflow-hidden flex shadow-[0_24px_64px_rgba(0,0,0,0.8)] z-10"
         >
           {/* Close button */}
           <button
@@ -149,32 +151,32 @@ export const LoginModal: React.FC = () => {
           </button>
 
           {/* LEFT — Cinematic Branding Side Panel */}
-          <div className="hidden md:flex flex-col justify-between w-[45%] p-8 relative overflow-hidden bg-gradient-to-br from-accent-dark via-[#120f24] to-[#0c0c0c]">
+          <div className="hidden md:flex flex-col justify-between w-[45%] p-8 relative overflow-hidden bg-gradient-to-br from-accent-dark via-[#091526] to-[#07111F]">
             <div className="absolute top-1/4 left-1/4 w-44 h-44 rounded-full bg-accent/20 filter blur-[80px]" />
-            <div className="absolute bottom-10 -left-10 w-40 h-40 rounded-full bg-violet-600/10 filter blur-[60px]" />
+            <div className="absolute bottom-10 -left-10 w-40 h-40 rounded-full bg-red-600/10 filter blur-[60px]" />
 
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-[8px] bg-accent flex items-center justify-center">
                 <Film className="w-4 h-4 text-white" />
               </div>
               <span className="text-[14px] font-bold text-white tracking-tight">
-                Kya<span className="text-accent-light">Dekhu</span>
+                Binge<span className="text-accent-light">Karo</span>
               </span>
             </div>
 
             <div className="space-y-3">
               <h2 className="text-2xl font-black text-white tracking-[-0.02em] leading-tight">
-                Your ultimate companion to escape the scroll loop.
+                Find Your Next Obsession.
               </h2>
               <p className="text-[12.5px] text-muted leading-relaxed">
-                Unlock personalized dashboards, sync your watchlists across devices, and get curated recommendations tailored to your exact mood.
+                Your AI-powered companion for discovering movies and shows you'll actually love.
               </p>
             </div>
 
             <div className="space-y-2.5">
               {[
                 'Sync watchlists across all devices',
-                'Curated AI recommendations in < 30s',
+                'Curated AI recommendations instantly',
                 'Set language & OTT provider preferences',
               ].map((f, i) => (
                 <div key={i} className="flex items-center gap-2">
@@ -273,8 +275,8 @@ export const LoginModal: React.FC = () => {
                       disabled={isSubmitting || otp.some(d => !d)}
                       className="w-full h-11 rounded-btn text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden relative"
                       style={{
-                        background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-                        boxShadow: '0 4px 20px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+                        background: 'linear-gradient(135deg, #FF1744, #D50000)',
+                        boxShadow: '0 4px 20px rgba(255,23,68,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                       }}
                     >
                       {isSubmitting ? (
@@ -309,10 +311,10 @@ export const LoginModal: React.FC = () => {
                 >
                   <div>
                     <h3 className="text-xl font-bold text-white tracking-tight">
-                      {step === 'signin' ? 'Welcome to KyaDekhu' : 'Create Account'}
+                      {step === 'signin' ? 'Welcome to BingeKaro' : 'Create Account'}
                     </h3>
                     <p className="text-[12.5px] text-muted mt-1">
-                      {step === 'signin' ? 'Sign in to save movies and view history.' : 'Join to unlock personalized recommendations.'}
+                      {step === 'signin' ? "Your AI-powered companion for discovering movies and shows you'll actually love." : 'Join to unlock personalized recommendations.'}
                     </p>
                   </div>
 
@@ -437,8 +439,8 @@ export const LoginModal: React.FC = () => {
                       type="submit"
                       className="w-full h-11 rounded-btn text-[13.5px] font-semibold text-white flex items-center justify-center gap-2 group transition-all overflow-hidden relative"
                       style={{
-                        background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-                        boxShadow: '0 4px 20px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+                        background: 'linear-gradient(135deg, #FF1744, #D50000)',
+                        boxShadow: '0 4px 20px rgba(255,23,68,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                       }}
                     >
                       {step === 'signin' ? 'Send One-Time Code' : 'Create Account'}

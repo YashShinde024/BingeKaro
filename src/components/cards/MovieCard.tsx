@@ -1,7 +1,9 @@
+"use client";
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Bookmark, Heart, Share2, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { Movie } from '../../types';
 import { OTTBadgeList } from '../badges/OTTBadge';
 import { useWatchlist } from '../../context/WatchlistContext';
@@ -59,9 +61,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const url = `${window.location.origin}/movie/${movie.id}`;
-    navigator.clipboard?.writeText(url);
-    showToast('Copied link to clipboard!', 'success');
+    if (typeof window !== 'undefined') {
+      const url = `${window.location.origin}/movie/${movie.id}`;
+      navigator.clipboard?.writeText(url);
+      showToast('Copied link to clipboard!', 'success');
+    }
   };
 
   // Actions
@@ -98,9 +102,10 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <Link to={`/movie/${movie.id}`} className="block">
+      <Link href={`/movie/${movie.id}`} className="block">
         {/* Poster Wrapper */}
         <motion.div
+          layoutId={`poster-wrap-${movie.id}`}
           className="relative aspect-poster rounded-card overflow-hidden bg-[#121212] border border-white/[0.06]"
           animate={{
             scale: hovered ? 1.03 : 1,
@@ -116,6 +121,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
         >
           {/* Poster image */}
           <motion.img
+            layoutId={`poster-img-${movie.id}`}
             src={imgError ? FALLBACK_POSTER : movie.posterPath}
             alt={movie.title}
             className="w-full h-full object-cover"
@@ -157,7 +163,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
                 className="absolute inset-0 z-10 flex flex-col justify-end p-3.5 bg-gradient-to-t from-black via-black/95 to-black/40 backdrop-blur-[3px]"
               >
                 {/* Backdrop image (blurred in background) */}
-                <img
+                <motion.img
+                  layoutId={`backdrop-img-${movie.id}`}
                   src={bdError ? FALLBACK_BACKDROP : movie.backdropPath}
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
@@ -202,7 +209,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
                         {action.icon}
                       </button>
                     ))}
-                    <Link to={`/movie/${movie.id}`} onClick={e => e.stopPropagation()} className="shrink-0">
+                    <Link href={`/movie/${movie.id}`} onClick={e => e.stopPropagation()} className="shrink-0">
                       <div
                         className="h-7.5 w-7.5 flex items-center justify-center rounded-btn border border-white/10 bg-white/5 text-white/80 hover:bg-white/15 transition-colors"
                         title="More Info"
@@ -220,9 +227,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, index = 0, size = '
         {/* Info below poster */}
         <div className="mt-3 px-0.5">
           <div className="flex items-center justify-between gap-1">
-            <h3 className="text-[13px] font-bold text-white/90 leading-snug truncate group-hover:text-accent-light transition-colors duration-200">
+            <motion.h3 
+              layoutId={`title-${movie.id}`}
+              className="text-[13px] font-bold text-white/90 leading-snug truncate group-hover:text-accent-light transition-colors duration-200"
+            >
               {movie.title}
-            </h3>
+            </motion.h3>
             <div className="flex items-center gap-0.5 text-white/40 text-[10px] font-bold shrink-0">
               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
               {movie.rating.toFixed(1)}

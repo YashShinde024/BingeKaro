@@ -7,13 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#080808',
-        surface: '#111111',
-        card: '#1a1a1a',
+        bg: '#07111F',
+        surface: '#0d1a2d',
+        card: '#12233c',
         accent: {
-          DEFAULT: '#8B5CF6',
-          light: '#A78BFA',
-          dark: '#7C3AED',
+          DEFAULT: '#FF1744',
+          light: '#FF5252',
+          dark: '#D50000',
         },
         muted: '#A1A1AA',
       },
@@ -41,8 +41,8 @@ export default {
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       boxShadow: {
-        'glow': '0 0 40px rgba(139,92,246,0.2), 0 0 80px rgba(139,92,246,0.08)',
-        'glow-sm': '0 0 24px rgba(139,92,246,0.2), 0 0 48px rgba(139,92,246,0.08)',
+        'glow': '0 0 40px rgba(255,23,68,0.2), 0 0 80px rgba(255,23,68,0.08)',
+        'glow-sm': '0 0 24px rgba(255,23,68,0.2), 0 0 48px rgba(255,23,68,0.08)',
         'card': '0 2px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
         'card-hover': '0 12px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08)',
         'poster': '0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06)',

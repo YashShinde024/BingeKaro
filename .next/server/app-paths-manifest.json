@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/about/page": "app/about/page.js",
+  "/discover/loading/page": "app/discover/loading/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/page": "app/page.js",
+  "/contact/page": "app/contact/page.js",
+  "/terms/page": "app/terms/page.js",
+  "/discover/result/page": "app/discover/result/page.js",
+  "/movie/[id]/page": "app/movie/[id]/page.js",
+  "/discover/page": "app/discover/page.js",
+  "/watchlist/page": "app/watchlist/page.js",
+  "/profile/page": "app/profile/page.js"
+}

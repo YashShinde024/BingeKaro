@@ -1,9 +1,9 @@
+"use client";
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Sparkles, Heart } from 'lucide-react';
-import { ProviderPill } from '../badges/ProviderLogo';
-import type { OTTProviderId } from '../../types';
 
 const GithubIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
@@ -22,17 +22,6 @@ const InstagramIcon = () => (
     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204 0-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
   </svg>
 );
-
-const FOOTER_PLATFORMS: { id: OTTProviderId; href: string }[] = [
-  { id: 'netflix', href: 'https://netflix.com' },
-  { id: 'prime-video', href: 'https://primevideo.com' },
-  { id: 'jiohotstar', href: '#' },
-  { id: 'sonyliv', href: 'https://sonyliv.com' },
-  { id: 'zee5', href: 'https://zee5.com' },
-  { id: 'apple-tv', href: 'https://tv.apple.com' },
-  { id: 'mx-player', href: '#' },
-  { id: 'crunchyroll', href: 'https://crunchyroll.com' },
-];
 
 const FOOTER_PRODUCT = [
   { to: '/', label: 'Home' },
@@ -59,43 +48,16 @@ const FOOTER_RESOURCES = [
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="relative mt-32 pb-28 md:pb-12 bg-[#050505] border-t border-white/[0.04]">
-      {/* Subtle ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[250px] pointer-events-none"
-           style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 70%)' }} />
+    <footer className="relative border-t border-white/[0.04] bg-[#050505] overflow-hidden">
+      {/* Ambient Radial Highlights */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[150px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-[300px] h-[150px] bg-accent-dark/5 rounded-full blur-[80px] pointer-events-none" />
 
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-8 pt-16 pb-10 relative">
-
-        {/* OTT Platform Pills */}
-        <div className="mb-14">
-          <p className="text-[10px] font-bold text-muted/30 uppercase tracking-widest mb-6 text-center">
-            Tracks availability across
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 max-w-4xl mx-auto">
-            {FOOTER_PLATFORMS.map((p, i) => (
-              <motion.a
-                key={p.id}
-                href={p.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="inline-block"
-              >
-                <ProviderPill provider={p.id} size="sm" className="bg-white/[0.01] hover:bg-white/[0.05]" />
-              </motion.a>
-            ))}
-          </div>
-        </div>
-
-        <div className="h-px bg-white/[0.05] mb-14" />
-
-        {/* Main columns */}
-        <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-10 mb-16">
-          {/* Brand Col */}
-          <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-10 pt-16 pb-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] gap-10 md:gap-8 pb-12">
+          {/* Brand */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-2.5">
               <motion.div
                 whileHover={{ scale: 1.05, rotate: 2 }}
                 className="w-9 h-9 rounded-[12px] bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.4)]"
@@ -106,24 +68,24 @@ export const Footer: React.FC = () => {
                 </svg>
               </motion.div>
               <span className="text-[17px] font-bold text-white tracking-tight">
-                Kya<span className="text-accent-light">Dekhu</span>
+                Binge<span className="text-accent-light">Karo</span>
               </span>
             </Link>
-            <p className="text-[13.5px] text-white/70 font-medium mb-3.5 leading-relaxed">
-              What to watch. Where to watch.<br />Whether it's free.
+            <p className="text-[13.5px] text-white/70 font-medium leading-relaxed">
+              Find Your Next Obsession.
             </p>
-            <p className="text-[11.5px] text-muted/50 leading-relaxed mb-6">
-              AI-powered OTT discovery. Find something worth watching in under 30 seconds.
+            <p className="text-[11.5px] text-muted/50 leading-relaxed mb-4">
+              AI-powered movie and TV show discovery platform. Find something worth watching instantly.
             </p>
 
-            <Link to="/discover">
+            <Link href="/discover">
               <motion.div
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12.5px] font-semibold text-white cursor-pointer overflow-hidden relative"
                 style={{
-                  background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-                  boxShadow: '0 4px 20px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  background: 'linear-gradient(135deg, #FF1744, #D50000)',
+                  boxShadow: '0 4px 20px rgba(255,23,68,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
                 }}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -138,23 +100,9 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3">
               {FOOTER_PRODUCT.map(({ to, label }) => (
                 <li key={to}>
-                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                  <Link href={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
                     {label}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Platforms Col */}
-          <div>
-            <p className="text-[10px] font-bold tracking-widest text-muted/30 uppercase mb-5">Platforms</p>
-            <ul className="space-y-3">
-              {FOOTER_PLATFORMS.slice(0, 5).map((p) => (
-                <li key={p.id}>
-                  <a href={p.href} target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted hover:text-white transition-all duration-200 block capitalize">
-                    {p.id.replace('-', ' ')}
-                  </a>
                 </li>
               ))}
             </ul>
@@ -166,7 +114,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3">
               {FOOTER_COMPANY.map(({ to, label }) => (
                 <li key={to}>
-                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                  <Link href={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
                     {label}
                   </Link>
                 </li>
@@ -180,7 +128,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3">
               {FOOTER_RESOURCES.map(({ to, label }) => (
                 <li key={label}>
-                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                  <Link href={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
                     {label}
                   </Link>
                 </li>
@@ -194,7 +142,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3">
               {FOOTER_LEGAL.map(({ to, label }) => (
                 <li key={to}>
-                  <Link to={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
+                  <Link href={to} className="text-[13px] text-muted hover:text-white transition-all duration-200 block">
                     {label}
                   </Link>
                 </li>
@@ -207,7 +155,7 @@ export const Footer: React.FC = () => {
         <div className="pt-8 border-t border-white/[0.05] flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 text-center sm:text-left">
             <p className="text-[11.5px] text-muted/40">
-              © {new Date().getFullYear()} KyaDekhu. All rights reserved.
+              © {new Date().getFullYear()} BingeKaro. All rights reserved.
             </p>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.05]">
               <p className="text-[11px] text-muted/40 flex items-center gap-1">

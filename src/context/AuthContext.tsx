@@ -1,3 +1,4 @@
+"use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserProfile, GenreId, MoodId, OTTProviderId } from '../types';
 import { useToast } from './ToastContext';

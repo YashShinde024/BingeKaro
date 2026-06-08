@@ -55,5 +55,11 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     name: 'MX Player',
     logo: '/providers/mx-player.png',
     type: 'free'
+  },
+  'youtube': {
+    id: 'youtube',
+    name: 'YouTube',
+    logo: '/providers/youtube.png',
+    type: 'free'
   }
 };

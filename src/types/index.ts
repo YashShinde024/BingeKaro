@@ -1,5 +1,5 @@
 // ===========================
-// Core Types for KyaDekhu
+// Core Types for BingeKaro
 // ===========================
 
 export type OTTProviderId =
@@ -10,7 +10,8 @@ export type OTTProviderId =
   | 'zee5'
   | 'apple-tv'
   | 'crunchyroll'
-  | 'mx-player';
+  | 'mx-player'
+  | 'youtube';
 
 export interface OTTProvider {
   id: OTTProviderId;
