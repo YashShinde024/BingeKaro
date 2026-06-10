@@ -700,4 +700,92 @@
     height: 1px;
     background: linear-gradient(to right, transparent, rgba(255,255,255,0.07) 30%, rgba(255,255,255,0.07) 70%, transparent);
   }
+
+  /* ── Content Rail — smooth horizontal scroll ── */
+  .content-rail {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1rem;
+  }
+  .content-rail::-webkit-scrollbar { display: none; }
+
+  /* ── Blur-up Image Placeholder ── */
+  .blur-placeholder {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
+  }
+  .blur-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139,92,246,0.05) 0%, rgba(20,20,20,0.3) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .blur-placeholder img {
+    transition: opacity 0.4s var(--ease-premium), filter 0.4s var(--ease-premium);
+  }
+  .blur-placeholder img[data-loaded="false"] {
+    opacity: 0;
+    filter: blur(20px);
+  }
+  .blur-placeholder img[data-loaded="true"] {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  /* ── Fade-in on data load ── */
+  .fade-in-data {
+    animation: fade-in-up 0.5s var(--ease-premium) forwards;
+  }
+
+  /* ── Media type badge ── */
+  .media-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+  }
+  .media-badge-movie {
+    background: rgba(139,92,246,0.2);
+    color: #C4B5FD;
+    border: 1px solid rgba(139,92,246,0.3);
+  }
+  .media-badge-tv {
+    background: rgba(56,189,248,0.15);
+    color: #7DD3FC;
+    border: 1px solid rgba(56,189,248,0.25);
+  }
+  .media-badge-person {
+    background: rgba(251,191,36,0.15);
+    color: #FCD34D;
+    border: 1px solid rgba(251,191,36,0.25);
+  }
+
+  /* ── Card image load transition ── */
+  .poster-image-load {
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-premium);
+  }
+  .poster-image-load.loaded {
+    opacity: 1;
+  }
+
+  /* ── Scroll row with no scrollbar ── */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 }

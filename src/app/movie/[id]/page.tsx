@@ -3,29 +3,35 @@
 import React, { use } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Star, Clock, Play, Bookmark, CheckCircle2, Sparkles, ChevronLeft, Share2, Copy, Film, Tv, Eye, Lock } from 'lucide-react';
 import { getMovieById, MOVIES } from '../../../lib/mockData';
 import { OTTBadge } from '../../../components/badges/OTTBadge';
 import { MovieCard } from '../../../components/cards/MovieCard';
+import { DetailPageSkeleton } from '../../../components/ui/Skeletons';
 import { useWatchlist } from '../../../context/WatchlistContext';
 import { useHistory } from '../../../context/HistoryContext';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from '../../../context/AuthContext';
-
-const FALLBACK_BACKDROP = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&q=90';
-const FALLBACK_POSTER = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&q=80';
-
-const MOCK_SCREENSHOTS = [
-  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&q=80",
-  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=600&q=80",
-  "https://images.unsplash.com/photo-1478720143023-6a9ec39e1efc?w=600&q=80",
-  "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&q=80"
-];
+import {
+  fetchMovieDetails,
+  fetchTVDetails,
+  isTMDBAvailable,
+  getBackdropUrl,
+  getPosterUrl,
+  getProfileUrl,
+  normalizeContent,
+  FALLBACK_BACKDROP,
+  FALLBACK_POSTER,
+} from '../../../lib/tmdb';
+import type { TMDBMovieDetails, TMDBTVDetails, TMDBCastMember, TMDBWatchProvider, NormalizedContent } from '../../../lib/tmdb-types';
 
 export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
-  
+  const searchParams = useSearchParams();
+  const mediaType = searchParams.get('type') || 'movie';
+
   const { user } = useAuth();
   const { addToWatchlist, removeFromWatchlist, inWatchlist } = useWatchlist();
   const { addToRecentlyViewed, addToContinueWatching } = useHistory();
@@ -36,29 +42,140 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const [showTrailer, setShowTrailer] = React.useState(false);
   const [showShare, setShowShare] = React.useState(false);
 
-  const movie = getMovieById(Number(id));
-  const similar = MOVIES.filter(m => m.id !== movie?.id && m.genres.some(g => movie?.genres.includes(g))).slice(0, 8);
-  const saved = movie ? inWatchlist(movie.id) : false;
+  // TMDB data state
+  const [tmdbData, setTmdbData] = React.useState<TMDBMovieDetails | TMDBTVDetails | null>(null);
+  const [tmdbLoading, setTmdbLoading] = React.useState(true);
+  const [tmdbError, setTmdbError] = React.useState(false);
+  const [similar, setSimilar] = React.useState<NormalizedContent[]>([]);
 
+  // Legacy mock data fallback
+  const mockMovie = getMovieById(Number(id));
+
+  // Fetch TMDB details
   React.useEffect(() => {
-    if (movie) {
-      addToRecentlyViewed(movie);
-      addToContinueWatching(movie);
+    if (!isTMDBAvailable()) {
+      setTmdbLoading(false);
+      return;
     }
-  }, [movie]);
 
-  if (!movie) {
+    setTmdbLoading(true);
+    setTmdbError(false);
+
+    const fetchData = mediaType === 'tv' ? fetchTVDetails(Number(id)) : fetchMovieDetails(Number(id));
+
+    fetchData
+      .then((data) => {
+        setTmdbData(data);
+        // Process similar content
+        if (data.similar?.results) {
+          setSimilar(data.similar.results.slice(0, 10).map(normalizeContent));
+        }
+        setTmdbLoading(false);
+      })
+      .catch(() => {
+        setTmdbError(true);
+        setTmdbLoading(false);
+      });
+  }, [id, mediaType]);
+
+  // Track views for mock movies
+  React.useEffect(() => {
+    if (mockMovie) {
+      addToRecentlyViewed(mockMovie);
+      addToContinueWatching(mockMovie);
+    }
+  }, [mockMovie]);
+
+  // Show skeleton while loading
+  if (tmdbLoading) {
+    return <DetailPageSkeleton />;
+  }
+
+  // Resolve data (TMDB or mock fallback)
+  const hasTMDB = !!tmdbData && !tmdbError;
+
+  // TMDB data extraction
+  const tmdbTitle = hasTMDB
+    ? (tmdbData as TMDBMovieDetails).title || (tmdbData as TMDBTVDetails).name || ''
+    : '';
+  const tmdbYear = hasTMDB
+    ? new Date(
+        (tmdbData as TMDBMovieDetails).release_date || (tmdbData as TMDBTVDetails).first_air_date || ''
+      ).getFullYear()
+    : 0;
+  const tmdbRating = hasTMDB ? tmdbData!.vote_average : 0;
+  const tmdbVoteCount = hasTMDB ? tmdbData!.vote_count : 0;
+  const tmdbRuntime = hasTMDB
+    ? (tmdbData as TMDBMovieDetails).runtime || ((tmdbData as TMDBTVDetails).episode_run_time?.[0] ?? 0)
+    : 0;
+  const tmdbOverview = hasTMDB ? tmdbData!.overview : '';
+  const tmdbTagline = hasTMDB ? tmdbData!.tagline : '';
+  const tmdbGenres = hasTMDB ? tmdbData!.genres.map(g => g.name) : [];
+  const tmdbBackdrop = hasTMDB ? getBackdropUrl(tmdbData!.backdrop_path, 'original') : null;
+  const tmdbPoster = hasTMDB ? getPosterUrl(tmdbData!.poster_path, 'w500') : null;
+  const tmdbCast = hasTMDB ? tmdbData!.credits?.cast?.slice(0, 8) || [] : [];
+  const tmdbDirector = hasTMDB
+    ? tmdbData!.credits?.crew?.find(c => c.job === 'Director')?.name || ''
+    : '';
+  const tmdbTrailer = hasTMDB
+    ? tmdbData!.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer')?.key || ''
+    : '';
+  const tmdbLanguage = hasTMDB ? tmdbData!.original_language : '';
+
+  // Watch providers (India region)
+  const watchProviders = hasTMDB
+    ? tmdbData!['watch/providers']?.results?.IN || tmdbData!['watch/providers']?.results?.US
+    : null;
+  const flatrateProviders = watchProviders?.flatrate || [];
+  const rentProviders = watchProviders?.rent || [];
+  const buyProviders = watchProviders?.buy || [];
+
+  // Final resolved values (TMDB > Mock > defaults)
+  const title = tmdbTitle || mockMovie?.title || 'Title not found';
+  const year = (tmdbYear > 1900 ? tmdbYear : 0) || mockMovie?.year || 0;
+  const rating = tmdbRating || mockMovie?.rating || 0;
+  const voteCount = tmdbVoteCount || mockMovie?.voteCount || 0;
+  const runtime = tmdbRuntime || mockMovie?.runtime || 0;
+  const overview = tmdbOverview || mockMovie?.overview || '';
+  const tagline = tmdbTagline || mockMovie?.tagline || '';
+  const genres = tmdbGenres.length > 0 ? tmdbGenres : (mockMovie?.genres || []);
+  const backdrop = tmdbBackdrop || mockMovie?.backdropPath || FALLBACK_BACKDROP;
+  const poster = tmdbPoster || mockMovie?.posterPath || FALLBACK_POSTER;
+  const cast = tmdbCast.length > 0 ? tmdbCast : (mockMovie?.cast || []);
+  const director = tmdbDirector || mockMovie?.director || '';
+  const trailerKey = tmdbTrailer || mockMovie?.trailerKey || '';
+  const language = tmdbLanguage || mockMovie?.language || '';
+
+  const saved = mockMovie ? inWatchlist(mockMovie.id) : false;
+  const runtimeStr = runtime > 0 ? `${Math.floor(runtime / 60)}h ${runtime % 60}m` : '';
+
+  // Similar content (TMDB or mock fallback)
+  const similarContent = similar.length > 0
+    ? similar
+    : (mockMovie
+        ? MOVIES.filter(m => m.id !== mockMovie.id && m.genres.some(g => mockMovie.genres.includes(g))).slice(0, 8)
+        : []);
+
+  // If no data at all
+  if (!hasTMDB && !mockMovie) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-2xl font-black text-white mb-3">Title not found</p>
-          <Link href="/" className="text-muted hover:text-white transition-colors text-sm">← Back home</Link>
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-muted/30">
+            <Film className="w-8 h-8" />
+          </div>
+          <p className="text-xl font-black text-white">Title not found</p>
+          <p className="text-sm text-muted/50 max-w-xs mx-auto">
+            This title may have been removed or doesn&apos;t exist in our database.
+          </p>
+          <Link href="/" className="inline-flex items-center gap-2 text-accent-light hover:text-white transition-colors text-sm font-bold">
+            <ChevronLeft className="w-4 h-4" />
+            Back to Home
+          </Link>
         </div>
       </div>
     );
   }
-
-  const runtimeStr = `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`;
 
   const handleCopyLink = () => {
     if (typeof window !== 'undefined') {
@@ -75,7 +192,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5 }}
-          src={bgErr ? FALLBACK_BACKDROP : movie.backdropPath}
+          src={bgErr ? FALLBACK_BACKDROP : backdrop}
           alt=""
           className="w-full h-full object-cover filter brightness-50"
           onError={() => setBgErr(true)}
@@ -95,13 +212,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           </button>
         </div>
 
-        {/* Floating Title info inside Hero (matches Letterboxd/Netflix) */}
+        {/* Floating content */}
         <div className="absolute bottom-10 left-6 lg:left-10 right-6 z-10 max-w-[1280px] mx-auto flex flex-col md:flex-row md:items-end gap-6 md:gap-10">
-          {/* Overlapping Poster */}
+          {/* Poster */}
           <div className="w-36 md:w-48 aspect-poster rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_24px_50px_rgba(0,0,0,0.9)] bg-[#0C0E17] shrink-0 self-start md:self-auto">
             <img
-              src={posterErr ? FALLBACK_POSTER : movie.posterPath}
-              alt={movie.title}
+              src={posterErr ? FALLBACK_POSTER : poster}
+              alt={title}
               className="w-full h-full object-cover"
               onError={() => setPosterErr(true)}
             />
@@ -109,34 +226,48 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
           {/* Details */}
           <div className="space-y-4 max-w-2xl">
-            {movie.tagline && (
-              <p className="text-[12.5px] text-accent-light/95 font-bold tracking-wide italic">"{movie.tagline}"</p>
+            {tagline && (
+              <p className="text-[12.5px] text-accent-light/95 font-bold tracking-wide italic">&quot;{tagline}&quot;</p>
             )}
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-              {movie.title}
+              {title}
             </h1>
 
             {/* Meta */}
             <div className="flex flex-wrap items-center gap-3 text-white/70 text-[13px] font-bold">
-              <span>{movie.year}</span>
-              <span className="w-1 h-1 bg-white/20 rounded-full" />
-              <div className="flex items-center gap-1 text-white font-black">
-                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                {movie.rating.toFixed(1)}
-                <span className="text-[11px] text-white/40 font-bold">({(movie.voteCount / 1000).toFixed(0)}K votes)</span>
-              </div>
-              <span className="w-1 h-1 bg-white/20 rounded-full" />
-              <div className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 opacity-60" />
-                {runtimeStr}
-              </div>
-              <span className="w-1 h-1 bg-white/20 rounded-full" />
-              <span className="capitalize">{movie.language}</span>
+              {year > 0 && (
+                <>
+                  <span>{year}</span>
+                  <span className="w-1 h-1 bg-white/20 rounded-full" />
+                </>
+              )}
+              {rating > 0 && (
+                <>
+                  <div className="flex items-center gap-1 text-white font-black">
+                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    {rating.toFixed(1)}
+                    {voteCount > 0 && (
+                      <span className="text-[11px] text-white/40 font-bold">({(voteCount / 1000).toFixed(0)}K)</span>
+                    )}
+                  </div>
+                  <span className="w-1 h-1 bg-white/20 rounded-full" />
+                </>
+              )}
+              {runtimeStr && (
+                <>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 opacity-60" />
+                    {runtimeStr}
+                  </div>
+                  <span className="w-1 h-1 bg-white/20 rounded-full" />
+                </>
+              )}
+              {language && <span className="uppercase">{language}</span>}
             </div>
 
             {/* Genres */}
             <div className="flex flex-wrap gap-1.5">
-              {movie.genres.map(g => (
+              {genres.map((g: string) => (
                 <span key={g} className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] text-white/80 font-bold capitalize">
                   {g}
                 </span>
@@ -146,15 +277,15 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      {/* ── Main Details Sections Grid ── */}
+      {/* ── Main Content ── */}
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12">
-          
-          {/* Left Column: Actions & Where to Watch */}
+
+          {/* Left Column */}
           <div className="space-y-8">
             {/* Quick Actions */}
             <div className="flex flex-col gap-3">
-              {movie.trailerKey && (
+              {trailerKey && (
                 <button
                   onClick={() => setShowTrailer(true)}
                   className="btn-primary w-full py-3.5 text-[13px] uppercase tracking-wider font-extrabold flex items-center justify-center gap-2"
@@ -164,15 +295,17 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 </button>
               )}
 
-              <button
-                onClick={() => saved ? removeFromWatchlist(movie.id) : addToWatchlist(movie)}
-                className={`btn-secondary w-full py-3.5 text-[13px] uppercase tracking-wider font-extrabold flex items-center justify-center gap-2 ${
-                  saved ? '!bg-accent/15 !border-accent/40 text-accent-light shadow-[0_0_20px_rgba(139,92,246,0.15)]' : ''
-                }`}
-              >
-                {saved ? <CheckCircle2 className="w-4 h-4 text-accent-light" /> : <Bookmark className="w-4 h-4" />}
-                {saved ? 'Saved to Watchlist' : 'Add to Watchlist'}
-              </button>
+              {mockMovie && (
+                <button
+                  onClick={() => saved ? removeFromWatchlist(mockMovie.id) : addToWatchlist(mockMovie)}
+                  className={`btn-secondary w-full py-3.5 text-[13px] uppercase tracking-wider font-extrabold flex items-center justify-center gap-2 ${
+                    saved ? '!bg-accent/15 !border-accent/40 text-accent-light shadow-[0_0_20px_rgba(139,92,246,0.15)]' : ''
+                  }`}
+                >
+                  {saved ? <CheckCircle2 className="w-4 h-4 text-accent-light" /> : <Bookmark className="w-4 h-4" />}
+                  {saved ? 'Saved to Watchlist' : 'Add to Watchlist'}
+                </button>
+              )}
 
               <button
                 onClick={() => setShowShare(true)}
@@ -183,79 +316,108 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               </button>
             </div>
 
-            {/* Where To Watch Section */}
-            <div className="space-y-3 p-5 rounded-2xl bg-white/[0.015] border border-white/[0.05]">
-              <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                Where To Watch
-              </h4>
-              <div className="flex flex-col gap-2.5">
-                {movie.providers.map(p => (
-                  <OTTBadge key={p} provider={p} size="sm" showLabel variant="badge" />
-                ))}
+            {/* Where To Watch — TMDB providers */}
+            {(flatrateProviders.length > 0 || rentProviders.length > 0 || buyProviders.length > 0) && (
+              <div className="space-y-4 p-5 rounded-2xl bg-white/[0.015] border border-white/[0.05]">
+                <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                  Where To Watch
+                </h4>
+                {flatrateProviders.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[9px] font-bold text-muted/40 uppercase tracking-wider">Streaming</span>
+                    <div className="flex flex-wrap gap-2">
+                      {flatrateProviders.map((p: TMDBWatchProvider) => (
+                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                          <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name} className="w-5 h-5 rounded" />
+                          <span className="text-[11px] font-bold text-white/80">{p.provider_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {rentProviders.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[9px] font-bold text-muted/40 uppercase tracking-wider">Rent</span>
+                    <div className="flex flex-wrap gap-2">
+                      {rentProviders.map((p: TMDBWatchProvider) => (
+                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                          <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name} className="w-5 h-5 rounded" />
+                          <span className="text-[11px] font-bold text-white/80">{p.provider_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {/* Legacy mock providers fallback */}
+            {(!hasTMDB || flatrateProviders.length === 0) && mockMovie?.providers && mockMovie.providers.length > 0 && (
+              <div className="space-y-3 p-5 rounded-2xl bg-white/[0.015] border border-white/[0.05]">
+                <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                  Where To Watch
+                </h4>
+                <div className="flex flex-col gap-2.5">
+                  {mockMovie.providers.map(p => (
+                    <OTTBadge key={p} provider={p} size="sm" showLabel variant="badge" />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Right Column: Sections */}
+          {/* Right Column */}
           <div className="space-y-12">
             {/* Overview */}
             <section className="space-y-3">
               <h3 className="text-[17px] font-bold text-white tracking-tight">Overview</h3>
-              {movie.director && (
+              {director && (
                 <p className="text-[13px] text-muted-foreground">
-                  Directed by <span className="text-white font-extrabold">{movie.director}</span>
+                  Directed by <span className="text-white font-extrabold">{director}</span>
                 </p>
               )}
               <p className="text-[14.5px] text-white/75 leading-relaxed font-semibold">
-                {movie.overview}
+                {overview}
               </p>
             </section>
 
             {/* Cast & Crew */}
-            {movie.cast && movie.cast.length > 0 && (
+            {cast.length > 0 && (
               <section className="space-y-4">
                 <h3 className="text-[17px] font-bold text-white tracking-tight">Cast & Crew</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {movie.cast.map(member => (
-                    <div
-                      key={member.id}
-                      className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/[0.015] border border-white/[0.05]"
-                    >
-                      <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 shrink-0 overflow-hidden">
-                        {member.profilePath ? (
-                          <img src={member.profilePath} alt={member.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted text-sm font-bold bg-white/5">
-                            {member.name[0]}
-                          </div>
-                        )}
+                  {cast.map((member: any) => {
+                    const profileImg = member.profilePath
+                      ? member.profilePath
+                      : member.profile_path
+                        ? getProfileUrl(member.profile_path)
+                        : null;
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/[0.015] border border-white/[0.05]"
+                      >
+                        <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 shrink-0 overflow-hidden">
+                          {profileImg ? (
+                            <img src={profileImg} alt={member.name} className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted text-sm font-bold bg-white/5">
+                              {member.name?.[0] || '?'}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-bold text-white truncate">{member.name}</p>
+                          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{member.character}</p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-bold text-white truncate">{member.name}</p>
-                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">{member.character}</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
 
-            {/* Screenshots Gallery */}
-            <section className="space-y-4">
-              <h3 className="text-[17px] font-bold text-white tracking-tight">Screenshots & Posters</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {MOCK_SCREENSHOTS.map((url, i) => (
-                  <div key={i} className="aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/5 shadow-md group relative cursor-zoom-in">
-                    <img src={url} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Eye className="w-5 h-5 text-white" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Authenticated Only: AI Insights & Why You'll Like This */}
+            {/* AI Insights */}
             <section className="space-y-4 border-t border-white/[0.05] pt-8">
               <h3 className="text-[17px] font-bold text-white tracking-tight flex items-center gap-2">
                 <Sparkles className="w-4.5 h-4.5 text-accent-light" />
@@ -264,18 +426,19 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
               {user ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* AI Summary */}
                   <div className="p-5 rounded-2xl border border-accent/15 bg-accent/[0.01] space-y-2">
                     <span className="text-[10px] font-black text-accent-light uppercase tracking-wider block">AI Summary</span>
                     <p className="text-[13.5px] text-white/80 leading-relaxed">
-                      {movie.aiInsight || movie.overview}
+                      {mockMovie?.aiInsight || overview.slice(0, 200) + '...'}
                     </p>
                   </div>
-                  {/* Why You'll Like This */}
                   <div className="p-5 rounded-2xl border border-accent/15 bg-accent/[0.01] space-y-2">
-                    <span className="text-[10px] font-black text-accent-light uppercase tracking-wider block">Why you'll like this</span>
+                    <span className="text-[10px] font-black text-accent-light uppercase tracking-wider block">Why you&apos;ll like this</span>
                     <p className="text-[13.5px] text-white/80 leading-relaxed">
-                      Matches your preferences in <strong>{movie.genres.slice(0, 2).join(', ')}</strong>. Available on your active channel subscriptions ({movie.providers.slice(0, 2).join(', ')}).
+                      Matches your preferences in <strong>{genres.slice(0, 2).join(', ')}</strong>.
+                      {flatrateProviders.length > 0 && (
+                        <> Available on {flatrateProviders.slice(0, 2).map((p: TMDBWatchProvider) => p.provider_name).join(', ')}.</>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -285,7 +448,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   <div>
                     <h5 className="text-[13.5px] font-bold text-white">Unlock taste profile insights</h5>
                     <p className="text-[11.5px] text-muted-foreground max-w-sm mt-0.5">
-                      Sign in with Clerk to get custom calculated AI analysis, match explanations, and personal compatibility recommendations.
+                      Sign in to get custom AI analysis, match explanations, and personal compatibility recommendations.
                     </p>
                   </div>
                 </div>
@@ -293,25 +456,27 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             </section>
 
             {/* Similar Content */}
-            {similar.length > 0 && (
+            {similarContent.length > 0 && (
               <section className="space-y-4">
                 <h3 className="text-[17px] font-bold text-white tracking-tight">Similar Content</h3>
-                <div className="flex gap-4 overflow-x-auto scroll-row pb-4 -mx-6 px-6 sm:-mx-0 sm:px-0">
-                  {similar.map((m, i) => (
-                    <MovieCard key={m.id} movie={m} index={i} size="sm" />
-                  ))}
+                <div className="flex gap-4 overflow-x-auto content-rail pb-4 -mx-6 px-6 sm:-mx-0 sm:px-0">
+                  {similarContent.map((item: any, i: number) => {
+                    // Check if it's a NormalizedContent (TMDB) or legacy Movie
+                    if (item.posterUrl !== undefined) {
+                      return <MovieCard key={`sim-${item.id}`} content={item} index={i} size="sm" />;
+                    }
+                    return <MovieCard key={`sim-${item.id}`} movie={item} index={i} size="sm" />;
+                  })}
                 </div>
               </section>
             )}
-
           </div>
-
         </div>
       </div>
 
       {/* ── YouTube Trailer Modal ── */}
       <AnimatePresence>
-        {showTrailer && movie.trailerKey && (
+        {showTrailer && trailerKey && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -326,15 +491,15 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_0_80px_rgba(139,92,246,0.4)]"
               onClick={e => e.stopPropagation()}
             >
-              <button 
+              <button
                 onClick={() => setShowTrailer(false)}
                 className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/90 border border-white/10 text-white transition-all font-bold"
               >
                 ✕
               </button>
               <iframe
-                src={`https://www.youtube.com/embed/${movie.trailerKey}?autoplay=1`}
-                title={`${movie.title} Trailer`}
+                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+                title={`${title} Trailer`}
                 className="w-full h-full border-none"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -361,14 +526,14 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               className="w-full max-w-sm bg-[#0C0E17] border border-white/[0.08] rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative"
               onClick={e => e.stopPropagation()}
             >
-              <button 
+              <button
                 onClick={() => setShowShare(false)}
                 className="absolute top-4 right-4 text-muted hover:text-white transition-all font-bold"
               >
                 ✕
               </button>
-              <h3 className="text-[14px] font-bold text-white mb-1.5">Share Movie</h3>
-              <p className="text-[12px] text-muted/50 mb-5 font-semibold">Share this screen with friends or other watch parties.</p>
+              <h3 className="text-[14px] font-bold text-white mb-1.5">Share</h3>
+              <p className="text-[12px] text-muted/50 mb-5 font-semibold">Share this title with friends.</p>
 
               <div className="flex gap-2 mb-5">
                 <input
@@ -387,7 +552,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
               <div className="grid grid-cols-2 gap-2">
                 <a
-                  href={`https://twitter.com/intent/tweet?text=Check out ${movie.title} on BingeKaro! ${typeof window !== 'undefined' ? window.location.href : ''}`}
+                  href={`https://twitter.com/intent/tweet?text=Check out ${title} on BingeKaro! ${typeof window !== 'undefined' ? window.location.href : ''}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-xl text-[12px] font-bold transition-all"
@@ -395,7 +560,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   Twitter / X
                 </a>
                 <a
-                  href={`https://api.whatsapp.com/send?text=Check out ${movie.title} on BingeKaro! ${typeof window !== 'undefined' ? window.location.href : ''}`}
+                  href={`https://api.whatsapp.com/send?text=Check out ${title} on BingeKaro! ${typeof window !== 'undefined' ? window.location.href : ''}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-1.5 p-2.5 bg-white/[0.02] border border-white/[0.08] hover:bg-white/[0.05] text-white rounded-xl text-[12px] font-bold transition-all"
