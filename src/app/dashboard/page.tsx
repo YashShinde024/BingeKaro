@@ -3,15 +3,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { Sparkles, Film, LogIn, LayoutGrid, BookmarkCheck, Heart } from 'lucide-react';
+import { useWatchlist } from '../../context/WatchlistContext';
+import { useHistory } from '../../context/HistoryContext';
+import { Sparkles, Film, LogIn, LayoutGrid, BookmarkCheck, Heart, Award, Eye, Flame, Compass, RefreshCw, BarChart2, Tv } from 'lucide-react';
 import { MovieCard } from '../../components/cards/MovieCard';
-import { getAIPicks, getTrendingMovies, MOVIES } from '../../lib/mockData';
-import { useRouter } from 'next/navigation';
+import { MOVIES } from '../../lib/mockData';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const { user, openLoginModal } = useAuth();
-  const router = useRouter();
+  const { watchlist, favorites, movieStatuses } = useWatchlist();
+  const { recentlyViewed, recommendationHistory } = useHistory();
 
   if (!user) {
     return (
@@ -36,16 +38,63 @@ export default function DashboardPage() {
     );
   }
 
-  // Filter movies that match user's selected genres
+  // Calculate stats
+  const watchlistCount = watchlist.length;
+  const favoritesCount = favorites.length;
+  const moviesSeenCount = watchlist.filter(m => movieStatuses[m.id] === 'completed' && m.type === 'movie').length;
+  const showsSeenCount = watchlist.filter(m => movieStatuses[m.id] === 'completed' && m.type === 'tv').length;
+
+  // Calculate insights: Top Genre
+  const genreCounts: Record<string, number> = {};
+  const allUserMovies = [...watchlist, ...favorites];
+  allUserMovies.forEach(m => {
+    m.genres.forEach(g => {
+      genreCounts[g] = (genreCounts[g] || 0) + 1;
+    });
+  });
+  let topGenre = 'None';
+  let maxGenreCount = 0;
+  Object.entries(genreCounts).forEach(([genre, count]) => {
+    if (count > maxGenreCount) {
+      maxGenreCount = count;
+      topGenre = genre;
+    }
+  });
+
+  // Calculate insights: Top Platform
+  const platformCounts: Record<string, number> = {};
+  allUserMovies.forEach(m => {
+    m.providers.forEach(p => {
+      platformCounts[p] = (platformCounts[p] || 0) + 1;
+    });
+  });
+  let topPlatform = 'None';
+  let maxPlatformCount = 0;
+  Object.entries(platformCounts).forEach(([p, count]) => {
+    if (count > maxPlatformCount) {
+      maxPlatformCount = count;
+      topPlatform = p.replace('-', ' ');
+    }
+  });
+
+  // Movie DNA (genre distribution)
+  const totalGenresCount = Object.values(genreCounts).reduce((a, b) => a + b, 0);
+  const movieDna = Object.entries(genreCounts)
+    .map(([genre, count]) => ({
+      genre,
+      percentage: totalGenresCount > 0 ? Math.round((count / totalGenresCount) * 100) : 0
+    }))
+    .sort((a, b) => b.percentage - a.percentage)
+    .slice(0, 4);
+
+  // Recommendations for taste
   const matchedMovies = MOVIES.filter(m => 
     m.genres.some(g => user.favoriteGenres.includes(g))
-  );
-
-  const displayMovies = matchedMovies.length > 0 ? matchedMovies : MOVIES.slice(0, 6);
-  const aiPicks = getAIPicks().slice(0, 5);
+  ).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20 px-6 sm:px-10 max-w-[1400px] mx-auto space-y-10">
+      
       {/* Welcome Banner */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
@@ -63,86 +112,153 @@ export default function DashboardPage() {
               Welcome Back, {user.name}!
             </h1>
             <p className="text-[13px] text-muted-foreground max-w-xl">
-              We've synced your cinema preferences. Explore your personal dashboard designed to surface releases you'll love.
+              We've calculated your preferences. Check your real-time stats, insights, and tailored recommendations.
             </p>
           </div>
-          
-          <div className="flex gap-3 shrink-0">
-            <Link href="/profile">
-              <button className="h-10 px-4 rounded-xl border border-white/[0.08] text-[12px] font-bold bg-white/[0.02] hover:bg-white/[0.05] transition-all">
-                Edit taste profile
-              </button>
-            </Link>
-          </div>
+          <Link href="/profile">
+            <button className="h-10 px-4 rounded-xl border border-white/[0.08] text-[12px] font-bold bg-white/[0.02] hover:bg-white/[0.05] transition-all">
+              Edit taste profile
+            </button>
+          </Link>
         </div>
       </motion.div>
 
-      {/* Grid of Preferences Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="p-5 rounded-2xl bg-white/[0.015] border border-white/[0.05] space-y-3">
-          <div className="flex items-center gap-2 text-[#8B5CF6]">
-            <LayoutGrid className="w-4 h-4" />
-            <h4 className="text-[12px] font-bold uppercase tracking-wider">My Genres</h4>
+      {/* Stats Counter Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Watchlist Items', count: watchlistCount, icon: BookmarkCheck, color: 'text-violet-400' },
+          { label: 'Favorites Saved', count: favoritesCount, icon: Heart, color: 'text-rose-400' },
+          { label: 'Movies Completed', count: moviesSeenCount, icon: Film, color: 'text-sky-400' },
+          { label: 'TV Shows Completed', count: showsSeenCount, icon: Tv, color: 'text-emerald-400' }
+        ].map((stat, i) => (
+          <div key={i} className="p-5 rounded-2xl bg-white/[0.015] border border-white/[0.05] flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest block">{stat.label}</span>
+              <span className="text-2xl sm:text-3xl font-black text-white mt-1 block">{stat.count}</span>
+            </div>
+            <stat.icon className={`w-8 h-8 ${stat.color} opacity-80`} />
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {user.favoriteGenres.map(g => (
-              <span key={g} className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[10.5px] font-semibold text-white/80 capitalize">
-                {g}
-              </span>
-            ))}
+        ))}
+      </div>
+
+      {/* Insights & Movie DNA */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Top Genre & Top Platform */}
+        <div className="p-6 rounded-2xl bg-white/[0.01] border border-white/[0.05] space-y-6">
+          <h3 className="text-[14px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 border-b border-white/[0.04] pb-3">
+            <Award className="w-4 h-4 text-[#8B5CF6]" />
+            Taste Indicators
+          </h3>
+
+          <div className="space-y-4">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground block">Top Genre</span>
+              <span className="text-lg font-bold text-white capitalize mt-1 block">{topGenre}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground block">Top Stream Channel</span>
+              <span className="text-lg font-bold text-white capitalize mt-1 block">{topPlatform}</span>
+            </div>
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white/[0.015] border border-white/[0.05] space-y-3">
-          <div className="flex items-center gap-2 text-[#8B5CF6]">
-            <BookmarkCheck className="w-4 h-4" />
-            <h4 className="text-[12px] font-bold uppercase tracking-wider">Services</h4>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {user.favoriteProviders.map(p => (
-              <span key={p} className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[10.5px] font-semibold text-white/80 capitalize">
-                {p.replace('-', ' ')}
-              </span>
-            ))}
-          </div>
-        </div>
+        {/* Movie DNA Visualizer */}
+        <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.01] border border-white/[0.05] space-y-4">
+          <h3 className="text-[14px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 border-b border-white/[0.04] pb-3">
+            <BarChart2 className="w-4 h-4 text-[#8B5CF6]" />
+            Movie DNA
+          </h3>
 
-        <div className="p-5 rounded-2xl bg-white/[0.015] border border-white/[0.05] space-y-3">
-          <div className="flex items-center gap-2 text-[#8B5CF6]">
-            <Heart className="w-4 h-4" />
-            <h4 className="text-[12px] font-bold uppercase tracking-wider">Quick Recommendation</h4>
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-normal">
-            BingeKaro AI is parsing active streaming catalog details for your provider list.
-          </p>
+          {movieDna.length > 0 ? (
+            <div className="space-y-4.5">
+              {movieDna.map(item => (
+                <div key={item.genre} className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-white">
+                    <span className="capitalize">{item.genre}</span>
+                    <span>{item.percentage}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-white/[0.04] rounded-full overflow-hidden">
+                    <div className="h-full bg-[#8B5CF6]" style={{ width: `${item.percentage}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-10 text-center text-xs text-muted-foreground">
+              Add films to your favorites or watchlist to plot your Movie DNA map.
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Row 1 - Matched by Genre preferences */}
-      <div className="space-y-4">
+      {/* Activity Feeds */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Recently Viewed */}
+        <div className="space-y-4">
+          <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
+            <Eye className="w-4.5 h-4.5 text-[#8B5CF6]" />
+            Recently Viewed
+          </h3>
+          <div className="flex gap-4 overflow-x-auto scroll-row pb-4">
+            {recentlyViewed.length > 0 ? (
+              recentlyViewed.map((m, idx) => (
+                <MovieCard key={m.id} movie={m} index={idx} size="sm" />
+              ))
+            ) : (
+              <div className="w-full py-12 text-center text-xs text-muted-foreground border border-dashed border-white/5 rounded-2xl">
+                No recently viewed movies.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent AI Recommendations History */}
+        <div className="space-y-4">
+          <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4.5 h-4.5 text-[#8B5CF6]" />
+            Recent AI Picks History
+          </h3>
+          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            {recommendationHistory.length > 0 ? (
+              recommendationHistory.map((rec, i) => (
+                <Link key={i} href={`/movie/${rec.movie.id}`} className="block">
+                  <div className="p-3.5 rounded-xl border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] transition-all flex items-start gap-4">
+                    <div className="w-10 aspect-poster rounded bg-white/5 overflow-hidden shrink-0">
+                      <img src={rec.movie.posterPath} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[12.5px] font-bold text-white truncate">{rec.movie.title}</p>
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1 leading-normal">
+                        {rec.aiExplanation}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="py-12 text-center text-xs text-muted-foreground border border-dashed border-white/5 rounded-2xl">
+                No recent recommendations generated.
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Recommendations For Your Taste */}
+      <div className="space-y-4 pt-4 border-t border-white/[0.05]">
         <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
-          <Film className="w-4 h-4 text-[#8B5CF6]" />
+          <Compass className="w-4.5 h-4.5 text-[#8B5CF6]" />
           Recommendations For Your Taste
         </h3>
         <div className="flex gap-4 overflow-x-auto scroll-row pb-4">
-          {displayMovies.map((movie, idx) => (
+          {matchedMovies.map((movie, idx) => (
             <MovieCard key={movie.id} movie={movie} index={idx} />
           ))}
         </div>
       </div>
 
-      {/* Row 2 - AI recommendations */}
-      <div className="space-y-4">
-        <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#8B5CF6]" />
-          Smart AI Recommendations
-        </h3>
-        <div className="flex gap-4 overflow-x-auto scroll-row pb-4">
-          {aiPicks.map((movie, idx) => (
-            <MovieCard key={movie.id} movie={movie} index={idx} />
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

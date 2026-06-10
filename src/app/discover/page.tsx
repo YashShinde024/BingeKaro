@@ -1,469 +1,505 @@
 "use client";
 
 import React, { Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, ArrowRight, Check, Users, Zap, Palette, Clock, Globe, Film,
-  Tv, Heart, User, Home, Moon, Target, Trophy, Hourglass, Droplets, Laugh, Brain, Flame, Coffee, Ghost, Smile, Compass, AlertCircle
+  Sparkles, Filter, Check, X, Star, Clock, Compass, Heart, Zap,
+  Users, Coffee, LayoutGrid, Calendar, HelpCircle, Film, Tv, ChevronDown
 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { MOODS, GENRES, LANGUAGES } from '../../lib/mockData';
-import type { MoodId, GenreId, LanguageId, ContentType } from '../../types';
-
-type WatchingWith = 'alone' | 'partner' | 'friends' | 'family';
-type EnergyLevel = 'relaxed' | 'focused' | 'excited';
-type ContentStyle = 'emotional' | 'mind-bending' | 'funny' | 'dark' | 'inspiring' | 'thrilling';
-
-const CONTENT_TYPES: { id: ContentType; label: string; sub: string; icon: React.ComponentType<any> }[] = [
-  { id: 'movie', label: 'Movie', sub: 'Feature films', icon: Film },
-  { id: 'tv', label: 'TV Show', sub: 'Series & episodes', icon: Tv },
-  { id: 'anime', label: 'Anime', sub: 'Animation', icon: Sparkles },
-];
+import { MOVIES, GENRES, LANGUAGES, MOODS } from '../../lib/mockData';
+import { PROVIDER_REGISTRY } from '../../lib/providers';
+import { MovieCard } from '../../components/cards/MovieCard';
+import type { MoodId, GenreId, LanguageId, OTTProviderId } from '../../types';
 
 const RUNTIME_OPTIONS = [
-  { label: 'Under 90 min', value: 90, sub: 'Quick watch', icon: Zap },
-  { label: '90 – 120 min', value: 120, sub: 'Standard', icon: Target },
-  { label: '2 – 3 hrs', value: 180, sub: 'Epic length', icon: Trophy },
-  { label: 'Any length', value: 999, sub: 'No limit', icon: Hourglass },
+  { label: 'Under 90 min', value: 'under-90' },
+  { label: '90 – 120 min', value: '90-120' },
+  { label: '2 – 3 hours', value: '120-180' },
+  { label: 'Any duration', value: 'any' },
 ];
 
-const WATCHING_WITH: { id: WatchingWith; label: string; icon: React.ComponentType<any>; desc: string }[] = [
-  { id: 'alone', label: 'Solo', icon: User, desc: 'Just me & the screen' },
-  { id: 'partner', label: 'Partner', icon: Heart, desc: 'Date night vibes' },
-  { id: 'friends', label: 'Friends', icon: Users, desc: 'Group watch session' },
-  { id: 'family', label: 'Family', icon: Home, desc: 'All ages welcome' },
+const RATING_OPTIONS = [
+  { label: '8.5+ Masterpieces', value: '8.5' },
+  { label: '8.0+ Highly Rated', value: '8.0' },
+  { label: '7.0+ Recommended', value: '7.0' },
+  { label: 'Any rating', value: 'any' },
 ];
 
-const ENERGY_LEVELS: { id: EnergyLevel; label: string; icon: React.ComponentType<any>; desc: string }[] = [
-  { id: 'relaxed', label: 'Relaxed', icon: Coffee, desc: 'Low effort viewing' },
-  { id: 'focused', label: 'Focused', icon: Target, desc: 'Ready to engage' },
-  { id: 'excited', label: 'Excited', icon: Zap, desc: 'High energy mode' },
+const YEAR_OPTIONS = [
+  { label: '2024 Releases', value: '2024' },
+  { label: '2023 Releases', value: '2023' },
+  { label: '2020 – 2022', value: '2020-2022' },
+  { label: 'Classic Hits (<2020)', value: 'classic' },
+  { label: 'Any year', value: 'any' },
 ];
 
-const CONTENT_STYLES: { id: ContentStyle; label: string; icon: React.ComponentType<any> }[] = [
-  { id: 'emotional', label: 'Emotional', icon: Droplets },
-  { id: 'mind-bending', label: 'Mind-Bending', icon: Brain },
-  { id: 'funny', label: 'Funny', icon: Laugh },
-  { id: 'dark', label: 'Dark', icon: Moon },
-  { id: 'inspiring', label: 'Inspiring', icon: Sparkles },
-  { id: 'thrilling', label: 'Thrilling', icon: Flame },
+const WATCHING_WITH_OPTIONS = [
+  { id: 'alone', label: 'Solo Vibe' },
+  { id: 'partner', label: 'Date Night' },
+  { id: 'friends', label: 'Group Watch' },
+  { id: 'family', label: 'Family Friendly' },
 ];
 
-const MOOD_ICONS: Record<string, React.ComponentType<any>> = {
-  adventurous: Compass, romantic: Heart, thrilling: Zap, funny: Laugh,
-  dark: Moon, 'feel-good': Smile, emotional: Droplets, inspiring: Sparkles,
-  chill: Coffee, scary: Ghost, 'mind-bending': Brain, 'action-packed': Flame,
-};
-
-function toggle<T extends string>(arr: T[], item: T): T[] {
-  return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
-}
-
-function toggleSingle<T extends string>(current: T | null, item: T): T | null {
-  return current === item ? null : item;
-}
+const ENERGY_OPTIONS = [
+  { id: 'relaxed', label: 'Relaxed / Chill' },
+  { id: 'focused', label: 'Engaged / Focused' },
+  { id: 'excited', label: 'High Excitement' },
+];
 
 function DiscoverContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialMood = searchParams ? (searchParams.get('mood') as MoodId | null) : null;
+  const [selectedGenres, setSelectedGenres] = React.useState<GenreId[]>([]);
+  const [selectedProviders, setSelectedProviders] = React.useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = React.useState<LanguageId[]>([]);
+  const [selectedYear, setSelectedYear] = React.useState<string>('any');
+  const [selectedRuntime, setSelectedRuntime] = React.useState<string>('any');
+  const [selectedRating, setSelectedRating] = React.useState<string>('any');
+  const [selectedMoods, setSelectedMoods] = React.useState<MoodId[]>([]);
+  const [watchingWith, setWatchingWith] = React.useState<string | null>(null);
+  const [energyLevel, setEnergyLevel] = React.useState<string | null>(null);
+  
+  const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
+  const [showFutureFilters, setShowFutureFilters] = React.useState(false);
 
-  const [moods, setMoods] = React.useState<MoodId[]>(initialMood ? [initialMood] : []);
-  const [genres, setGenres] = React.useState<GenreId[]>([]);
-  const [languages, setLanguages] = React.useState<LanguageId[]>([]);
-  const [runtime, setRuntime] = React.useState(999);
-  const [types, setTypes] = React.useState<ContentType[]>(['movie']);
-  const [watchingWith, setWatchingWith] = React.useState<WatchingWith | null>(null);
-  const [energyLevel, setEnergyLevel] = React.useState<EnergyLevel | null>(null);
-  const [contentStyles, setContentStyles] = React.useState<ContentStyle[]>([]);
-
-  const canDiscover = moods.length > 0 || genres.length > 0;
-
-  const calculateProgress = () => {
-    let score = 0;
-    if (moods.length > 0) score += 20;
-    if (genres.length > 0) score += 15;
-    if (languages.length > 0) score += 10;
-    if (runtime !== 999) score += 10;
-    if (watchingWith) score += 15;
-    if (energyLevel) score += 15;
-    if (contentStyles.length > 0) score += 15;
-    return Math.min(score, 100);
+  const toggleGenre = (id: GenreId) => {
+    setSelectedGenres(prev =>
+      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
+    );
   };
 
-  const progressPercent = calculateProgress();
+  const toggleProvider = (id: string) => {
+    setSelectedProviders(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
+  };
 
-  const handleDiscover = () => {
-    const params = new URLSearchParams({
-      moods: moods.join(','),
-      genres: genres.join(','),
-      languages: languages.join(','),
-      runtime: String(runtime),
-      types: types.join(','),
-      watchingWith: watchingWith || '',
-      energyLevel: energyLevel || '',
-      contentStyles: contentStyles.join(','),
+  const toggleLanguage = (id: LanguageId) => {
+    setSelectedLanguages(prev =>
+      prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]
+    );
+  };
+
+  const toggleMood = (id: MoodId) => {
+    setSelectedMoods(prev =>
+      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+    );
+  };
+
+  const clearFilters = () => {
+    setSelectedGenres([]);
+    setSelectedProviders([]);
+    setSelectedLanguages([]);
+    setSelectedYear('any');
+    setSelectedRuntime('any');
+    setSelectedRating('any');
+    setSelectedMoods([]);
+    setWatchingWith(null);
+    setEnergyLevel(null);
+  };
+
+  // Filter Logic
+  const filteredMovies = React.useMemo(() => {
+    return MOVIES.filter(movie => {
+      // Genre Filter
+      if (selectedGenres.length > 0 && !movie.genres.some(g => selectedGenres.includes(g))) {
+        return false;
+      }
+      // Provider Filter
+      if (selectedProviders.length > 0 && !movie.providers.some(p => selectedProviders.includes(p))) {
+        return false;
+      }
+      // Language Filter
+      if (selectedLanguages.length > 0 && !selectedLanguages.includes(movie.language as LanguageId)) {
+        return false;
+      }
+      // Year Filter
+      if (selectedYear !== 'any') {
+        if (selectedYear === '2024' && movie.year !== 2024) return false;
+        if (selectedYear === '2023' && movie.year !== 2023) return false;
+        if (selectedYear === '2020-2022' && (movie.year < 2020 || movie.year > 2022)) return false;
+        if (selectedYear === 'classic' && movie.year >= 2020) return false;
+      }
+      // Runtime Filter
+      if (selectedRuntime !== 'any') {
+        if (selectedRuntime === 'under-90' && movie.runtime >= 90) return false;
+        if (selectedRuntime === '90-120' && (movie.runtime < 90 || movie.runtime > 120)) return false;
+        if (selectedRuntime === '120-180' && (movie.runtime < 120 || movie.runtime > 180)) return false;
+      }
+      // Rating Filter
+      if (selectedRating !== 'any') {
+        const minRating = parseFloat(selectedRating);
+        if (movie.rating < minRating) return false;
+      }
+      // Mood Filter (If active)
+      if (selectedMoods.length > 0) {
+        // Mock mood checking based on movie tags/genres or AI insights
+        const matched = selectedMoods.some(m => {
+          if (m === 'thrilling' && movie.genres.includes('thriller')) return true;
+          if (m === 'funny' && movie.genres.includes('comedy')) return true;
+          if (m === 'dark' && movie.genres.includes('horror')) return true;
+          if (m === 'mind-bending' && movie.genres.includes('sci-fi')) return true;
+          if (m === 'romantic' && movie.genres.includes('romance')) return true;
+          return false;
+        });
+        // Apply loose matching to make filters friendly
+        if (!matched && movie.rating < 8.0) return false;
+      }
+      return true;
     });
-    router.push(`/discover/loading?${params.toString()}`);
-  };
+  }, [
+    selectedGenres, selectedProviders, selectedLanguages,
+    selectedYear, selectedRuntime, selectedRating, selectedMoods
+  ]);
 
-  const progressLabel = progressPercent < 25 ? 'Getting started…'
-    : progressPercent < 50 ? 'Building your taste profile'
-    : progressPercent < 75 ? 'Profile looking good!'
-    : progressPercent < 100 ? 'Almost there!'
-    : 'Perfect match profile!';
+  const FilterSections = () => (
+    <div className="space-y-6">
+      {/* Genres */}
+      <div>
+        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Genres</h4>
+        <div className="flex flex-wrap gap-1.5">
+          {GENRES.map(g => {
+            const active = selectedGenres.includes(g.id);
+            return (
+              <button
+                key={g.id}
+                onClick={() => toggleGenre(g.id)}
+                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
+                  active
+                    ? 'bg-accent border-accent text-white'
+                    : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
+                }`}
+              >
+                {g.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Platforms */}
+      <div>
+        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Platforms</h4>
+        <div className="flex flex-wrap gap-1.5">
+          {Object.values(PROVIDER_REGISTRY).map(p => {
+            const active = selectedProviders.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                onClick={() => toggleProvider(p.id)}
+                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition-all ${
+                  active
+                    ? 'bg-accent border-accent text-white'
+                    : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
+                }`}
+              >
+                <img src={p.logo} alt="" className="w-3.5 h-3.5 object-contain" />
+                {p.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Languages */}
+      <div>
+        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Languages</h4>
+        <div className="flex flex-wrap gap-1.5">
+          {LANGUAGES.map(l => {
+            const active = selectedLanguages.includes(l.id);
+            return (
+              <button
+                key={l.id}
+                onClick={() => toggleLanguage(l.id)}
+                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
+                  active
+                    ? 'bg-accent border-accent text-white'
+                    : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
+                }`}
+              >
+                {l.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Release Year */}
+      <div>
+        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Year</h4>
+        <div className="grid grid-cols-2 gap-1.5">
+          {YEAR_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setSelectedYear(opt.value)}
+              className={`px-3 py-2 rounded-xl border text-[11px] font-bold text-left transition-all ${
+                selectedYear === opt.value
+                  ? 'bg-accent border-accent text-white'
+                  : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Duration */}
+      <div>
+        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Runtime</h4>
+        <div className="grid grid-cols-2 gap-1.5">
+          {RUNTIME_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setSelectedRuntime(opt.value)}
+              className={`px-3 py-2 rounded-xl border text-[11px] font-bold text-left transition-all ${
+                selectedRuntime === opt.value
+                  ? 'bg-accent border-accent text-white'
+                  : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Minimum Rating */}
+      <div>
+        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Minimum Rating</h4>
+        <div className="grid grid-cols-2 gap-1.5">
+          {RATING_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setSelectedRating(opt.value)}
+              className={`px-3 py-2 rounded-xl border text-[11px] font-bold text-left transition-all ${
+                selectedRating === opt.value
+                  ? 'bg-accent border-accent text-white'
+                  : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Collapse/Expand Future-Ready Filters */}
+      <div className="pt-4 border-t border-white/[0.05]">
+        <button
+          onClick={() => setShowFutureFilters(!showFutureFilters)}
+          className="flex items-center justify-between w-full text-left text-[11px] font-black text-muted-foreground hover:text-white uppercase tracking-widest"
+        >
+          <span>Social & Context Filters (AI)</span>
+          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showFutureFilters ? 'rotate-180' : ''}`} />
+        </button>
+
+        <AnimatePresence>
+          {showFutureFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden space-y-4 pt-4"
+            >
+              {/* Moods */}
+              <div>
+                <span className="text-[9.5px] font-bold text-accent-light uppercase tracking-wider block mb-2">Mood / Vibe</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {MOODS.map(m => {
+                    const active = selectedMoods.includes(m.id);
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => toggleMood(m.id)}
+                        className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${
+                          active
+                            ? 'bg-accent border-accent text-white'
+                            : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Watching With */}
+              <div>
+                <span className="text-[9.5px] font-bold text-accent-light uppercase tracking-wider block mb-2">Watching With</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {WATCHING_WITH_OPTIONS.map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setWatchingWith(watchingWith === opt.id ? null : opt.id)}
+                      className={`px-2.5 py-2 rounded-lg border text-[10px] font-bold text-left transition-all ${
+                        watchingWith === opt.id
+                          ? 'bg-accent border-accent text-white'
+                          : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Energy Level */}
+              <div>
+                <span className="text-[9.5px] font-bold text-accent-light uppercase tracking-wider block mb-2">Energy Level</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {ENERGY_OPTIONS.map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setEnergyLevel(energyLevel === opt.id ? null : opt.id)}
+                      className={`px-2.5 py-2 rounded-lg border text-[10px] font-bold text-left transition-all ${
+                        energyLevel === opt.id
+                          ? 'bg-accent border-accent text-white'
+                          : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[#050505] pt-24 pb-32 md:pb-20">
-      <div className="max-w-2xl mx-auto px-6">
-
-        {/* Sticky progress bar */}
-        <div className="sticky top-[64px] z-30 py-4 mb-10 bg-[#050505]/80 backdrop-blur-xl border-b border-white/[0.05]">
-          <div className="flex items-center justify-between text-[11px] font-bold mb-2">
-            <span className="text-muted/40 uppercase tracking-widest">Taste Match Profile</span>
-            <motion.span
-              key={progressLabel}
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-accent-light font-bold"
-            >
-              {progressLabel}
-            </motion.span>
+    <div className="min-h-screen bg-[#050505] pt-24 pb-20">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
+        
+        {/* Header Board */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.06] pb-6 mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Discover Catalogue</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Filter and discover titles across your subscribed OTT platforms.</p>
           </div>
-          <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-accent via-violet-500 to-accent-light rounded-full shadow-[0_0_12px_rgba(139,92,246,0.5)]"
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ type: 'spring', damping: 24, stiffness: 120 }}
-            />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 rounded-xl text-[12px] font-bold text-white/80 hover:text-white hover:bg-white/5 transition-all"
+            >
+              Reset Filters
+            </button>
+            <button
+              onClick={() => setMobileFiltersOpen(true)}
+              className="lg:hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[12px] font-bold text-white"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+            </button>
           </div>
         </div>
 
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-14"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-accent/20 bg-accent/5 mb-6"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-accent-light" />
-            <span className="text-[10px] font-bold text-accent-light uppercase tracking-widest">
-              AI Taste-Mapping Engine
-            </span>
-          </motion.div>
-          <h1 className="text-3xl sm:text-4.5xl font-black text-white tracking-tight mb-4">
-            How are you feeling{' '}
-            <span className="text-gradient-accent">tonight?</span>
-          </h1>
-          <p className="text-[14.5px] text-muted/80 max-w-sm mx-auto leading-relaxed font-medium">
-            Configure your mood and context, and our AI will search OTT catalogs to map the perfect movie.
-          </p>
-        </motion.div>
+        {/* Board Workspace Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10 items-start">
+          
+          {/* Desktop Filter Sidebar (Sticky) */}
+          <aside className="hidden lg:block sticky top-24 max-h-[80vh] overflow-y-auto pr-4 scrollbar-thin">
+            <FilterSections />
+          </aside>
 
-        {/* ── 01. Mood ── */}
-        <FilterBlock step="01" title="Pick your mood" hint="Select multiple vibe matches">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {MOODS.map((mood) => {
-              const active = moods.includes(mood.id);
-              return (
-                <motion.button
-                  key={mood.id}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setMoods(prev => toggle(prev, mood.id))}
-                  className={`relative flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl text-left text-[13px] font-bold border transition-all duration-250 ${
-                    active
-                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
-                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
-                  }`}
+          {/* Results Grid */}
+          <main className="space-y-6">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Showing <strong>{filteredMovies.length}</strong> matches</span>
+            </div>
+
+            {filteredMovies.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-6">
+                {filteredMovies.map((movie, idx) => (
+                  <MovieCard key={movie.id} movie={movie} index={idx} />
+                ))}
+              </div>
+            ) : (
+              <div className="py-24 text-center border border-dashed border-white/5 rounded-3xl bg-white/[0.005]">
+                <Film className="w-10 h-10 mx-auto text-muted-foreground/35 mb-4" />
+                <h3 className="text-base font-bold text-white">No titles match filters</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed">
+                  Try adjusting genres, minimum ratings, or platform channels to broaden your discovery match.
+                </p>
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 px-4.5 py-2 rounded-xl bg-accent text-[12px] font-bold text-white hover:bg-accent/90"
                 >
-                  <span className="text-base leading-none">
-                    {React.createElement(MOOD_ICONS[mood.id] || Compass, { className: "w-4 h-4 text-accent-light shrink-0" })}
-                  </span>
-                  <span className="leading-tight capitalize">{mood.label}</span>
-                  {active && (
-                    <motion.div
-                      layoutId={`check-mood-${mood.id}`}
-                      className="ml-auto w-4.5 h-4.5 bg-accent rounded-full flex items-center justify-center flex-shrink-0"
-                    >
-                      <Check className="w-3 h-3 text-white" />
-                    </motion.div>
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── 02. Watching With ── */}
-        <FilterBlock step="02" title="Watching with?" hint="Adapts recommendations for groups" icon={<Users className="w-4 h-4 text-muted/40" />}>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {WATCHING_WITH.map((w) => {
-              const active = watchingWith === w.id;
-              return (
-                <motion.button
-                  key={w.id}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setWatchingWith(prev => toggleSingle(prev, w.id))}
-                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-250 ${
-                    active
-                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
-                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
-                  }`}
-                >
-                  <span className="text-xl mb-1">
-                    {React.createElement(w.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
-                  </span>
-                  <span className="text-[12.5px] font-bold">{w.label}</span>
-                  <span className="text-[9px] opacity-40 font-bold leading-normal mt-0.5">{w.desc}</span>
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── 03. Energy Level ── */}
-        <FilterBlock step="03" title="Energy level?" hint="Controls pacing & complexity" icon={<Zap className="w-4 h-4 text-muted/40" />}>
-          <div className="grid grid-cols-3 gap-2.5">
-            {ENERGY_LEVELS.map((e) => {
-              const active = energyLevel === e.id;
-              return (
-                <motion.button
-                  key={e.id}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setEnergyLevel(prev => toggleSingle(prev, e.id))}
-                  className={`flex flex-col items-center gap-2 px-3 py-4.5 rounded-2xl border text-center transition-all duration-250 ${
-                    active
-                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
-                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
-                  }`}
-                >
-                  <span className="text-xl mb-1">
-                    {React.createElement(e.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
-                  </span>
-                  <span className="text-[12.5px] font-bold">{e.label}</span>
-                  <span className="text-[9px] opacity-40 font-bold leading-normal mt-0.5">{e.desc}</span>
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── 04. Content Style ── */}
-        <FilterBlock step="04" title="Content style?" hint="Filters emotional tone" icon={<Palette className="w-4 h-4 text-muted/40" />}>
-          <div className="flex flex-wrap gap-2">
-            {CONTENT_STYLES.map((cs) => {
-              const active = contentStyles.includes(cs.id);
-              return (
-                <motion.button
-                  key={cs.id}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setContentStyles(prev => toggle(prev, cs.id))}
-                  className={`px-4.5 py-2.5 rounded-full border text-[12px] font-bold flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-                    active 
-                      ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
-                  }`}
-                >
-                  <span>
-                    {React.createElement(cs.icon, { className: "w-4 h-4 text-accent-light shrink-0" })}
-                  </span>
-                  {cs.label}
-                  {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── 05. Genre ── */}
-        <FilterBlock step="05" title="Preferred genres" hint="Optional Filter">
-          <div className="flex flex-wrap gap-2">
-            {GENRES.map((g) => {
-              const active = genres.includes(g.id);
-              return (
-                <motion.button
-                  key={g.id}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setGenres(prev => toggle(prev, g.id))}
-                  className={`px-4.5 py-2.5 rounded-full border text-[12px] font-bold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
-                    active
-                      ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
-                  }`}
-                >
-                  {g.label}
-                  {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── 06. Language ── */}
-        <FilterBlock step="06" title="Languages" hint="Optional Filter" icon={<Globe className="w-4 h-4 text-muted/40" />}>
-          <div className="flex flex-wrap gap-2">
-            {LANGUAGES.map((lang) => {
-              const active = languages.includes(lang.id);
-              return (
-                <motion.button
-                  key={lang.id}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setLanguages(prev => toggle(prev, lang.id))}
-                  className={`px-4.5 py-2.5 rounded-full border text-[12px] font-bold flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
-                    active
-                      ? 'bg-accent border-accent text-white shadow-[0_2px_12px_rgba(139,92,246,0.3)]'
-                      : 'bg-white/[0.03] border-white/[0.07] text-muted hover:bg-white/[0.06] hover:border-white/[0.12] hover:text-white'
-                  }`}
-                >
-                  {lang.label}
-                  <span className="text-muted/40 text-[10px] font-semibold">({lang.nativeLabel})</span>
-                  {active && <Check className="w-3.5 h-3.5 ml-0.5" />}
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── 07. Runtime ── */}
-        <FilterBlock step="07" title="Preferred duration" icon={<Clock className="w-4 h-4 text-muted/40" />}>
-          <div className="grid grid-cols-2 gap-2.5">
-            {RUNTIME_OPTIONS.map(opt => {
-              const active = runtime === opt.value;
-              return (
-                <motion.button
-                  key={opt.value}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setRuntime(opt.value)}
-                  className={`flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl border text-left transition-all duration-200 ${
-                    active
-                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
-                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
-                  }`}
-                >
-                  <span className="text-xl">
-                    {React.createElement(opt.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
-                  </span>
-                  <div>
-                    <span className="text-[13px] font-extrabold block leading-none mb-1">{opt.label}</span>
-                    <span className="text-[10px] opacity-40 font-bold">{opt.sub}</span>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── 08. Content Type ── */}
-        <FilterBlock step="08" title="Content format" icon={<Film className="w-4 h-4 text-muted/40" />}>
-          <div className="grid grid-cols-3 gap-2.5">
-            {CONTENT_TYPES.map(opt => {
-              const active = types.includes(opt.id);
-              return (
-                <motion.button
-                  key={opt.id}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setTypes(prev => toggle(prev, opt.id))}
-                  className={`flex flex-col items-center gap-2 px-4 py-4.5 rounded-2xl border text-center transition-all duration-200 ${
-                    active
-                      ? 'bg-accent/10 border-accent/40 text-white shadow-[0_4px_20px_rgba(139,92,246,0.15)]'
-                      : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-white'
-                  }`}
-                >
-                  <span className="text-xl">
-                    {React.createElement(opt.icon, { className: "w-5 h-5 text-accent-light shrink-0" })}
-                  </span>
-                  <span className="text-[13px] font-bold leading-none mb-0.5">{opt.label}</span>
-                  <span className="text-[9.5px] opacity-40 font-bold">{opt.sub}</span>
-                </motion.button>
-              );
-            })}
-          </div>
-        </FilterBlock>
-
-        {/* ── CTA ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-12"
-        >
-          <motion.button
-            whileHover={canDiscover ? { scale: 1.02, y: -1 } : {}}
-            whileTap={canDiscover ? { scale: 0.98 } : {}}
-            onClick={handleDiscover}
-            disabled={!canDiscover}
-            className={`w-full relative flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-[14px] tracking-wide transition-all duration-300 select-none overflow-hidden ${
-              canDiscover
-                ? 'text-white cursor-pointer'
-                : 'text-muted/40 cursor-not-allowed bg-white/[0.02] border border-white/[0.05]'
-            }`}
-            style={canDiscover ? {
-              background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-              boxShadow: '0 8px 40px rgba(139,92,246,0.4), 0 0 0 1px rgba(139,92,246,0.25)',
-            } : {}}
-          >
-            {canDiscover && (
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent -translate-x-full"
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.8 }}
-              />
+                  Clear Filters
+                </button>
+              </div>
             )}
-            <Sparkles className="w-4.5 h-4.5 relative z-10" />
-            <span className="relative z-10 font-black uppercase tracking-widest">
-              {canDiscover ? 'Find My Perfect Watch' : 'Select a mood to continue'}
-            </span>
-            {canDiscover && <ArrowRight className="w-4.5 h-4.5 relative z-10" />}
-          </motion.button>
-        </motion.div>
+          </main>
+
+        </div>
+
       </div>
+
+      {/* Mobile Drawer (Bottom Sheet) */}
+      <AnimatePresence>
+        {mobileFiltersOpen && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center lg:hidden">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileFiltersOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-full max-h-[85vh] bg-[#0A0C14] border-t border-white/10 rounded-t-[28px] z-10 flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4.5 border-b border-white/[0.06] shrink-0">
+                <span className="text-sm font-black text-white uppercase tracking-wider">Filters</span>
+                <button
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Scrollable Filters */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <FilterSections />
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 border-t border-white/[0.06] shrink-0 flex items-center gap-3">
+                <button
+                  onClick={clearFilters}
+                  className="flex-1 py-3.5 rounded-xl border border-white/10 text-[12.5px] font-bold text-white"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="flex-1 py-3.5 bg-accent rounded-xl text-[12.5px] font-bold text-white"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-const FilterBlock: React.FC<{
-  step: string;
-  title: string;
-  hint?: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ step, title, hint, icon, children }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 16 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-40px' }}
-    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-    className="mb-12 border-b border-white/[0.03] pb-10 last:border-0 last:pb-0"
-  >
-    <div className="flex items-center gap-3 mb-5 select-none">
-      <span className="text-[11px] font-extrabold text-accent/50 font-mono tracking-widest shrink-0">{step}</span>
-      <h3 className="text-[14.5px] font-bold text-white flex items-center gap-2">
-        {icon}
-        {title}
-      </h3>
-      {hint && <span className="text-[11.5px] font-bold text-muted/40 ml-auto">{hint}</span>}
-    </div>
-    {children}
-  </motion.div>
-);
-
 export default function Discover() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-bold">Loading discover wizard...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-bold">Loading discover boards...</div>}>
       <DiscoverContent />
     </Suspense>
   );

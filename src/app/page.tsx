@@ -5,24 +5,18 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import {
   Sparkles, TrendingUp, ChevronRight, Play, Star, ArrowRight, Clock,
   Flame, Gem, Film, Globe, Search, Plus, Check, Compass, Info,
-  Heart, Zap, Laugh, Moon, Sun, Droplets, Coffee, Ghost, Brain, AlertCircle
+  Heart, Zap, Laugh, Moon, Sun, Droplets, Coffee, Ghost, Brain, Tv, Calendar
 } from 'lucide-react';
 import Link from 'next/link';
 import { MovieCard } from '../components/cards/MovieCard';
 import { SearchOverlay } from '../components/search/SearchOverlay';
-import {
-  getTrendingMovies, getTopRatedMovies, getFreeMovies,
-  getAIPicks, getBollywoodMovies, getHollywoodMovies, getHiddenGems, MOVIES,
-  MOODS,
-} from '../lib/mockData';
+import { MOVIES, MOODS } from '../lib/mockData';
 import { OTTBadgeList } from '../components/badges/OTTBadge';
 import { useHistory } from '../context/HistoryContext';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useToast } from '../context/ToastContext';
 import { PROVIDER_REGISTRY } from '../lib/providers';
 
-const HERO_MOVIES = [MOVIES[0], MOVIES[2], MOVIES[4], MOVIES[7], MOVIES[9]].filter(Boolean);
-const TONIGHT = MOVIES[5]; // 12th Fail
 const FALLBACK_BG = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&q=90';
 
 const MOOD_ICONS: Record<string, React.ComponentType<any>> = {
@@ -72,6 +66,24 @@ const Section: React.FC<SectionProps> = ({ title, subtitle, badge, children, vie
   </motion.section>
 );
 
+const SkeletonCard = () => (
+  <div className="flex-shrink-0 w-[165px] sm:w-[190px] space-y-3 animate-pulse">
+    <div className="aspect-poster rounded-[20px] bg-white/5 border border-white/5" />
+    <div className="h-4 bg-white/10 rounded w-4/5" />
+    <div className="flex justify-between">
+      <div className="h-3 bg-white/5 rounded w-1/4" />
+      <div className="h-3 bg-white/5 rounded w-1/3" />
+    </div>
+  </div>
+);
+
+const EmptyState = ({ message = "No titles available in this shelf." }) => (
+  <div className="w-full py-10 flex flex-col items-center justify-center text-center text-muted-foreground/60 border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+    <Film className="w-8 h-8 mb-2 opacity-40" />
+    <p className="text-sm font-medium">{message}</p>
+  </div>
+);
+
 export default function Home() {
   const heroRef = React.useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -82,6 +94,15 @@ export default function Home() {
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
 
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Simulate loading data from backend APIs
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!heroRef.current) return;
@@ -95,20 +116,13 @@ export default function Home() {
   const [heroIndex, setHeroIndex] = React.useState(0);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [imgErrors, setImgErrors] = React.useState<Record<number, boolean>>({});
-  const [tonightImgError, setTonightImgError] = React.useState(false);
   const [isTransitioning, setIsTransitioning] = React.useState(false);
 
   const { continueWatching } = useHistory();
   const { addToWatchlist, removeFromWatchlist, inWatchlist } = useWatchlist();
   const { showToast } = useToast();
 
-  const trending = getTrendingMovies();
-  const topRated = getTopRatedMovies();
-  const free = getFreeMovies();
-  const aiPicks = getAIPicks();
-  const bollywood = getBollywoodMovies();
-  const hollywood = getHollywoodMovies();
-  const hidden = getHiddenGems();
+  const HERO_MOVIES = [MOVIES[0], MOVIES[2], MOVIES[4], MOVIES[7], MOVIES[9]].filter(Boolean);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -119,10 +133,18 @@ export default function Home() {
       }, 450);
     }, 9000);
     return () => clearInterval(interval);
-  }, []);
+  }, [HERO_MOVIES.length]);
 
   const HERO = HERO_MOVIES[heroIndex];
-  const heroImgSrc = imgErrors[HERO?.id] ? FALLBACK_BG : HERO?.backdropPath;
+  const heroImgSrc = HERO ? (imgErrors[HERO.id] ? FALLBACK_BG : HERO.backdropPath) : FALLBACK_BG;
+
+  // Set up specific sections
+  const trending = MOVIES.filter(m => m.isTrending).slice(0, 8);
+  const popularMovies = MOVIES.filter(m => m.type === 'movie' && m.rating >= 7.2).slice(0, 8);
+  const popularTVShows = MOVIES.filter(m => m.type === 'tv').slice(0, 8);
+  const topRated = MOVIES.filter(m => m.isTopRated).slice(0, 8);
+  const upcomingReleases = MOVIES.filter(m => m.year === 2024).slice(0, 8);
+  const weekendPicks = MOVIES.filter(m => m.isAIPick).slice(0, 8);
 
   if (!HERO) return null;
 
@@ -141,7 +163,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#050505]">
-
       {/* ══════════════════════════════════════
           HERO — Cinematic Rotating Backdrop
       ══════════════════════════════════════ */}
@@ -170,12 +191,12 @@ export default function Home() {
             <img
               src={heroImgSrc}
               alt=""
-              className="w-full h-full object-cover opacity-80"
+              className="w-full h-full object-cover opacity-85 filter brightness-90"
               onError={() => setImgErrors(p => ({ ...p, [HERO.id]: true }))}
             />
             {/* Cinematic Overlay Gradients */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/90 via-[#050505]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/95 via-[#050505]/40 to-transparent" />
           </motion.div>
         </AnimatePresence>
 
@@ -236,9 +257,9 @@ export default function Home() {
                         </span>
                       </div>
                       <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 backdrop-blur-md">
-                        <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400 animate-pulse" />
+                        <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
                         <span className="text-[10px] font-black text-orange-400 uppercase tracking-wider">
-                          #1 Trending Now
+                          Trending Now
                         </span>
                       </div>
                     </div>
@@ -351,7 +372,7 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════
-          MOOD ROW (RIBON)
+          MOOD ROW (RIBBON)
       ══════════════════════════════════════ */}
       <div className="relative border-y border-white/[0.04] bg-white/[0.01] backdrop-blur-md z-20">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-5">
@@ -396,8 +417,7 @@ export default function Home() {
                     whileTap={{ scale: 0.95 }}
                     className="w-12 h-12 rounded-full flex items-center justify-center bg-white/[0.02] border border-white/[0.06] hover:border-accent/40 hover:bg-white/[0.06] hover:shadow-[0_0_15px_rgba(139,92,246,0.35)] transition-all duration-300 relative group shrink-0 cursor-pointer"
                   >
-                    <img src={prov.logo} alt={prov.name} className="w-6 h-6 object-contain" onError={(e) => { (e.target as any).style.display = 'none'; }} />
-                    <span className="text-[10px] font-bold text-white/70 group-hover:text-white absolute">{prov.name.charAt(0)}</span>
+                    <img src={prov.logo} alt={prov.name} className="w-6 h-6 object-contain" />
                     <span className="absolute bottom-[-32px] left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 bg-black/90 border border-white/10 text-[9px] font-bold px-2 py-0.5 rounded text-white whitespace-nowrap transition-all duration-200 z-50">
                       {prov.name}
                     </span>
@@ -408,8 +428,8 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="max-w-[1400px] mx-auto pt-10 pb-20">
 
+      <div className="max-w-[1400px] mx-auto pt-10 pb-20">
         {/* Continue Watching / Recent */}
         {continueWatching && continueWatching.length > 0 && (
           <Section
@@ -417,109 +437,111 @@ export default function Home() {
             subtitle="Recent entertainment scans"
             badge={<Clock className="w-4 h-4 text-accent-light" />}
           >
-            {continueWatching.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
+            {isLoading ? (
+              [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
+            ) : (
+              continueWatching.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+            )}
           </Section>
         )}
 
-        {/* Popular this Week */}
+        {/* 1. Trending Now */}
         <div id="trending-row">
           <Section
-            title="Popular This Week"
-            subtitle="Trending across primary streaming platforms"
-            badge={<Flame className="w-4 h-4 text-orange-400" />}
+            title="Trending Now"
+            subtitle="What's hot across premium OTT services"
+            badge={<Flame className="w-4 h-4 text-orange-500" />}
             viewAllTo="/discover"
           >
-            {trending.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
+            {isLoading ? (
+              [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
+            ) : trending.length > 0 ? (
+              trending.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+            ) : (
+              <EmptyState message="No trending movies matches right now." />
+            )}
           </Section>
         </div>
 
-        {/* Available Free Section */}
+        {/* 2. Popular Movies */}
         <Section
-          title="Available Free"
-          subtitle="Desi hits & streaming favorites (No subscription)"
-          badge={<Globe className="w-4 h-4 text-emerald-400" />}
-          viewAllTo="/discover"
+          title="Popular Movies"
+          subtitle="Top movie blockbusters this season"
+          badge={<Film className="w-4 h-4 text-violet-400" />}
+          viewAllTo="/discover?type=movie"
         >
-          {free.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
+          {isLoading ? (
+            [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
+          ) : popularMovies.length > 0 ? (
+            popularMovies.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+          ) : (
+            <EmptyState message="No popular movies available." />
+          )}
         </Section>
 
-        {/* AI Picks For You */}
-        <motion.section
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
-          className="mb-14 px-6 lg:px-10"
-        >
-          <div className="rounded-3xl border border-accent/15 bg-gradient-to-r from-accent/5 via-transparent to-transparent p-6 sm:p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-[90px] pointer-events-none" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-accent-light" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">AI Engine Match Recommendations</h3>
-                    <p className="text-xs text-muted mt-0.5">Custom computed on-device database picks</p>
-                  </div>
-                </div>
-                <Link href="/discover" className="text-[12px] font-bold text-accent-light hover:underline">
-                  Personalize Discover
-                </Link>
-              </div>
-              <div className="flex gap-4 overflow-x-auto scroll-row pb-2 fade-edges-sm">
-                {aiPicks.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
-              </div>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Top Rated Section */}
+        {/* 3. Popular TV Shows */}
         <Section
-          title="Top Rated Masterpieces"
+          title="Popular TV Shows"
+          subtitle="Trending episodic drama & comedies"
+          badge={<Tv className="w-4 h-4 text-sky-400" />}
+          viewAllTo="/discover?type=tv"
+        >
+          {isLoading ? (
+            [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
+          ) : popularTVShows.length > 0 ? (
+            popularTVShows.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+          ) : (
+            <EmptyState message="No popular TV shows available." />
+          )}
+        </Section>
+
+        {/* 4. Top Rated */}
+        <Section
+          title="Top Rated"
           subtitle="Highest rating metrics across catalogs"
           badge={<Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
           viewAllTo="/discover"
         >
-          {topRated.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
+          {isLoading ? (
+            [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
+          ) : topRated.length > 0 ? (
+            topRated.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+          ) : (
+            <EmptyState message="No top rated movies available." />
+          )}
         </Section>
 
-        {/* Spotlights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-14 px-6 lg:px-10">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-[15px] font-bold text-white">Bollywood Spotlight</h3>
-                <p className="text-[11px] text-muted">Desi storytelling at its best</p>
-              </div>
-            </div>
-            <div className="flex gap-4 overflow-x-auto scroll-row pb-2 fade-edges-sm">
-              {bollywood.slice(0, 6).map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-[15px] font-bold text-white">Hollywood Blockbusters</h3>
-                <p className="text-[11px] text-muted">Global stories & box office hits</p>
-              </div>
-            </div>
-            <div className="flex gap-4 overflow-x-auto scroll-row pb-2 fade-edges-sm">
-              {hollywood.slice(0, 6).map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
-            </div>
-          </div>
-        </div>
-
-        {/* Hidden Gems Section */}
+        {/* 5. Upcoming Releases */}
         <Section
-          title="Hidden Gems"
-          subtitle="Criminally underrated cinema worth discovering"
-          badge={<Gem className="w-4 h-4 text-violet-400" />}
+          title="Upcoming Releases"
+          subtitle="Most anticipated fresh additions"
+          badge={<Calendar className="w-4 h-4 text-[#8B5CF6]" />}
           viewAllTo="/discover"
         >
-          {hidden.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
+          {isLoading ? (
+            [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
+          ) : upcomingReleases.length > 0 ? (
+            upcomingReleases.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+          ) : (
+            <EmptyState message="No upcoming releases available." />
+          )}
         </Section>
 
+        {/* 6. Weekend Picks */}
+        <Section
+          title="Weekend Picks"
+          subtitle="AI computed match recommendations for your weekend"
+          badge={<Sparkles className="w-4 h-4 text-accent-light" />}
+          viewAllTo="/discover"
+        >
+          {isLoading ? (
+            [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
+          ) : weekendPicks.length > 0 ? (
+            weekendPicks.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+          ) : (
+            <EmptyState message="No weekend picks recommendations." />
+          )}
+        </Section>
       </div>
 
       {/* Global Search Overlay */}

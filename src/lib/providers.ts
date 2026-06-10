@@ -20,10 +20,10 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     logo: '/providers/prime-video.png',
     type: 'subscription'
   },
-  'disney-hotstar': {
-    id: 'disney-hotstar',
-    name: 'Disney+ Hotstar',
-    logo: '/providers/disney-hotstar.png',
+  'jiohotstar': {
+    id: 'jiohotstar',
+    name: 'JioHotstar',
+    logo: '/providers/jiohotstar.png',
     type: 'subscription'
   },
   'sonyliv': {
@@ -32,40 +32,22 @@ export const PROVIDER_REGISTRY: Record<string, OTTProvider> = {
     logo: '/providers/sonyliv.png',
     type: 'subscription'
   },
-  'jiohotstar': {
-    id: 'jiohotstar',
-    name: 'JioHotstar',
-    logo: '/providers/jiohotstar.png',
+  'zee5': {
+    id: 'zee5',
+    name: 'ZEE5',
+    logo: '/providers/zee5.png',
     type: 'subscription'
   },
   'apple-tv': {
     id: 'apple-tv',
-    name: 'Apple TV',
+    name: 'Apple TV+',
     logo: '/providers/apple-tv.png',
     type: 'rent'
-  },
-  'zee5': {
-    id: 'zee5',
-    name: 'Zee5',
-    logo: '/providers/zee5.png',
-    type: 'subscription'
-  },
-  'mx-player': {
-    id: 'mx-player',
-    name: 'MX Player',
-    logo: '/providers/mx-player.png',
-    type: 'free'
   },
   'crunchyroll': {
     id: 'crunchyroll',
     name: 'Crunchyroll',
     logo: '/providers/crunchyroll.png',
-    type: 'subscription'
-  },
-  'lionsgate-play': {
-    id: 'lionsgate-play',
-    name: 'Lionsgate Play',
-    logo: '/providers/lionsgate-play.png',
     type: 'subscription'
   }
 };

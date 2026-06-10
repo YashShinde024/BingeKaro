@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, TrendingUp, Clock, Star, Sparkles, ArrowRight, Filter } from 'lucide-react';
+import { Search, X, TrendingUp, Clock, Star, Sparkles, ArrowRight, Filter, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Movie, OTTProviderId } from '../../types';
-import { MOVIES } from '../../lib/mockData';
+import { MOVIES, ACTORS } from '../../lib/mockData';
 import { ProviderLogo } from '../badges/ProviderLogo';
 
 interface SearchOverlayProps {
@@ -15,33 +15,30 @@ interface SearchOverlayProps {
 }
 
 const TRENDING_SEARCHES = [
-  '🔥 Stree 2', '🌊 Maharaja', '⚡ Animal', '🎭 The Bear',
-  '🏆 Scam 1992', '🎬 Dune',
+  'Stree 2', 'Maharaja', 'Animal', 'The Bear',
+  'Scam 1992', 'Dune',
 ];
 
 const FILTER_PROVIDERS: { id: OTTProviderId; label: string }[] = [
   { id: 'netflix', label: 'Netflix' },
   { id: 'prime-video', label: 'Prime Video' },
-  { id: 'disney-hotstar', label: 'Disney+ Hotstar' },
-  { id: 'sonyliv', label: 'SonyLIV' },
   { id: 'jiohotstar', label: 'JioHotstar' },
-  { id: 'apple-tv', label: 'Apple TV' },
-  { id: 'zee5', label: 'Zee5' },
-  { id: 'mx-player', label: 'MX Player' },
-  { id: 'crunchyroll', label: 'Crunchyroll' },
-  { id: 'lionsgate-play', label: 'Lionsgate Play' },
+  { id: 'sonyliv', label: 'SonyLIV' },
+  { id: 'zee5', label: 'ZEE5' },
+  { id: 'apple-tv', label: 'Apple TV+' },
+  { id: 'crunchyroll', label: 'Crunchyroll' }
 ];
 
 const FALLBACK = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=200&q=80';
 const FEATURED = MOVIES.filter(m => m.rating >= 8.2).slice(0, 4);
 
 const SearchSkeleton = () => (
-  <div className="p-4 space-y-3">
+  <div className="p-5 space-y-4">
     <div className="h-4 bg-white/5 rounded w-1/4 animate-pulse mb-3" />
     {[1, 2, 3].map(i => (
       <div key={i} className="flex items-center gap-4 p-3 rounded-2xl bg-white/[0.01] border border-white/[0.03] animate-pulse">
         <div className="w-10 h-14 bg-white/5 rounded-lg shrink-0" />
-        <div className="flex-1 space-y-2.5 min-w-0">
+        <div className="flex-1 space-y-2 min-w-0">
           <div className="h-3.5 bg-white/10 rounded w-1/2" />
           <div className="h-3 bg-white/5 rounded w-1/3" />
         </div>
@@ -52,7 +49,9 @@ const SearchSkeleton = () => (
 
 export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = React.useState('');
-  const [results, setResults] = React.useState<Movie[]>([]);
+  const [movieResults, setMovieResults] = React.useState<Movie[]>([]);
+  const [tvResults, setTvResults] = React.useState<Movie[]>([]);
+  const [peopleResults, setPeopleResults] = React.useState<any[]>([]);
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const [recentSearches, setRecentSearches] = React.useState<string[]>([]);
   const [selectedProvider, setSelectedProvider] = React.useState<OTTProviderId | null>(null);
@@ -74,16 +73,29 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
       setSelectedIndex(-1);
     } else {
       setQuery('');
-      setResults([]);
+      setMovieResults([]);
+      setTvResults([]);
+      setPeopleResults([]);
       setSelectedIndex(-1);
       setSelectedProvider(null);
     }
   }, [isOpen]);
 
+  // Combined Flat List for Keyboard Nav
+  const flatResults = React.useMemo(() => {
+    return [
+      ...movieResults.map(m => ({ type: 'movie', data: m })),
+      ...tvResults.map(t => ({ type: 'tv', data: t })),
+      ...peopleResults.map(p => ({ type: 'person', data: p }))
+    ];
+  }, [movieResults, tvResults, peopleResults]);
+
   React.useEffect(() => {
     const q = query.toLowerCase().trim();
     if (!q && !selectedProvider) {
-      setResults([]);
+      setMovieResults([]);
+      setTvResults([]);
+      setPeopleResults([]);
       setIsLoading(false);
       return;
     }
@@ -104,7 +116,21 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
         found = found.filter(m => m.providers.includes(selectedProvider));
       }
 
-      setResults(found.slice(0, 6));
+      // Categorize Movies vs TV Shows
+      setMovieResults(found.filter(m => m.type === 'movie').slice(0, 4));
+      setTvResults(found.filter(m => m.type === 'tv').slice(0, 4));
+
+      // Query People (Actors)
+      if (q) {
+        const foundActors = ACTORS.filter(a => 
+          a.name.toLowerCase().includes(q) || 
+          a.knownFor.some(k => k.toLowerCase().includes(q))
+        );
+        setPeopleResults(foundActors.slice(0, 3));
+      } else {
+        setPeopleResults([]);
+      }
+
       setIsLoading(false);
     }, 250);
 
@@ -132,19 +158,24 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (results.length === 0) return;
+    if (flatResults.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => (prev + 1) % results.length);
+      setSelectedIndex(prev => (prev + 1) % flatResults.length);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex(prev => (prev - 1 + results.length) % results.length);
+      setSelectedIndex(prev => (prev - 1 + flatResults.length) % flatResults.length);
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const target = selectedIndex >= 0 ? results[selectedIndex] : results[0];
+      const target = selectedIndex >= 0 ? flatResults[selectedIndex] : flatResults[0];
       if (target) {
-        saveRecentSearch(query || target.title);
-        router.push(`/movie/${target.id}`);
+        if (target.type === 'person') {
+          saveRecentSearch(query || target.data.name);
+          router.push(`/discover?search=${target.data.name}`);
+        } else {
+          saveRecentSearch(query || target.data.title);
+          router.push(`/movie/${target.data.id}`);
+        }
         onClose();
       }
     }
@@ -160,8 +191,9 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
     localStorage.removeItem('kd_recent_searches');
   };
 
-  const showResults = !isLoading && (results.length > 0 || selectedProvider !== null);
-  const showEmpty = !isLoading && (query.trim().length >= 2 || selectedProvider) && results.length === 0;
+  const hasResults = flatResults.length > 0;
+  const showResults = !isLoading && (hasResults || selectedProvider !== null);
+  const showEmpty = !isLoading && (query.trim().length >= 2 || selectedProvider) && !hasResults;
   const showPreQuery = !isLoading && !showResults && !showEmpty;
 
   return (
@@ -176,6 +208,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <div className="max-w-xl w-full mx-auto px-4 pt-16 sm:pt-24">
+            
             {/* Search Input Bar */}
             <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0C0E17] shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
               <Search className="absolute left-4 w-4.5 h-4.5 text-muted/60" />
@@ -185,7 +218,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Search movies, TV shows, genres..."
+                placeholder="Search movies, TV shows, directors, actors..."
                 className="flex-1 bg-transparent text-white placeholder-muted/30 text-[14.5px] py-4.5 pl-12 pr-4 outline-none font-medium"
               />
               {query && (
@@ -199,24 +232,22 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
             <div className="flex items-center gap-1.5 overflow-x-auto py-3.5 scrollbar-none mt-2">
               <span className="text-[10px] font-black text-muted/40 uppercase shrink-0 mr-1.5 flex items-center gap-1 select-none">
                 <Filter className="w-3 h-3" />
-                Filter:
+                Platform:
               </span>
               {FILTER_PROVIDERS.map(prov => {
                 const active = selectedProvider === prov.id;
                 return (
-                  <motion.button
+                  <button
                     key={prov.id}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
                     onClick={() => setSelectedProvider(active ? null : prov.id)}
                     className={`px-3.5 py-1.5 rounded-xl text-[11px] font-bold border shrink-0 transition-all ${
                       active 
                         ? 'bg-accent border-accent text-white shadow-[0_0_12px_rgba(139,92,246,0.35)]'
-                        : 'bg-white/[0.02] border-white/[0.06] text-muted hover:bg-white/[0.05] hover:text-white'
+                        : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:bg-white/[0.05] hover:text-white'
                     }`}
                   >
                     {prov.label}
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
@@ -230,47 +261,113 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
               {isLoading && <SearchSkeleton />}
 
               {/* Show Results List */}
-              {showResults && results.length > 0 && (
-                <div className="p-2 space-y-0.5">
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.04] mb-1.5 select-none">
-                    <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest">Search Matches</span>
-                    <span className="text-[9.5px] text-muted/40 font-mono">Use Arrow Keys & Enter</span>
-                  </div>
+              {showResults && hasResults && (
+                <div className="p-2 space-y-4">
+                  {/* Flat item rendering mapped to global keyboard index */}
+                  
+                  {/* Category: Movies */}
+                  {movieResults.length > 0 && (
+                    <div className="space-y-1">
+                      <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest px-3 select-none">Movies</span>
+                      {movieResults.map((movie, i) => {
+                        const globalIdx = i;
+                        const active = globalIdx === selectedIndex;
+                        return (
+                          <Link
+                            key={movie.id}
+                            href={`/movie/${movie.id}`}
+                            onClick={() => handleResultClick(movie.title)}
+                            className={`flex items-center gap-4 p-2.5 rounded-2xl border border-transparent transition-all ${
+                              active ? 'bg-accent/10 border-accent/20 text-white' : 'hover:bg-white/[0.02]'
+                            }`}
+                          >
+                            <div className="w-10 h-14 rounded-lg overflow-hidden bg-white/5 shrink-0 border border-white/5">
+                              <img src={movie.posterPath} alt="" className="w-full h-full object-cover" onError={e => ((e.target as any).src = FALLBACK)} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13.5px] font-bold text-white truncate">{movie.title}</p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-[11px] text-muted-foreground font-semibold">{movie.year}</span>
+                                <span className="w-1 h-1 bg-white/10 rounded-full" />
+                                <div className="flex items-center gap-0.5 text-white/80 font-bold text-[11px]">
+                                  <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                                  {movie.rating.toFixed(1)}
+                                </div>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-muted/40" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
 
-                  {results.map((movie, i) => (
-                    <Link
-                      key={movie.id}
-                      href={`/movie/${movie.id}`}
-                      onClick={() => handleResultClick(movie.title)}
-                      className={`flex items-center gap-4 p-2.5 rounded-2xl border border-transparent transition-all ${
-                        i === selectedIndex
-                          ? 'bg-accent/10 border-accent/20 text-white'
-                          : 'hover:bg-white/[0.02]'
-                      }`}
-                    >
-                      <div className="w-10 h-14 rounded-lg overflow-hidden bg-white/5 shrink-0 border border-white/5">
-                        <img src={movie.posterPath} alt="" className="w-full h-full object-cover" onError={e => ((e.target as any).src = FALLBACK)} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13.5px] font-bold text-white truncate">{movie.title}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[11px] text-muted/60 font-semibold">{movie.year}</span>
-                          <span className="w-1 h-1 bg-white/10 rounded-full" />
-                          <div className="flex items-center gap-0.5 text-white/80 font-bold text-[11px]">
-                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                            {movie.rating.toFixed(1)}
-                          </div>
-                        </div>
-                        {/* Provider Logos */}
-                        <div className="flex items-center gap-1 mt-1.5">
-                          {movie.providers.map(prov => (
-                            <ProviderLogo key={prov} provider={prov} size="xs" />
-                          ))}
-                        </div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-muted/40" />
-                    </Link>
-                  ))}
+                  {/* Category: TV Shows */}
+                  {tvResults.length > 0 && (
+                    <div className="space-y-1">
+                      <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest px-3 select-none">TV Shows</span>
+                      {tvResults.map((tv, i) => {
+                        const globalIdx = movieResults.length + i;
+                        const active = globalIdx === selectedIndex;
+                        return (
+                          <Link
+                            key={tv.id}
+                            href={`/movie/${tv.id}`}
+                            onClick={() => handleResultClick(tv.title)}
+                            className={`flex items-center gap-4 p-2.5 rounded-2xl border border-transparent transition-all ${
+                              active ? 'bg-accent/10 border-accent/20 text-white' : 'hover:bg-white/[0.02]'
+                            }`}
+                          >
+                            <div className="w-10 h-14 rounded-lg overflow-hidden bg-white/5 shrink-0 border border-white/5">
+                              <img src={tv.posterPath} alt="" className="w-full h-full object-cover" onError={e => ((e.target as any).src = FALLBACK)} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13.5px] font-bold text-white truncate">{tv.title}</p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-[11px] text-muted-foreground font-semibold">{tv.year}</span>
+                                <span className="w-1 h-1 bg-white/10 rounded-full" />
+                                <div className="flex items-center gap-0.5 text-white/80 font-bold text-[11px]">
+                                  <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                                  {tv.rating.toFixed(1)}
+                                </div>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-muted/40" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Category: People */}
+                  {peopleResults.length > 0 && (
+                    <div className="space-y-1">
+                      <span className="text-[9.5px] font-extrabold text-white/40 uppercase tracking-widest px-3 select-none">People</span>
+                      {peopleResults.map((person, i) => {
+                        const globalIdx = movieResults.length + tvResults.length + i;
+                        const active = globalIdx === selectedIndex;
+                        return (
+                          <Link
+                            key={person.id}
+                            href={`/discover?search=${person.name}`}
+                            onClick={() => handleResultClick(person.name)}
+                            className={`flex items-center gap-4 p-2.5 rounded-2xl border border-transparent transition-all ${
+                              active ? 'bg-accent/10 border-accent/20 text-white' : 'hover:bg-white/[0.02]'
+                            }`}
+                          >
+                            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                              <User className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13.5px] font-bold text-white truncate">{person.name}</p>
+                              <p className="text-[11px] text-muted-foreground truncate">Known for: {person.knownFor.slice(0, 2).join(', ')}</p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-muted/40" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -281,7 +378,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                     <Search className="w-5 h-5" />
                   </div>
                   <p className="text-[14px] font-bold text-white font-sans">No matches found</p>
-                  <p className="text-[11.5px] text-muted/50 mt-1 max-w-xs mx-auto leading-relaxed">No movies or TV shows matched your filters. Try checking your spelling or clearing active filters.</p>
+                  <p className="text-[11.5px] text-muted/50 mt-1 max-w-xs mx-auto leading-relaxed">No movies, TV shows, or people matched your search criteria.</p>
                 </div>
               )}
 
@@ -307,7 +404,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                               setQuery(term);
                               saveRecentSearch(term);
                             }}
-                            className="px-3.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] text-white/90 text-[11.5px] font-semibold transition-all"
+                            className="px-3.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] text-white/95 text-[11.5px] font-semibold transition-all"
                           >
                             {term}
                           </button>
@@ -326,11 +423,10 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         <button
                           key={term}
                           onClick={() => {
-                            const cleaned = term.replace(/🔥|🌊|⚡|🎭|🏆|🎬/g, '').trim();
-                            setQuery(cleaned);
-                            saveRecentSearch(cleaned);
+                            setQuery(term);
+                            saveRecentSearch(term);
                           }}
-                          className="px-3.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] text-white/90 text-[11.5px] font-semibold transition-all"
+                          className="px-3.5 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-white/[0.1] text-white/95 text-[11.5px] font-semibold transition-all"
                         >
                           {term}
                         </button>
