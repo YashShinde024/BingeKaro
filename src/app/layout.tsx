@@ -9,14 +9,29 @@ import "../index.css";
 import "../App.css";
 
 export const metadata: Metadata = {
-  title: "BingeKaro – Find Your Next Obsession",
-  description: "AI-powered movie and TV show discovery platform that helps you instantly find what to watch across streaming services.",
+  metadataBase: new URL('https://binge-karo.vercel.app'),
+  title: {
+    default: "BingeKaro",
+    template: "%s | BingeKaro"
+  },
+  description: "Discover movies, TV shows and streaming platforms with BingeKaro.",
   keywords: ["BingeKaro", "Movie Recommendation AI", "What To Watch", "OTT Discovery", "Streaming Guide", "AI Movie Finder"],
+  alternatives: {
+    canonical: '/',
+  },
   openGraph: {
-    title: "BingeKaro – Find Your Next Obsession",
-    description: "AI-powered movie and TV show discovery platform that helps you instantly find what to watch across streaming services.",
+    title: "BingeKaro",
+    description: "Discover movies, TV shows and streaming platforms with BingeKaro.",
+    url: "https://binge-karo.vercel.app",
+    siteName: "BingeKaro",
+    locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "BingeKaro",
+    description: "Discover movies, TV shows and streaming platforms with BingeKaro.",
+  }
 };
 
 export const viewport: Viewport = {
