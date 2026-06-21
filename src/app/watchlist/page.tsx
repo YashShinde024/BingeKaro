@@ -9,6 +9,7 @@ import type { WatchlistStatus } from '../../context/WatchlistContext';
 import type { OTTProviderId } from '../../types';
 import { PROVIDER_REGISTRY } from '../../lib/providers';
 import { MovieCard } from '../../components/cards/MovieCard';
+import { OptimizedImage } from '../../components/ui/OptimizedImage';
 
 const FALLBACK = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=80';
 
@@ -373,94 +374,117 @@ export default function WatchlistPage() {
         {sorted.length === 0 ? (
           <EmptyWatchlist activeTab={activeTab} />
         ) : view === 'grid' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
-            {sorted.map((movie, i) => (
-              <div key={movie.id} className="relative group">
-                <div className="absolute top-2 left-2 z-20">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(movie.id)}
-                    onChange={() => handleToggleSelect(movie.id)}
-                    className="w-4 h-4 rounded border-white/10 bg-black/60 checked:bg-accent text-accent cursor-pointer opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
-                  />
-                </div>
-                <MovieCard movie={movie} index={i} />
-
-                {/* Hover Quick Status Changer */}
-                <div className="absolute bottom-16 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0C0E17]/95 backdrop-blur-md rounded-lg p-1.5 border border-white/10 flex flex-col gap-1.5">
-                  {STATUS_TABS.map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => updateMovieStatus(movie.id, tab.id)}
-                      className={`text-[10px] font-bold p-1 rounded hover:bg-white/10 text-left flex items-center gap-1 ${
-                        (movieStatuses[movie.id] || 'want-to-watch') === tab.id ? 'text-accent-light' : 'text-white/70'
-                      }`}
-                    >
-                      {React.createElement(tab.icon, { className: "w-3.5 h-3.5 shrink-0" })}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            {sorted.map((movie) => {
-              const isSelected = selectedIds.includes(movie.id);
-              return (
-                <div
+          <motion.div layout className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
+            <AnimatePresence mode="popLayout">
+              {sorted.map((movie, i) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, y: 15 }}
+                  transition={{ duration: 0.2 }}
                   key={movie.id}
-                  className={`flex items-center gap-4 p-3.5 rounded-2xl border transition-all duration-200 group ${
-                    isSelected
-                      ? 'bg-accent/[0.03] border-accent/25'
-                      : 'bg-white/[0.015] border-white/[0.05] hover:bg-white/[0.03] hover:border-white/10'
-                  }`}
+                  className="relative group"
                 >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleToggleSelect(movie.id)}
-                    className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-accent text-accent cursor-pointer"
-                  />
-                  <div className="w-10 rounded-lg overflow-hidden aspect-poster shrink-0 bg-white/5 border border-white/10">
-                    <img src={movie.posterPath || FALLBACK} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute top-2 left-2 z-20">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(movie.id)}
+                      onChange={() => handleToggleSelect(movie.id)}
+                      className="w-4 h-4 rounded border-white/10 bg-black/60 checked:bg-accent text-accent cursor-pointer opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
+                    />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13.5px] font-bold text-white truncate">{movie.title}</p>
-                    <div className="flex items-center gap-1.5 text-[11px] text-muted mt-0.5 font-semibold">
-                      <span>{movie.year}</span>
-                      <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
-                      <div className="flex items-center gap-0.5 text-white/60">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                        {movie.rating.toFixed(1)}
-                      </div>
-                      <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
-                      <span>{movie.runtime}m</span>
-                    </div>
-                  </div>
-                  <div className="shrink-0 flex items-center gap-3">
-                    <select
-                      value={movieStatuses[movie.id] || 'want-to-watch'}
-                      onChange={(e) => updateMovieStatus(movie.id, e.target.value as WatchlistStatus)}
-                      className="bg-[#0C0E17] border border-white/10 text-white rounded-lg text-[11.5px] py-1 px-2 focus:outline-none cursor-pointer outline-none font-bold"
-                    >
-                      <option value="want-to-watch">Want Watch</option>
-                      <option value="watching">Watching</option>
-                      <option value="completed">Completed</option>
-                      <option value="dropped">Dropped</option>
-                    </select>
+                  <MovieCard movie={movie} index={i} />
 
-                    <button
-                      onClick={() => removeFromWatchlist(movie.id)}
-                      className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  {/* Hover Quick Status Changer */}
+                  <div className="absolute bottom-16 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0C0E17]/95 backdrop-blur-md rounded-lg p-1.5 border border-white/10 flex flex-col gap-1.5">
+                    {STATUS_TABS.map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => updateMovieStatus(movie.id, tab.id)}
+                        className={`text-[10px] font-bold p-1 rounded hover:bg-white/10 text-left flex items-center gap-1 ${
+                          (movieStatuses[movie.id] || 'want-to-watch') === tab.id ? 'text-accent-light' : 'text-white/70'
+                        }`}
+                      >
+                        {React.createElement(tab.icon, { className: "w-3.5 h-3.5 shrink-0" })}
+                      </button>
+                    ))}
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        ) : (
+          <motion.div layout className="space-y-2.5">
+            <AnimatePresence mode="popLayout">
+              {sorted.map((movie) => {
+                const isSelected = selectedIds.includes(movie.id);
+                return (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    transition={{ duration: 0.2 }}
+                    key={movie.id}
+                    className={`flex items-center gap-4 p-3.5 rounded-2xl border transition-all duration-200 group ${
+                      isSelected
+                        ? 'bg-accent/[0.03] border-accent/25'
+                        : 'bg-white/[0.015] border-white/[0.05] hover:bg-white/[0.03] hover:border-white/10'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelect(movie.id)}
+                      className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-accent text-accent cursor-pointer"
+                    />
+                    <div className="w-10 rounded-lg overflow-hidden aspect-poster shrink-0 bg-white/5 border border-white/10 relative">
+                      <OptimizedImage
+                        src={movie.posterPath || FALLBACK}
+                        alt=""
+                        width={40}
+                        height={60}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13.5px] font-bold text-white truncate">{movie.title}</p>
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted mt-0.5 font-semibold">
+                        <span>{movie.year}</span>
+                        <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
+                        <div className="flex items-center gap-0.5 text-white/60">
+                          <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                          {movie.rating.toFixed(1)}
+                        </div>
+                        <span className="w-0.5 h-0.5 bg-muted/40 rounded-full" />
+                        <span>{movie.runtime}m</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-3">
+                      <select
+                        value={movieStatuses[movie.id] || 'want-to-watch'}
+                        onChange={(e) => updateMovieStatus(movie.id, e.target.value as WatchlistStatus)}
+                        className="bg-[#0C0E17] border border-white/10 text-white rounded-lg text-[11.5px] py-1 px-2 focus:outline-none cursor-pointer outline-none font-bold"
+                      >
+                        <option value="want-to-watch">Want Watch</option>
+                        <option value="watching">Watching</option>
+                        <option value="completed">Completed</option>
+                        <option value="dropped">Dropped</option>
+                      </select>
+
+                      <button
+                        onClick={() => removeFromWatchlist(movie.id)}
+                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
         )}
       </div>
 

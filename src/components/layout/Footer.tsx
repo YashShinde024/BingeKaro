@@ -84,8 +84,8 @@ export const Footer: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12.5px] font-semibold text-white cursor-pointer overflow-hidden relative"
                 style={{
-                  background: 'linear-gradient(135deg, #FF1744, #D50000)',
-                  boxShadow: '0 4px 20px rgba(255,23,68,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+                  boxShadow: '0 4px 20px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
                 }}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -176,6 +176,8 @@ export const Footer: React.FC = () => {
                 key={label}
                 href={href}
                 aria-label={label}
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className={`w-9 h-9 rounded-xl border border-white/[0.07] flex items-center justify-center text-muted transition-all duration-200 ${hoverBg}`}

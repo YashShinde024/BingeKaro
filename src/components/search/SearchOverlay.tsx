@@ -299,12 +299,15 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
           className="fixed inset-0 z-[100] flex flex-col justify-start bg-[#050505]/95 backdrop-blur-2xl"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search movies and TV shows"
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <div className="max-w-xl w-full mx-auto px-4 pt-16 sm:pt-24">
 
             {/* Search Input Bar */}
-            <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0C0E17] shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+            <div className="relative flex items-center rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0C0E17] shadow-[0_8px_32px_rgba(0,0,0,0.8)]" role="search">
               <Search className="absolute left-4 w-4.5 h-4.5 text-muted/60" />
               <input
                 ref={inputRef}

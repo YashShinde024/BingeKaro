@@ -25,6 +25,7 @@ import {
   FALLBACK_POSTER,
 } from '../../../lib/tmdb';
 import type { TMDBMovieDetails, TMDBTVDetails, TMDBCastMember, TMDBWatchProvider, NormalizedContent } from '../../../lib/tmdb-types';
+import { OptimizedImage } from '../../../components/ui/OptimizedImage';
 
 export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -188,15 +189,21 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
     <div className="min-h-screen bg-[#050505] text-white">
       {/* ── Hero Backdrop Banner ── */}
       <div className="relative h-[60vh] min-h-[460px] w-full overflow-hidden">
-        <motion.img
+        <motion.div
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.5 }}
-          src={bgErr ? FALLBACK_BACKDROP : backdrop}
-          alt=""
-          className="w-full h-full object-cover filter brightness-50"
-          onError={() => setBgErr(true)}
-        />
+          className="w-full h-full"
+        >
+          <OptimizedImage
+            src={backdrop}
+            fallbackSrc={FALLBACK_BACKDROP}
+            alt={title}
+            fill
+            priority
+            className="object-cover filter brightness-50"
+          />
+        </motion.div>
         {/* Gradients */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/95 via-transparent to-transparent" />
@@ -216,11 +223,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         <div className="absolute bottom-10 left-6 lg:left-10 right-6 z-10 max-w-[1280px] mx-auto flex flex-col md:flex-row md:items-end gap-6 md:gap-10">
           {/* Poster */}
           <div className="w-36 md:w-48 aspect-poster rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_24px_50px_rgba(0,0,0,0.9)] bg-[#0C0E17] shrink-0 self-start md:self-auto">
-            <img
-              src={posterErr ? FALLBACK_POSTER : poster}
+            <OptimizedImage
+              src={poster}
+              fallbackSrc={FALLBACK_POSTER}
               alt={title}
+              width={200}
+              height={300}
               className="w-full h-full object-cover"
-              onError={() => setPosterErr(true)}
             />
           </div>
 
@@ -328,7 +337,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                     <div className="flex flex-wrap gap-2">
                       {flatrateProviders.map((p: TMDBWatchProvider) => (
                         <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                          <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name} className="w-5 h-5 rounded" />
+                          <OptimizedImage 
+                            src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} 
+                            alt={p.provider_name} 
+                            width={20} 
+                            height={20} 
+                            className="rounded" 
+                          />
                           <span className="text-[11px] font-bold text-white/80">{p.provider_name}</span>
                         </div>
                       ))}
@@ -341,7 +356,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                     <div className="flex flex-wrap gap-2">
                       {rentProviders.map((p: TMDBWatchProvider) => (
                         <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                          <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt={p.provider_name} className="w-5 h-5 rounded" />
+                          <OptimizedImage 
+                            src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} 
+                            alt={p.provider_name} 
+                            width={20} 
+                            height={20} 
+                            className="rounded" 
+                          />
                           <span className="text-[11px] font-bold text-white/80">{p.provider_name}</span>
                         </div>
                       ))}
@@ -399,7 +420,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                       >
                         <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 shrink-0 overflow-hidden">
                           {profileImg ? (
-                            <img src={profileImg} alt={member.name} className="w-full h-full object-cover" loading="lazy" />
+                            <OptimizedImage 
+                              src={profileImg} 
+                              alt={member.name} 
+                              width={44} 
+                              height={44} 
+                              className="w-full h-full object-cover" 
+                            />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted text-sm font-bold bg-white/5">
                               {member.name?.[0] || '?'}

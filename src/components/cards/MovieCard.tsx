@@ -20,7 +20,7 @@ interface MovieCardProps {
   size?: 'sm' | 'md';
 }
 
-export const MovieCard: React.FC<MovieCardProps> = ({ movie, content, index = 0, size = 'md' }) => {
+export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content, index = 0, size = 'md' }) => {
   const [imgLoaded, setImgLoaded] = React.useState(false);
   const [imgError, setImgError] = React.useState(false);
 
@@ -164,6 +164,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, content, index = 0,
                 <button
                   onClick={handleSave}
                   title="Save to Watchlist"
+                  aria-label={saved ? `Remove ${title} from watchlist` : `Save ${title} to watchlist`}
                   className={`w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${
                     saved
                       ? 'bg-[#8B5CF6] border-[#8B5CF6] text-white shadow-[0_0_10px_rgba(139,92,246,0.3)]'
@@ -176,6 +177,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, content, index = 0,
                 <button
                   onClick={handleFavorite}
                   title="Favorite"
+                  aria-label={favorite ? `Remove ${title} from favorites` : `Add ${title} to favorites`}
                   className={`w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${
                     favorite
                       ? 'bg-[#FF3B30] border-[#FF3B30] text-white shadow-[0_0_10px_rgba(255,59,48,0.3)]'
@@ -188,6 +190,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, content, index = 0,
                 <button
                   onClick={handleShare}
                   title="Copy Link"
+                  aria-label={`Copy link to ${title}`}
                   className="w-8 h-8 rounded-full border bg-black/55 border-white/10 text-white/80 hover:bg-black/80 hover:text-white hover:scale-110 active:scale-95 flex items-center justify-center backdrop-blur-md transition-all"
                 >
                   <Share2 className="w-3.5 h-3.5" />
@@ -225,4 +228,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, content, index = 0,
       </Link>
     </motion.div>
   );
-};
+});
+
+MovieCard.displayName = 'MovieCard';

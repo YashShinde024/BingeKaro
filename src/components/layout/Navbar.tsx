@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Home, Compass, Bookmark, User, LogIn, LogOut, Settings } from 'lucide-react';
+import { Search, Bell, Home, Compass, Bookmark, User, LogIn, LogOut, Settings, Sun, Moon } from 'lucide-react';
 import { SearchOverlay } from '../search/SearchOverlay';
 import { useAuth } from '../../context/AuthContext';
 
@@ -28,8 +28,48 @@ export const Navbar: React.FC = () => {
   const [lastScrollY, setLastScrollY] = React.useState(0);
   const [notifOpen, setNotifOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const [theme, setTheme] = React.useState<'dark' | 'light'>('dark');
   const { user, openLoginModal, logout } = useAuth();
   const scrolled = scrollDepth > 10;
+
+  const notifRef = React.useRef<HTMLDivElement>(null);
+  const profileRef = React.useRef<HTMLDivElement>(null);
+
+  // Click-away listener
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotifOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Theme Sync
+  React.useEffect(() => {
+    const root = window.document.documentElement;
+    const initialTheme = root.classList.contains('light') ? 'light' : 'dark';
+    setTheme(initialTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.remove('dark');
+      root.classList.add('light');
+      setTheme('light');
+      localStorage.setItem('theme', 'light');
+    } else {
+      root.classList.remove('light');
+      root.classList.add('dark');
+      setTheme('dark');
+      localStorage.setItem('theme', 'dark');
+    }
+  };
 
   const handleProtectedClick = (e: React.MouseEvent, to: string) => {
     const isProtected = ['/watchlist', '/profile', '/settings', '/ai'].some(route => to.startsWith(route));
@@ -172,8 +212,19 @@ export const Navbar: React.FC = () => {
               <kbd className="hidden lg:inline-block text-[8px] px-1.5 py-0.5 rounded bg-white/10 text-muted/60 font-mono border border-white/[0.05]">Ctrl+K</kbd>
             </motion.button>
 
+            {/* Theme Toggle */}
+            <motion.button
+              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.06)' }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/[0.05] bg-white/[0.02] text-muted hover:text-white"
+              aria-label="Toggle visual theme"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </motion.button>
+
             {/* Notifications */}
-            <div className="relative">
+            <div className="relative" ref={notifRef}>
               <motion.button
                 whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.06)' }}
                 whileTap={{ scale: 0.95 }}
@@ -184,6 +235,8 @@ export const Navbar: React.FC = () => {
                 className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 border border-white/[0.05] ${
                   notifOpen ? 'bg-white/10 text-white border-white/10' : 'bg-white/[0.02] text-muted hover:text-white'
                 }`}
+                aria-expanded={notifOpen}
+                aria-haspopup="true"
               >
                 <Bell className="w-4 h-4" />
                 <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
@@ -223,7 +276,7 @@ export const Navbar: React.FC = () => {
 
             {/* Profile Menu */}
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={profileRef}>
                 <motion.div
                   whileHover={{ 
                     scale: 1.05,
@@ -237,6 +290,8 @@ export const Navbar: React.FC = () => {
                   className={`w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center cursor-pointer border overflow-hidden transition-all ${
                     profileOpen ? 'border-white/40 shadow-[0_0_15px_rgba(139,92,246,0.4)]' : 'border-white/10'
                   }`}
+                  aria-expanded={profileOpen}
+                  aria-haspopup="true"
                 >
                   {user.avatarUrl ? (
                     <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />

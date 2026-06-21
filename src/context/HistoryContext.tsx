@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import type { Movie, RecommendationResult } from '../types';
 
 interface HistoryContextType {
@@ -34,38 +34,38 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (savedRecent) setRecentlyViewed(JSON.parse(savedRecent));
       if (savedContinue) setContinueWatching(JSON.parse(savedContinue));
       if (savedRecs) setRecommendationHistory(JSON.parse(savedRecs));
-    } catch (e) {
-      console.error('Failed to load history lists', e);
+    } catch {
+      // Silently handle corrupted localStorage
     }
   }, []);
 
-  const addToRecentlyViewed = (movie: Movie) => {
+  const addToRecentlyViewed = useCallback((movie: Movie) => {
     setRecentlyViewed((prev) => {
       const filtered = prev.filter((m) => m.id !== movie.id);
       const updated = [movie, ...filtered].slice(0, 10);
       localStorage.setItem('kd_recent', JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
 
-  const addToContinueWatching = (movie: Movie) => {
+  const addToContinueWatching = useCallback((movie: Movie) => {
     setContinueWatching((prev) => {
       const filtered = prev.filter((m) => m.id !== movie.id);
       const updated = [movie, ...filtered].slice(0, 6);
       localStorage.setItem('kd_continue', JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
 
-  const removeFromContinueWatching = (movieId: number) => {
+  const removeFromContinueWatching = useCallback((movieId: number) => {
     setContinueWatching((prev) => {
       const updated = prev.filter((m) => m.id !== movieId);
       localStorage.setItem('kd_continue', JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
 
-  const addToRecommendationHistory = (movie: Movie, explanation: string) => {
+  const addToRecommendationHistory = useCallback((movie: Movie, explanation: string) => {
     setRecommendationHistory((prev) => {
       const filtered = prev.filter((r) => r.movie.id !== movie.id);
       const updated = [
@@ -75,20 +75,23 @@ export const HistoryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       localStorage.setItem('kd_rec_history', JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    recentlyViewed,
+    continueWatching,
+    recommendationHistory,
+    addToRecentlyViewed,
+    addToContinueWatching,
+    removeFromContinueWatching,
+    addToRecommendationHistory,
+  }), [
+    recentlyViewed, continueWatching, recommendationHistory,
+    addToRecentlyViewed, addToContinueWatching, removeFromContinueWatching, addToRecommendationHistory,
+  ]);
 
   return (
-    <HistoryContext.Provider
-      value={{
-        recentlyViewed,
-        continueWatching,
-        recommendationHistory,
-        addToRecentlyViewed,
-        addToContinueWatching,
-        removeFromContinueWatching,
-        addToRecommendationHistory,
-      }}
-    >
+    <HistoryContext.Provider value={value}>
       {children}
     </HistoryContext.Provider>
   );

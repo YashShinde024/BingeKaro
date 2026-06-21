@@ -8,7 +8,7 @@ import React from 'react';
 export const MovieCardSkeleton: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md' }) => {
   const width = size === 'sm' ? 'w-[140px] sm:w-[155px]' : 'w-[165px] sm:w-[190px]';
   return (
-    <div className={`flex-shrink-0 ${width} space-y-3`}>
+    <div className={`flex-shrink-0 ${width} space-y-3`} role="status" aria-label="Loading content">
       <div className="aspect-poster rounded-[20px] skeleton border border-white/[0.04]" />
       <div className="space-y-2 px-1">
         <div className="h-3.5 skeleton rounded w-4/5" />
@@ -17,6 +17,7 @@ export const MovieCardSkeleton: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md
           <div className="h-3 skeleton rounded w-1/3" />
         </div>
       </div>
+      <span className="sr-only">Loading movie card...</span>
     </div>
   );
 };
@@ -25,7 +26,7 @@ export const MovieCardSkeleton: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md
 // Content Rail Skeleton (full row)
 // ===========================
 export const ContentRailSkeleton: React.FC<{ count?: number }> = ({ count = 7 }) => (
-  <div className="mb-14">
+  <div className="mb-14" role="status" aria-label="Loading content row" aria-busy="true">
     <div className="px-6 lg:px-10 mb-5 space-y-2">
       <div className="h-5 skeleton rounded w-40" />
       <div className="h-3 skeleton rounded w-56" />
@@ -35,6 +36,7 @@ export const ContentRailSkeleton: React.FC<{ count?: number }> = ({ count = 7 })
         <MovieCardSkeleton key={i} />
       ))}
     </div>
+    <span className="sr-only">Loading content row...</span>
   </div>
 );
 
@@ -42,7 +44,7 @@ export const ContentRailSkeleton: React.FC<{ count?: number }> = ({ count = 7 })
 // Hero Skeleton
 // ===========================
 export const HeroSkeleton: React.FC = () => (
-  <div className="relative h-[90vh] min-h-[600px] overflow-hidden flex items-end">
+  <div className="relative h-[90vh] min-h-[600px] overflow-hidden flex items-end" role="status" aria-label="Loading hero" aria-busy="true">
     {/* Background */}
     <div className="absolute inset-0 skeleton" />
     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent" />
@@ -85,6 +87,7 @@ export const HeroSkeleton: React.FC = () => (
         </div>
       </div>
     </div>
+    <span className="sr-only">Loading hero section...</span>
   </div>
 );
 
@@ -92,7 +95,7 @@ export const HeroSkeleton: React.FC = () => (
 // Search Result Skeleton
 // ===========================
 export const SearchResultSkeleton: React.FC<{ count?: number }> = ({ count = 4 }) => (
-  <div className="p-2 space-y-2">
+  <div className="p-2 space-y-2" role="status" aria-label="Loading search results">
     {[...Array(count)].map((_, i) => (
       <div key={i} className="flex items-center gap-4 p-2.5 rounded-2xl">
         <div className="w-10 h-14 skeleton rounded-lg shrink-0" />
@@ -102,6 +105,7 @@ export const SearchResultSkeleton: React.FC<{ count?: number }> = ({ count = 4 }
         </div>
       </div>
     ))}
+    <span className="sr-only">Loading search results...</span>
   </div>
 );
 
@@ -109,7 +113,7 @@ export const SearchResultSkeleton: React.FC<{ count?: number }> = ({ count = 4 }
 // Detail Page Skeleton
 // ===========================
 export const DetailPageSkeleton: React.FC = () => (
-  <div className="min-h-screen bg-[#050505]">
+  <div className="min-h-screen bg-[#050505]" role="status" aria-label="Loading movie details" aria-busy="true">
     {/* Hero backdrop */}
     <div className="relative h-[60vh] min-h-[460px] w-full overflow-hidden">
       <div className="absolute inset-0 skeleton" />
@@ -182,6 +186,7 @@ export const DetailPageSkeleton: React.FC = () => (
         </div>
       </div>
     </div>
+    <span className="sr-only">Loading movie details...</span>
   </div>
 );
 
@@ -189,7 +194,8 @@ export const DetailPageSkeleton: React.FC = () => (
 // Inline Loading Spinner (small)
 // ===========================
 export const InlineSpinner: React.FC = () => (
-  <div className="flex items-center justify-center py-4">
+  <div className="flex items-center justify-center py-4" role="status">
     <div className="w-5 h-5 border-2 border-white/10 border-t-accent rounded-full animate-spin" />
+    <span className="sr-only">Loading...</span>
   </div>
 );

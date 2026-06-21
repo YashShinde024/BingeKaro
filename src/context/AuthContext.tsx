@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useUser, useClerk } from '@clerk/nextjs';
 import type { UserProfile, GenreId, MoodId, OTTProviderId } from '../types';
 import { useToast } from './ToastContext';
@@ -36,10 +36,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // Sync Clerk user profile with BingeKaro custom settings stored locally
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -56,8 +54,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           favoriteGenres = parsed.favoriteGenres || favoriteGenres;
           favoriteMoods = parsed.favoriteMoods || favoriteMoods;
           favoriteProviders = parsed.favoriteProviders || favoriteProviders;
-        } catch (e) {
-          console.error('Failed to parse user preferences', e);
+        } catch {
+          // Silently handle corrupted preferences
         }
       }
 
@@ -71,29 +69,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         favoriteProviders,
         joinedAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'June 2026',
       });
-      // Close modal if user gets authenticated successfully
       setIsLoginModalOpen(false);
     } else {
       setUserProfile(null);
     }
   }, [clerkUser, isLoaded]);
 
-  // login redirects to custom clerk sign-in page
-  const login = async (name: string, email: string) => {
+  const login = useCallback(async () => {
     router.push('/sign-in');
-  };
+  }, [router]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await signOut();
       showToast('Signed out successfully.', 'info');
       router.push('/');
-    } catch (e) {
-      console.error('Failed to logout', e);
+    } catch {
+      // Silently handle logout errors
     }
-  };
+  }, [signOut, showToast, router]);
 
-  const updatePreferences = (
+  const updatePreferences = useCallback((
     genres: GenreId[],
     moods: MoodId[],
     providers: OTTProviderId[]
@@ -106,33 +102,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       favoriteMoods: moods,
       favoriteProviders: providers,
     };
-    
+
     setUserProfile(updated);
     localStorage.setItem(`kd_user_${clerkUser.id}`, JSON.stringify(updated));
     showToast('Preferences updated successfully!', 'success');
-  };
+  }, [clerkUser, userProfile, showToast]);
 
-  const openLoginModal = () => {
-    setIsLoginModalOpen(true);
-  };
+  const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
+  const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
 
-  const closeLoginModal = () => {
-    setIsLoginModalOpen(false);
-  };
+  const value = useMemo(() => ({
+    user: userProfile,
+    isLoading: !isLoaded,
+    login,
+    logout,
+    updatePreferences,
+    openLoginModal,
+    closeLoginModal,
+    isLoginModalOpen,
+  }), [userProfile, isLoaded, login, logout, updatePreferences, openLoginModal, closeLoginModal, isLoginModalOpen]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user: userProfile,
-        isLoading: !isLoaded,
-        login,
-        logout,
-        updatePreferences,
-        openLoginModal,
-        closeLoginModal,
-        isLoginModalOpen,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
