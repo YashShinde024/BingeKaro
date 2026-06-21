@@ -106,10 +106,8 @@ export const Navbar: React.FC = () => {
 
       <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white font-black text-sm tracking-tighter group-hover:scale-105 transition-transform">
-            BK
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <img src="/logo.png" alt="BingeKaro Logo" className="w-8.5 h-8.5 object-contain group-hover:scale-105 transition-transform" />
           <span className="text-[15px] font-black text-foreground tracking-tight">
             Binge<span className="text-accent">Karo</span>
           </span>

@@ -124,6 +124,8 @@ export const api = {
     media_type: 'movie' | 'tv';
     title: string;
     poster_path: string;
+    backdrop_path?: string;
+    overview?: string;
     rating: number;
     release_date: string;
   }) => 
@@ -144,6 +146,8 @@ export const api = {
     media_type: 'movie' | 'tv';
     title: string;
     poster_path: string;
+    backdrop_path?: string;
+    overview?: string;
     rating: number;
     release_date: string;
   }) => 

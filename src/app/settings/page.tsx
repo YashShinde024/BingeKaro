@@ -112,7 +112,7 @@ export default function SettingsPage() {
       await updatePreferences(selectedGenres, user.favoriteMoods || [], selectedProviders);
       showToast('Settings saved successfully!', 'success');
     } catch (err: any) {
-      showToast(err.message || 'Failed to save settings', 'danger');
+      showToast(err.message || 'Failed to save settings', 'error');
     } finally {
       setIsSaving(false);
     }

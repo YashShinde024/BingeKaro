@@ -60,10 +60,10 @@ export const CommandPalette: React.FC = () => {
         const response = await api.search(searchQuery);
         if (response && Array.isArray(response.results)) {
           const mapped = response.results.slice(0, 5).map((item: any) => ({
-            id: `movie-${item.id}`,
+            id: `${item.media_type || 'movie'}-${item.id}`,
             label: `${item.title || item.name} (${item.release_date ? new Date(item.release_date).getFullYear() : 'N/A'})`,
             icon: Film,
-            action: () => router.push(`/movie/${item.id}?type=${item.media_type || 'movie'}`),
+            action: () => router.push(item.media_type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`),
           }));
           setResults(mapped);
         }

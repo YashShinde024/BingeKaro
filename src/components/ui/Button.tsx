@@ -16,10 +16,10 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center font-bold tracking-wide uppercase transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/50 disabled:opacity-50 disabled:pointer-events-none",
+        "inline-flex items-center justify-center font-bold tracking-wide uppercase transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:opacity-50 disabled:pointer-events-none",
         {
           // Variants
-          "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25": variant === 'primary',
+          "bg-gradient-to-r from-accent to-accent-dark hover:from-accent-light hover:to-accent text-white shadow-lg shadow-accent/25": variant === 'primary',
           "bg-white/[0.03] hover:bg-white/[0.08] text-white border border-white/[0.08]": variant === 'secondary',
           "hover:bg-white/[0.05] text-white/80 hover:text-white": variant === 'ghost',
           "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30": variant === 'danger',

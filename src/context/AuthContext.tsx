@@ -139,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         showToast('Preferences updated locally.', 'info');
       }
     } catch (err: any) {
-      showToast(err.message || 'Failed to sync preferences to cloud.', 'warning');
+      showToast(err.message || 'Failed to sync preferences to cloud.', 'info');
     }
   }, [clerkUser, userProfile, getToken, showToast]);
 

@@ -134,14 +134,14 @@ export const WatchlistProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         poster_path: posterRelative || movie.posterPath,
         backdrop_path: backdropRelative || movie.backdropPath,
         overview: movie.overview || '',
-        vote_average: movie.rating,
+        rating: movie.rating,
         release_date: movie.year ? `${movie.year}-01-01` : '',
       });
 
       showToast(`"${movie.title}" added to watchlist!`, 'success');
       syncWatchlist();
     } catch (err: any) {
-      showToast(err.message || 'Failed to add to watchlist', 'danger');
+      showToast(err.message || 'Failed to add to watchlist', 'error');
     }
   }, [user, getToken, showToast, openLoginModal, syncWatchlist]);
 
@@ -160,7 +160,7 @@ export const WatchlistProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         syncWatchlist();
       }
     } catch (err: any) {
-      showToast(err.message || 'Failed to remove from watchlist', 'danger');
+      showToast(err.message || 'Failed to remove from watchlist', 'error');
     }
   }, [user, getToken, showToast, syncWatchlist]);
 
@@ -188,14 +188,14 @@ export const WatchlistProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         poster_path: posterRelative || movie.posterPath,
         backdrop_path: backdropRelative || movie.backdropPath,
         overview: movie.overview || '',
-        vote_average: movie.rating,
+        rating: movie.rating,
         release_date: movie.year ? `${movie.year}-01-01` : '',
       });
 
       showToast(`Added "${movie.title}" to Favorites`, 'success');
       syncFavorites();
     } catch (err: any) {
-      showToast(err.message || 'Failed to add to favorites', 'danger');
+      showToast(err.message || 'Failed to add to favorites', 'error');
     }
   }, [user, getToken, showToast, openLoginModal, syncFavorites]);
 
@@ -213,7 +213,7 @@ export const WatchlistProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         syncFavorites();
       }
     } catch (err: any) {
-      showToast(err.message || 'Failed to remove from favorites', 'danger');
+      showToast(err.message || 'Failed to remove from favorites', 'error');
     }
   }, [user, getToken, showToast, syncFavorites]);
 

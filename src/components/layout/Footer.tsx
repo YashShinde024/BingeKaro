@@ -56,16 +56,8 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr] gap-10 md:gap-8 pb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: 2 }}
-                className="w-9 h-9 rounded-[12px] bg-accent flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.4)]"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M15 10L19.553 7.724A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
-                    stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </motion.div>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <img src="/logo.png" alt="BingeKaro Logo" className="w-8.5 h-8.5 object-contain group-hover:scale-105 transition-transform" />
               <span className="text-[17px] font-bold text-foreground tracking-tight">
                 Binge<span className="text-accent">Karo</span>
               </span>

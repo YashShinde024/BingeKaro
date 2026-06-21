@@ -4,7 +4,8 @@ import React, { use, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Star, Clock, Play, Bookmark, CheckCircle2, Sparkles, ChevronLeft, Share2, Copy, Film, Tv, Eye, Lock, Globe } from 'lucide-react';
+import { Star, Clock, Play, Bookmark, CheckCircle2, Sparkles, ChevronLeft, Share2, Copy, Film, Tv, Eye, Lock, Globe, X, Heart } from 'lucide-react';
+import type { Movie } from '../../../types';
 import { getMovieById, MOVIES } from '../../../lib/mockData';
 import { OTTBadge } from '../../../components/badges/OTTBadge';
 import { MovieCard } from '../../../components/cards/MovieCard';
@@ -258,7 +259,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   width={300}
                   height={450}
                   className="w-full h-full object-cover"
-                  onError={() => setPosterErr(true)}
+                  fallbackSrc={FALLBACK_POSTER}
                 />
               )}
             </div>
@@ -299,7 +300,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest block">Available Stream</span>
                 <div className="flex flex-wrap gap-2">
                   {flatrateProviders.slice(0, 4).map((p: any) => (
-                    <OTTBadge key={p.provider_id} providerId={p.provider_name.toLowerCase().replace(/\s+/g, '-')} size="sm" />
+                    <OTTBadge key={p.provider_id} provider={p.provider_name.toLowerCase().replace(/\s+/g, '-')} size="sm" />
                   ))}
                 </div>
               </div>
@@ -367,7 +368,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 <div className="h-64 md:h-72 w-full flex items-center justify-center bg-card/10 border border-border/60 rounded-3xl p-4">
                   {isClient ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" radius="80%" data={dnaChartData}>
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={dnaChartData}>
                         <PolarGrid stroke="var(--border)" />
                         <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--muted)', fontSize: 10, fontWeight: 700 }} />
                         <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: 'var(--muted-dark)', fontSize: 8 }} />

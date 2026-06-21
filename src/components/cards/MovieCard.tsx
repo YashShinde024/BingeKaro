@@ -50,8 +50,8 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
 
   const width = size === 'sm' ? 'w-[140px] sm:w-[155px]' : 'w-[165px] sm:w-[190px]';
 
-  // Link path - use /movie/ for both movie and TV (handled by detail page)
-  const detailPath = `/movie/${id}${mediaType === 'tv' ? '?type=tv' : ''}`;
+  // Link path - route directly to dedicated pages
+  const detailPath = mediaType === 'tv' ? `/tv/${id}` : `/movie/${id}`;
 
   const handleSave = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -101,7 +101,7 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
     >
       <Link href={detailPath} className="block" prefetch={false}>
         {/* Poster Wrapper */}
-        <div className="relative aspect-poster rounded-[20px] overflow-hidden bg-[#0A0D14] border border-white/[0.06] transition-all duration-300 group-hover:border-[#8B5CF6]/50 group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(139,92,246,0.25)]">
+        <div className="relative aspect-poster rounded-[20px] overflow-hidden bg-[#0A0D14] border border-white/[0.06] transition-all duration-300 group-hover:border-accent/50 group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(249,115,22,0.25)]">
           {/* Poster image with blur-up */}
           <img
             src={posterSrc}
@@ -153,7 +153,7 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
 
             {/* Center: Play/Trailer button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-[#8B5CF6] text-white flex items-center justify-center shadow-[0_0_24px_rgba(139,92,246,0.4)] transform scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 hover:bg-[#8B5CF6]/90 hover:scale-110 active:scale-95">
+              <div className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shadow-[0_0_24px_rgba(249,115,22,0.4)] transform scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 hover:bg-accent/90 hover:scale-110 active:scale-95">
                 <Play className="w-5 h-5 fill-white ml-0.5" />
               </div>
             </div>
@@ -167,7 +167,7 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
                   aria-label={saved ? `Remove ${title} from watchlist` : `Save ${title} to watchlist`}
                   className={`w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-md transition-all hover:scale-110 active:scale-95 ${
                     saved
-                      ? 'bg-[#8B5CF6] border-[#8B5CF6] text-white shadow-[0_0_10px_rgba(139,92,246,0.3)]'
+                      ? 'bg-accent border-accent text-white shadow-[0_0_10px_rgba(249,115,22,0.3)]'
                       : 'bg-black/55 border-white/10 text-white/80 hover:bg-black/80 hover:text-white'
                   }`}
                 >
@@ -208,7 +208,7 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
 
         {/* Info below poster */}
         <div className="mt-3 px-1">
-          <h3 className="text-[13px] font-bold text-white/90 leading-tight truncate group-hover:text-[#8B5CF6] transition-colors duration-200">
+          <h3 className="text-[13px] font-bold text-white/90 leading-tight truncate group-hover:text-accent transition-colors duration-200">
             {title}
           </h3>
           <div className="flex items-center justify-between gap-1.5 mt-1.5">

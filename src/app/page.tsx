@@ -92,7 +92,7 @@ export default function Home() {
             ) : (
               trendingList.map((item, idx) => (
                 <div key={item.id} className="w-[185px] shrink-0">
-                  <MovieCard movie={item} index={idx} />
+                  <MovieCard content={item} index={idx} />
                 </div>
               ))
             )}
@@ -151,7 +151,7 @@ export default function Home() {
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {popularMoviesList.slice(0, 6).map((item) => (
-                <MovieCard key={item.id} movie={item} />
+                <MovieCard key={item.id} content={item} />
               ))}
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function Home() {
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {popularTVList.slice(0, 6).map((item) => (
-                <MovieCard key={item.id} movie={item} />
+                <MovieCard key={item.id} content={item} />
               ))}
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function Home() {
             {topRatedList.slice(0, 3).map((item, idx) => (
               <div key={item.id} className="p-4 rounded-2xl bg-card border border-border flex gap-4 hover:border-accent/40 transition-all duration-300">
                 <div className="w-20 aspect-poster rounded-xl overflow-hidden shrink-0 border border-border">
-                  <img src={item.posterUrl} alt="" className="w-full h-full object-cover" />
+                  <img src={item.posterUrl || undefined} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                   <div className="space-y-1">

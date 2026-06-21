@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import { 
   SlidersHorizontal, Check, X, Star, Clock, Compass, HelpCircle, 
   Film, Tv, ArrowUpDown, RefreshCw, Grid, List, AlertCircle 
