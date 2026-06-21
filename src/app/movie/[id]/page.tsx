@@ -95,41 +95,34 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   // Resolve data (TMDB or mock fallback)
   const hasTMDB = !!tmdbData && !tmdbError;
 
-  // TMDB data extraction
+  // TMDB data extraction (adapting to FastAPI backend full_content output)
   const tmdbTitle = hasTMDB
-    ? (tmdbData as TMDBMovieDetails).title || (tmdbData as TMDBTVDetails).name || ''
+    ? (tmdbData as any).title || (tmdbData as any).name || ''
     : '';
   const tmdbYear = hasTMDB
-    ? new Date(
-        (tmdbData as TMDBMovieDetails).release_date || (tmdbData as TMDBTVDetails).first_air_date || ''
-      ).getFullYear()
+    ? new Date((tmdbData as any).release_date || '').getFullYear()
     : 0;
-  const tmdbRating = hasTMDB ? tmdbData!.vote_average : 0;
-  const tmdbVoteCount = hasTMDB ? tmdbData!.vote_count : 0;
-  const tmdbRuntime = hasTMDB
-    ? (tmdbData as TMDBMovieDetails).runtime || ((tmdbData as TMDBTVDetails).episode_run_time?.[0] ?? 0)
-    : 0;
-  const tmdbOverview = hasTMDB ? tmdbData!.overview : '';
-  const tmdbTagline = hasTMDB ? tmdbData!.tagline : '';
-  const tmdbGenres = hasTMDB ? tmdbData!.genres.map(g => g.name) : [];
-  const tmdbBackdrop = hasTMDB ? getBackdropUrl(tmdbData!.backdrop_path, 'original') : null;
-  const tmdbPoster = hasTMDB ? getPosterUrl(tmdbData!.poster_path, 'w500') : null;
-  const tmdbCast = hasTMDB ? tmdbData!.credits?.cast?.slice(0, 8) || [] : [];
+  const tmdbRating = hasTMDB ? (tmdbData as any).vote_average : 0;
+  const tmdbVoteCount = hasTMDB ? (tmdbData as any).vote_count : 0;
+  const tmdbRuntime = hasTMDB ? (tmdbData as any).runtime : 0;
+  const tmdbOverview = hasTMDB ? (tmdbData as any).overview : '';
+  const tmdbTagline = hasTMDB ? (tmdbData as any).tagline : '';
+  const tmdbGenres = hasTMDB
+    ? (tmdbData as any).genres?.map((g: any) => typeof g === 'object' ? g.name : g) || []
+    : [];
+  const tmdbBackdrop = hasTMDB ? getBackdropUrl((tmdbData as any).backdrop_path, 'original') : null;
+  const tmdbPoster = hasTMDB ? getPosterUrl((tmdbData as any).poster_path, 'w500') : null;
+  const tmdbCast = hasTMDB ? (tmdbData as any).cast?.slice(0, 16) || [] : [];
   const tmdbDirector = hasTMDB
-    ? tmdbData!.credits?.crew?.find(c => c.job === 'Director')?.name || ''
+    ? (tmdbData as any).crew?.find((c: any) => c.job === 'Director' || c.job === 'Creator' || c.job === 'Writer')?.name || ''
     : '';
-  const tmdbTrailer = hasTMDB
-    ? tmdbData!.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer')?.key || ''
-    : '';
-  const tmdbLanguage = hasTMDB ? tmdbData!.original_language : '';
+  const tmdbTrailer = hasTMDB ? (tmdbData as any).trailer?.key || '' : '';
+  const tmdbLanguage = hasTMDB ? (tmdbData as any).language || 'en' : '';
 
-  // Watch providers (India region)
-  const watchProviders = hasTMDB
-    ? tmdbData!['watch/providers']?.results?.IN || tmdbData!['watch/providers']?.results?.US
-    : null;
-  const flatrateProviders = watchProviders?.flatrate || [];
-  const rentProviders = watchProviders?.rent || [];
-  const buyProviders = watchProviders?.buy || [];
+  // Watch providers pre-bucketed by FastAPI backend
+  const flatrateProviders = hasTMDB ? (tmdbData as any).watch_providers?.subscription || [] : [];
+  const rentProviders = hasTMDB ? (tmdbData as any).watch_providers?.rent || [] : [];
+  const buyProviders = hasTMDB ? (tmdbData as any).watch_providers?.buy || [] : [];
 
   // Final resolved values (TMDB > Mock > defaults)
   const title = tmdbTitle || mockMovie?.title || 'Title not found';
@@ -147,12 +140,29 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const trailerKey = tmdbTrailer || mockMovie?.trailerKey || '';
   const language = tmdbLanguage || mockMovie?.language || '';
 
-  const saved = mockMovie ? inWatchlist(mockMovie.id) : false;
+  const resolvedMovie: Movie = {
+    id: Number(id),
+    type: mediaType as any,
+    title,
+    posterPath: poster,
+    backdropPath: backdrop,
+    year,
+    rating,
+    voteCount,
+    runtime,
+    overview,
+    genres: genres.map((g: string) => g.toLowerCase() as any),
+    language: language as any,
+    providers: [],
+    isFree: false,
+  };
+
+  const saved = inWatchlist(Number(id));
   const runtimeStr = runtime > 0 ? `${Math.floor(runtime / 60)}h ${runtime % 60}m` : '';
 
-  // Similar content (TMDB or mock fallback)
-  const similarContent = similar.length > 0
-    ? similar
+  // Similar content from backend
+  const similarContent = hasTMDB && (tmdbData as any).similar_content
+    ? (tmdbData as any).similar_content
     : (mockMovie
         ? MOVIES.filter(m => m.id !== mockMovie.id && m.genres.some(g => mockMovie.genres.includes(g))).slice(0, 8)
         : []);
@@ -304,9 +314,9 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 </button>
               )}
 
-              {mockMovie && (
+              {resolvedMovie && (
                 <button
-                  onClick={() => saved ? removeFromWatchlist(mockMovie.id) : addToWatchlist(mockMovie)}
+                  onClick={() => saved ? removeFromWatchlist(resolvedMovie.id) : addToWatchlist(resolvedMovie)}
                   className={`btn-secondary w-full py-3.5 text-[13px] uppercase tracking-wider font-extrabold flex items-center justify-center gap-2 ${
                     saved ? '!bg-accent/15 !border-accent/40 text-accent-light shadow-[0_0_20px_rgba(139,92,246,0.15)]' : ''
                   }`}

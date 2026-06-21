@@ -9,7 +9,10 @@ import {
 import { MOVIES, GENRES, LANGUAGES, MOODS } from '../../lib/mockData';
 import { PROVIDER_REGISTRY } from '../../lib/providers';
 import { MovieCard } from '../../components/cards/MovieCard';
-import type { MoodId, GenreId, LanguageId, OTTProviderId } from '../../types';
+import type { MoodId, GenreId, LanguageId, OTTProviderId, Movie } from '../../types';
+import { api } from '../../lib/api';
+import { normalizeContent } from '../../lib/tmdb';
+import { MovieCardSkeleton } from '../../components/ui/Skeletons';
 
 const RUNTIME_OPTIONS = [
   { label: 'Under 90 min', value: 'under-90' },
@@ -96,58 +99,57 @@ function DiscoverContent() {
     setEnergyLevel(null);
   };
 
-  // Filter Logic
-  const filteredMovies = React.useMemo(() => {
-    return MOVIES.filter(movie => {
-      // Genre Filter
-      if (selectedGenres.length > 0 && !movie.genres.some(g => selectedGenres.includes(g))) {
-        return false;
+  const [discoverResults, setDiscoverResults] = React.useState<Movie[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+
+    // Map year string
+    let yearParam: number | undefined;
+    if (selectedYear !== 'any') {
+      const yearInt = parseInt(selectedYear);
+      if (!isNaN(yearInt)) {
+        yearParam = yearInt;
       }
-      // Provider Filter
-      if (selectedProviders.length > 0 && !movie.providers.some(p => selectedProviders.includes(p))) {
-        return false;
-      }
-      // Language Filter
-      if (selectedLanguages.length > 0 && !selectedLanguages.includes(movie.language as LanguageId)) {
-        return false;
-      }
-      // Year Filter
-      if (selectedYear !== 'any') {
-        if (selectedYear === '2024' && movie.year !== 2024) return false;
-        if (selectedYear === '2023' && movie.year !== 2023) return false;
-        if (selectedYear === '2020-2022' && (movie.year < 2020 || movie.year > 2022)) return false;
-        if (selectedYear === 'classic' && movie.year >= 2020) return false;
-      }
-      // Runtime Filter
-      if (selectedRuntime !== 'any') {
-        if (selectedRuntime === 'under-90' && movie.runtime >= 90) return false;
-        if (selectedRuntime === '90-120' && (movie.runtime < 90 || movie.runtime > 120)) return false;
-        if (selectedRuntime === '120-180' && (movie.runtime < 120 || movie.runtime > 180)) return false;
-      }
-      // Rating Filter
-      if (selectedRating !== 'any') {
-        const minRating = parseFloat(selectedRating);
-        if (movie.rating < minRating) return false;
-      }
-      // Mood Filter (If active)
-      if (selectedMoods.length > 0) {
-        // Mock mood checking based on movie tags/genres or AI insights
-        const matched = selectedMoods.some(m => {
-          if (m === 'thrilling' && movie.genres.includes('thriller')) return true;
-          if (m === 'funny' && movie.genres.includes('comedy')) return true;
-          if (m === 'dark' && movie.genres.includes('horror')) return true;
-          if (m === 'mind-bending' && movie.genres.includes('sci-fi')) return true;
-          if (m === 'romantic' && movie.genres.includes('romance')) return true;
-          return false;
-        });
-        // Apply loose matching to make filters friendly
-        if (!matched && movie.rating < 8.0) return false;
-      }
-      return true;
-    });
+    }
+
+    const filters: Record<string, any> = {
+      genre: selectedGenres.join(','),
+      platform: selectedProviders.join(','),
+      language: selectedLanguages.join(','),
+      year: yearParam,
+      runtime: selectedRuntime !== 'any' ? selectedRuntime : undefined,
+      rating: selectedRating !== 'any' ? parseFloat(selectedRating) : undefined,
+      mood: selectedMoods.join(','),
+      watching_with: watchingWith || undefined,
+      energy_level: energyLevel || undefined,
+    };
+
+    api.discover(filters, 1)
+      .then((data) => {
+        if (!active) return;
+        const items = data.results || [...(data.movies?.results || []), ...(data.tv?.results || [])];
+        const normalized = items.map(normalizeContent);
+        setDiscoverResults(normalized);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err.message || 'Failed to fetch discover results');
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [
     selectedGenres, selectedProviders, selectedLanguages,
-    selectedYear, selectedRuntime, selectedRating, selectedMoods
+    selectedYear, selectedRuntime, selectedRating, selectedMoods,
+    watchingWith, energyLevel
   ]);
 
   const FilterSections = () => (
@@ -408,12 +410,23 @@ function DiscoverContent() {
           {/* Results Grid */}
           <main className="space-y-6">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Showing <strong>{filteredMovies.length}</strong> matches</span>
+              <span>Showing <strong>{discoverResults.length}</strong> matches</span>
             </div>
 
-            {filteredMovies.length > 0 ? (
+            {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-6">
-                {filteredMovies.map((movie, idx) => (
+                {[...Array(8)].map((_, idx) => (
+                  <MovieCardSkeleton key={idx} />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="py-24 text-center border border-dashed border-white/5 rounded-3xl bg-white/[0.005]">
+                <h3 className="text-base font-bold text-white">Error searching catalogue</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed">{error}</p>
+              </div>
+            ) : discoverResults.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-6">
+                {discoverResults.map((movie, idx) => (
                   <MovieCard key={movie.id} movie={movie} index={idx} />
                 ))}
               </div>

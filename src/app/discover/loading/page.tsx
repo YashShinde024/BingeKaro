@@ -3,7 +3,8 @@
 import React, { Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getMoodBasedRecommendation, generateAIExplanation } from '../../../lib/mockData';
+import { api } from '../../../lib/api';
+import { useAuth as useClerkAuth } from '@clerk/nextjs';
 import { Brain, Sparkles, ShieldCheck, Heart, Star, Film } from 'lucide-react';
 
 const STEPS = [
@@ -32,6 +33,7 @@ function LoadingContent() {
   const [currentStep, setCurrentStep] = React.useState(-1);
   const [progress, setProgress] = React.useState(0);
   const [factIndex, setFactIndex] = React.useState(0);
+  const { getToken } = useClerkAuth();
 
   React.useEffect(() => {
     const factTimer = setInterval(() => {
@@ -58,15 +60,39 @@ function LoadingContent() {
       setProgress(100);
 
       await new Promise(resolve => setTimeout(resolve, 500));
-      const movie = getMoodBasedRecommendation(moods, genres);
-      const aiExplanation = generateAIExplanation(movie, moods);
-      const result = encodeURIComponent(JSON.stringify({ movieId: movie.id, aiExplanation }));
-      router.push(`/discover/result?data=${result}`);
+      
+      try {
+        const token = await getToken();
+        if (!token) {
+          router.push('/discover');
+          return;
+        }
+
+        const res = await api.getRecommendations(token, {
+          genre: genres[0] || moods[0] || '',
+          platform: searchParams.get('platform') || '',
+          language: searchParams.get('language') || '',
+          runtime: searchParams.get('runtime') || '',
+        });
+
+        if (res.results && res.results.length > 0) {
+          const recMovie = res.results[0];
+          const result = encodeURIComponent(JSON.stringify({ 
+            movieId: recMovie.id, 
+            aiExplanation: recMovie.overview || "This matches your selected preferences." 
+          }));
+          router.push(`/discover/result?data=${result}`);
+        } else {
+          router.push('/discover');
+        }
+      } catch {
+        router.push('/discover');
+      }
     };
 
     runSteps();
     return () => clearInterval(progressInterval);
-  }, [searchParams, router]);
+  }, [searchParams, router, getToken]);
 
   const completedCount = Math.max(0, currentStep);
 

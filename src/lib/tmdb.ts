@@ -1,3 +1,4 @@
+import { api } from './api';
 import type {
   TMDBPagedResponse,
   TMDBMovie,
@@ -11,9 +12,7 @@ import type {
 // ===========================
 // Configuration
 // ===========================
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY || '';
 
 // ===========================
 // Image URL Helpers
@@ -22,6 +21,7 @@ export type ImageSize = 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1
 
 export function getImageUrl(path: string | null | undefined, size: ImageSize = 'w500'): string | null {
   if (!path) return null;
+  if (path.startsWith('http')) return path;
   return `${TMDB_IMAGE_BASE}/${size}${path}`;
 }
 
@@ -38,58 +38,10 @@ export function getProfileUrl(path: string | null | undefined, size: ImageSize =
 }
 
 // ===========================
-// Request Helper
-// ===========================
-const requestCache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minute cache
-const inflightRequests = new Map<string, Promise<unknown>>();
-
-async function tmdbFetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
-  if (!API_KEY) {
-    throw new Error('TMDB API key not configured. Set NEXT_PUBLIC_TMDB_API_KEY in your environment.');
-  }
-
-  const searchParams = new URLSearchParams({
-    api_key: API_KEY,
-    ...params,
-  });
-  const url = `${TMDB_BASE_URL}${endpoint}?${searchParams.toString()}`;
-
-  // Check cache
-  const cached = requestCache.get(url);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data as T;
-  }
-
-  // Deduplicate in-flight requests
-  if (inflightRequests.has(url)) {
-    return inflightRequests.get(url) as Promise<T>;
-  }
-
-  const fetchPromise = fetch(url)
-    .then(async (res) => {
-      if (!res.ok) {
-        throw new Error(`TMDB API error: ${res.status} ${res.statusText}`);
-      }
-      const data = await res.json();
-      requestCache.set(url, { data, timestamp: Date.now() });
-      inflightRequests.delete(url);
-      return data as T;
-    })
-    .catch((err) => {
-      inflightRequests.delete(url);
-      throw err;
-    });
-
-  inflightRequests.set(url, fetchPromise);
-  return fetchPromise;
-}
-
-// ===========================
-// Check if TMDB is available
+// Check if TMDB is available (always true since backend handles it)
 // ===========================
 export function isTMDBAvailable(): boolean {
-  return !!API_KEY;
+  return true;
 }
 
 // ===========================
@@ -99,8 +51,20 @@ export async function fetchTrending(
   timeWindow: 'day' | 'week' = 'day',
   page: number = 1
 ): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>(`/trending/all/${timeWindow}`, {
-    page: String(page),
+  // Use BingeKaro Backend Movies Trending Endpoint
+  return api.getHome(page).then((homeData) => {
+    const railKey = timeWindow === 'day' ? 'trending_today' : 'trending_this_week';
+    const rail = homeData.rails?.[railKey];
+    if (rail) {
+      return {
+        page: rail.page || page,
+        total_pages: rail.total_pages || 1,
+        total_results: rail.total_results || rail.results?.length || 0,
+        results: rail.results || [],
+      };
+    }
+    // Fallback if not in home object
+    return { page, total_pages: 1, total_results: 0, results: [] };
   });
 }
 
@@ -108,29 +72,50 @@ export async function fetchTrending(
 // Movies
 // ===========================
 export async function fetchPopularMovies(page: number = 1): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/movie/popular', {
-    page: String(page),
-    region: 'IN',
+  return api.getHome(page).then((data) => {
+    const rail = data.rails?.['popular_movies'];
+    return {
+      page: rail?.page || page,
+      total_pages: rail?.total_pages || 1,
+      total_results: rail?.total_results || 0,
+      results: rail?.results || [],
+    };
   });
 }
 
 export async function fetchTopRatedMovies(page: number = 1): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/movie/top_rated', {
-    page: String(page),
+  return api.getHome(page).then((data) => {
+    const rail = data.rails?.['top_rated_movies'];
+    return {
+      page: rail?.page || page,
+      total_pages: rail?.total_pages || 1,
+      total_results: rail?.total_results || 0,
+      results: rail?.results || [],
+    };
   });
 }
 
 export async function fetchNowPlaying(page: number = 1): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/movie/now_playing', {
-    page: String(page),
-    region: 'IN',
+  return api.getHome(page).then((data) => {
+    const rail = data.rails?.['now_playing'];
+    return {
+      page: rail?.page || page,
+      total_pages: rail?.total_pages || 1,
+      total_results: rail?.total_results || 0,
+      results: rail?.results || [],
+    };
   });
 }
 
 export async function fetchUpcoming(page: number = 1): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/movie/upcoming', {
-    page: String(page),
-    region: 'IN',
+  return api.getHome(page).then((data) => {
+    const rail = data.rails?.['upcoming'];
+    return {
+      page: rail?.page || page,
+      total_pages: rail?.total_pages || 1,
+      total_results: rail?.total_results || 0,
+      results: rail?.results || [],
+    };
   });
 }
 
@@ -138,14 +123,26 @@ export async function fetchUpcoming(page: number = 1): Promise<TMDBPagedResponse
 // TV Shows
 // ===========================
 export async function fetchPopularTV(page: number = 1): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/tv/popular', {
-    page: String(page),
+  return api.getHome(page).then((data) => {
+    const rail = data.rails?.['popular_tv'];
+    return {
+      page: rail?.page || page,
+      total_pages: rail?.total_pages || 1,
+      total_results: rail?.total_results || 0,
+      results: rail?.results || [],
+    };
   });
 }
 
 export async function fetchTopRatedTV(page: number = 1): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/tv/top_rated', {
-    page: String(page),
+  return api.getHome(page).then((data) => {
+    const rail = data.rails?.['top_rated_tv'];
+    return {
+      page: rail?.page || page,
+      total_pages: rail?.total_pages || 1,
+      total_results: rail?.total_results || 0,
+      results: rail?.results || [],
+    };
   });
 }
 
@@ -156,24 +153,14 @@ export async function fetchMoviesByGenre(
   genreId: number,
   page: number = 1
 ): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/discover/movie', {
-    page: String(page),
-    with_genres: String(genreId),
-    sort_by: 'popularity.desc',
-    'vote_count.gte': '100',
-  });
+  return api.discoverByGenre(genreId, 'movie', page).then((res) => res.movie || res.movies || res);
 }
 
 export async function fetchTVByGenre(
   genreId: number,
   page: number = 1
 ): Promise<TMDBPagedResponse<TMDBMovie>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMovie>>('/discover/tv', {
-    page: String(page),
-    with_genres: String(genreId),
-    sort_by: 'popularity.desc',
-    'vote_count.gte': '50',
-  });
+  return api.discoverByGenre(genreId, 'tv', page).then((res) => res.tv || res);
 }
 
 // ===========================
@@ -183,33 +170,25 @@ export async function multiSearch(
   query: string,
   page: number = 1
 ): Promise<TMDBPagedResponse<TMDBMultiSearchResult>> {
-  return tmdbFetch<TMDBPagedResponse<TMDBMultiSearchResult>>('/search/multi', {
-    query,
-    page: String(page),
-    include_adult: 'false',
-  });
+  return api.search(query, page);
 }
 
 // ===========================
 // Details
 // ===========================
-export async function fetchMovieDetails(id: number): Promise<TMDBMovieDetails> {
-  return tmdbFetch<TMDBMovieDetails>(`/movie/${id}`, {
-    append_to_response: 'credits,similar,videos,watch/providers',
-  });
+export async function fetchMovieDetails(id: number): Promise<any> {
+  return api.getMovieDetails(id);
 }
 
-export async function fetchTVDetails(id: number): Promise<TMDBTVDetails> {
-  return tmdbFetch<TMDBTVDetails>(`/tv/${id}`, {
-    append_to_response: 'credits,similar,videos,watch/providers',
-  });
+export async function fetchTVDetails(id: number): Promise<any> {
+  return api.getTVDetails(id);
 }
 
 // ===========================
 // Normalization Helpers
 // ===========================
-export function normalizeContent(item: TMDBMovie): NormalizedContent {
-  const isTV = item.media_type === 'tv' || !!item.first_air_date;
+export function normalizeContent(item: any): NormalizedContent {
+  const mediaType = item.media_type || item.mediaType || ('first_air_date' in item || 'episode_run_time' in item ? 'tv' : 'movie');
   const title = item.title || item.name || 'Untitled';
   const dateStr = item.release_date || item.first_air_date || '';
   const year = dateStr ? new Date(dateStr).getFullYear() : 0;
@@ -217,27 +196,27 @@ export function normalizeContent(item: TMDBMovie): NormalizedContent {
   return {
     id: item.id,
     title,
-    mediaType: isTV ? 'tv' : 'movie',
-    posterUrl: getPosterUrl(item.poster_path),
-    backdropUrl: getBackdropUrl(item.backdrop_path),
+    mediaType: mediaType as 'movie' | 'tv',
+    posterUrl: item.poster_path ? getPosterUrl(item.poster_path) : (item.posterUrl || FALLBACK_POSTER),
+    backdropUrl: item.backdrop_path ? getBackdropUrl(item.backdrop_path) : (item.backdropUrl || FALLBACK_BACKDROP),
     year: isNaN(year) ? 0 : year,
-    rating: Math.round(item.vote_average * 10) / 10,
-    voteCount: item.vote_count,
+    rating: Math.round((item.vote_average || item.rating || 0) * 10) / 10,
+    voteCount: item.vote_count || item.voteCount || 0,
     overview: item.overview || '',
-    genreIds: item.genre_ids || [],
-    language: item.original_language || 'en',
+    genreIds: item.genre_ids || (item.genres ? item.genres.map((g: any) => typeof g === 'object' ? g.id : g) : []),
+    language: item.original_language || item.language || 'en',
     popularity: item.popularity || 0,
   };
 }
 
-export function normalizePerson(item: TMDBMultiSearchResult): NormalizedPerson {
+export function normalizePerson(item: any): NormalizedPerson {
   return {
     id: item.id,
     name: item.name || 'Unknown',
-    profileUrl: getProfileUrl(item.profile_path),
+    profileUrl: item.profile_path ? getProfileUrl(item.profile_path) : FALLBACK_PROFILE,
     department: item.known_for_department || 'Acting',
     knownFor: (item.known_for || [])
-      .map((m) => m.title || m.name || '')
+      .map((m: any) => m.title || m.name || '')
       .filter(Boolean)
       .slice(0, 3),
   };

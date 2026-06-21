@@ -8,10 +8,12 @@ import { Star, Clock, Bookmark, Play, RotateCcw, Sparkles, CheckCircle2, Heart, 
 import { getMovieById, MOVIES } from '../../../lib/mockData';
 import { PROVIDER_REGISTRY } from '../../../lib/providers';
 import { OTTBadge, OTTBadgeList } from '../../../components/badges/OTTBadge';
-import { OTTProviderId } from '../../../types';
+import { OTTProviderId, Movie } from '../../../types';
 import { useWatchlist } from '../../../context/WatchlistContext';
 import { useHistory } from '../../../context/HistoryContext';
 import { useToast } from '../../../context/ToastContext';
+import { api } from '../../../lib/api';
+import { getBackdropUrl, getPosterUrl } from '../../../lib/tmdb';
 
 const FALLBACK_BACKDROP = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&q=90';
 const FALLBACK_POSTER = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&q=80';
@@ -104,23 +106,52 @@ function ResultContent() {
   const [bgErr, setBgErr] = React.useState(false);
 
   const dataParam = searchParams ? searchParams.get('data') : null;
-  let movie: any = null;
-  let aiExplanation = '';
+  const [movie, setMovie] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [aiExplanation, setAiExplanation] = React.useState('');
 
-  try {
-    if (dataParam) {
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      movie = getMovieById(parsed.movieId);
-      aiExplanation = parsed.aiExplanation;
+  React.useEffect(() => {
+    if (!dataParam) {
+      setLoading(false);
+      return;
     }
-  } catch (_) {}
+    try {
+      const parsed = JSON.parse(decodeURIComponent(dataParam));
+      setAiExplanation(parsed.aiExplanation || '');
+      
+      setLoading(true);
+      api.getMovieDetails(parsed.movieId)
+        .then((res) => {
+          const normalized = {
+            id: res.id,
+            title: res.title || res.name || 'Untitled',
+            backdropPath: res.backdrop_path ? getBackdropUrl(res.backdrop_path) : FALLBACK_BACKDROP,
+            posterPath: res.poster_path ? getPosterUrl(res.poster_path) : FALLBACK_POSTER,
+            year: res.release_date ? new Date(res.release_date).getFullYear() : 0,
+            rating: res.vote_average || 0,
+            runtime: res.runtime || 0,
+            language: res.original_language || 'en',
+            genres: res.genres ? res.genres.map((g: any) => typeof g === 'object' ? g.name : g) : [],
+            overview: res.overview || '',
+            providers: res.watch_providers?.subscription?.map((p: any) => p.provider_name.toLowerCase()) || [],
+          };
+          setMovie(normalized);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    } catch {
+      setLoading(false);
+    }
+  }, [dataParam]);
 
   const saved = movie ? inWatchlist(movie.id) : false;
   const favorited = movie ? inFavorites(movie.id) : false;
 
   React.useEffect(() => {
     if (movie) {
-      addToRecommendationHistory(movie, aiExplanation || movie.aiInsight || movie.overview);
+      addToRecommendationHistory(movie, aiExplanation || movie.overview);
     }
   }, [movie?.id]);
 
@@ -165,6 +196,17 @@ function ResultContent() {
     const el = document.getElementById('alternatives-section');
     el?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#07111F] flex items-center justify-center text-white">
+        <div className="text-center space-y-4">
+          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-semibold text-muted-foreground">Decoding dynamic match context...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!movie) {
     return (

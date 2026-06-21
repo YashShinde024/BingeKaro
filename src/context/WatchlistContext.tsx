@@ -1,8 +1,11 @@
 "use client";
+
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { useAuth as useClerkAuth } from '@clerk/nextjs';
 import type { Movie } from '../types';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import { api } from '../lib/api';
 
 export type WatchlistStatus = 'want-to-watch' | 'watching' | 'completed' | 'dropped';
 
@@ -33,101 +36,186 @@ export const WatchlistProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [movieStatuses, setMovieStatuses] = useState<Record<number, WatchlistStatus>>({});
   const { user, openLoginModal } = useAuth();
   const { showToast } = useToast();
+  const { getToken } = useClerkAuth();
+
+  const syncWatchlist = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      
+      const items = await api.getWatchlist(token);
+      const mapped = items.map((item: any) => ({
+        id: item.tmdb_id,
+        type: (item.media_type || 'movie') as any,
+        title: item.title,
+        posterPath: item.poster_path || '',
+        backdropPath: item.backdrop_path || '',
+        year: item.release_date ? new Date(item.release_date).getFullYear() : 0,
+        rating: item.vote_average || 0,
+        voteCount: 0,
+        runtime: 0,
+        overview: item.overview || '',
+        genres: [],
+        language: 'english' as any,
+        providers: [],
+        isFree: false,
+        dbId: item.id, // Database record ID for deletion
+      }));
+      setWatchlist(mapped);
+
+      // Statuses mapping
+      const statuses: Record<number, WatchlistStatus> = {};
+      items.forEach((item: any) => {
+        statuses[item.tmdb_id] = (item.status || 'want-to-watch') as WatchlistStatus;
+      });
+      setMovieStatuses(statuses);
+    } catch {
+      // Silently handle errors
+    }
+  }, [getToken]);
+
+  const syncFavorites = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const items = await api.getFavorites(token);
+      const mapped = items.map((item: any) => ({
+        id: item.tmdb_id,
+        type: (item.media_type || 'movie') as any,
+        title: item.title,
+        posterPath: item.poster_path || '',
+        backdropPath: item.backdrop_path || '',
+        year: item.release_date ? new Date(item.release_date).getFullYear() : 0,
+        rating: item.vote_average || 0,
+        voteCount: 0,
+        runtime: 0,
+        overview: item.overview || '',
+        genres: [],
+        language: 'english' as any,
+        providers: [],
+        isFree: false,
+        dbId: item.id, // Database record ID
+      }));
+      setFavorites(mapped);
+    } catch {
+      // Silently handle errors
+    }
+  }, [getToken]);
 
   useEffect(() => {
     if (user) {
-      const wKey = `kd_watchlist_${user.id}`;
-      const fKey = `kd_favorites_${user.id}`;
-      const sKey = `kd_statuses_${user.id}`;
-      try {
-        const savedW = localStorage.getItem(wKey);
-        const savedF = localStorage.getItem(fKey);
-        const savedS = localStorage.getItem(sKey);
-        setWatchlist(savedW ? JSON.parse(savedW) : []);
-        setFavorites(savedF ? JSON.parse(savedF) : []);
-        setMovieStatuses(savedS ? JSON.parse(savedS) : {});
-      } catch {
-        // Silently handle corrupted localStorage
-      }
+      syncWatchlist();
+      syncFavorites();
     } else {
       setWatchlist([]);
       setFavorites([]);
       setMovieStatuses({});
     }
-  }, [user]);
+  }, [user, syncWatchlist, syncFavorites]);
 
-  const addToWatchlist = useCallback((movie: Movie) => {
+  const addToWatchlist = useCallback(async (movie: Movie) => {
     if (!user) {
       showToast('Please sign in to save movies to your watchlist.', 'info');
       openLoginModal();
       return;
     }
-    const key = `kd_watchlist_${user.id}`;
-    setWatchlist((prev) => {
-      if (prev.some((m) => m.id === movie.id)) return prev;
-      const updated = [movie, ...prev];
-      localStorage.setItem(key, JSON.stringify(updated));
-      const sKey = `kd_statuses_${user.id}`;
-      setMovieStatuses(s => {
-        const next = { ...s, [movie.id]: 'want-to-watch' as const };
-        localStorage.setItem(sKey, JSON.stringify(next));
-        return next;
-      });
-      showToast(`"${movie.title}" added to watchlist!`, 'success');
-      return updated;
-    });
-  }, [user, showToast, openLoginModal]);
+    try {
+      const token = await getToken();
+      if (!token) return;
 
-  const removeFromWatchlist = useCallback((movieId: number) => {
-    if (!user) return;
-    const key = `kd_watchlist_${user.id}`;
-    setWatchlist((prev) => {
-      const target = prev.find((m) => m.id === movieId);
-      const updated = prev.filter((m) => m.id !== movieId);
-      localStorage.setItem(key, JSON.stringify(updated));
-      const sKey = `kd_statuses_${user.id}`;
-      setMovieStatuses(s => {
-        const next = { ...s };
-        delete next[movieId];
-        localStorage.setItem(sKey, JSON.stringify(next));
-        return next;
+      const posterRelative = movie.posterPath ? movie.posterPath.substring(movie.posterPath.indexOf('/p/')) : '';
+      const backdropRelative = movie.backdropPath ? movie.backdropPath.substring(movie.backdropPath.indexOf('/p/')) : '';
+
+      await api.addToWatchlist(token, {
+        tmdb_id: movie.id,
+        media_type: movie.type === 'tv' ? 'tv' : 'movie',
+        title: movie.title,
+        poster_path: posterRelative || movie.posterPath,
+        backdrop_path: backdropRelative || movie.backdropPath,
+        overview: movie.overview || '',
+        vote_average: movie.rating,
+        release_date: movie.year ? `${movie.year}-01-01` : '',
       });
-      if (target) showToast(`"${target.title}" removed from watchlist.`, 'info');
-      return updated;
-    });
-  }, [user, showToast]);
+
+      showToast(`"${movie.title}" added to watchlist!`, 'success');
+      syncWatchlist();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to add to watchlist', 'danger');
+    }
+  }, [user, getToken, showToast, openLoginModal, syncWatchlist]);
+
+  const removeFromWatchlist = useCallback(async (movieId: number) => {
+    if (!user) return;
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      // Find the database record uuid
+      const list = await api.getWatchlist(token);
+      const dbItem = list.find((item: any) => item.tmdb_id === movieId);
+      if (dbItem?.id) {
+        await api.removeFromWatchlist(token, dbItem.id);
+        showToast('Removed from watchlist.', 'info');
+        syncWatchlist();
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to remove from watchlist', 'danger');
+    }
+  }, [user, getToken, showToast, syncWatchlist]);
 
   const inWatchlist = useCallback((movieId: number) => {
     return watchlist.some((m) => m.id === movieId);
   }, [watchlist]);
 
-  const addToFavorites = useCallback((movie: Movie) => {
+  const addToFavorites = useCallback(async (movie: Movie) => {
     if (!user) {
       showToast('Please sign in to save favorites.', 'info');
       openLoginModal();
       return;
     }
-    const key = `kd_favorites_${user.id}`;
-    setFavorites((prev) => {
-      if (prev.some((m) => m.id === movie.id)) return prev;
-      const updated = [movie, ...prev];
-      localStorage.setItem(key, JSON.stringify(updated));
-      showToast(`Added "${movie.title}" to Favorites`, 'success');
-      return updated;
-    });
-  }, [user, showToast, openLoginModal]);
+    try {
+      const token = await getToken();
+      if (!token) return;
 
-  const removeFromFavorites = useCallback((movieId: number) => {
+      const posterRelative = movie.posterPath ? movie.posterPath.substring(movie.posterPath.indexOf('/p/')) : '';
+      const backdropRelative = movie.backdropPath ? movie.backdropPath.substring(movie.backdropPath.indexOf('/p/')) : '';
+
+      await api.addToFavorites(token, {
+        tmdb_id: movie.id,
+        media_type: movie.type === 'tv' ? 'tv' : 'movie',
+        title: movie.title,
+        poster_path: posterRelative || movie.posterPath,
+        backdrop_path: backdropRelative || movie.backdropPath,
+        overview: movie.overview || '',
+        vote_average: movie.rating,
+        release_date: movie.year ? `${movie.year}-01-01` : '',
+      });
+
+      showToast(`Added "${movie.title}" to Favorites`, 'success');
+      syncFavorites();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to add to favorites', 'danger');
+    }
+  }, [user, getToken, showToast, openLoginModal, syncFavorites]);
+
+  const removeFromFavorites = useCallback(async (movieId: number) => {
     if (!user) return;
-    const key = `kd_favorites_${user.id}`;
-    setFavorites((prev) => {
-      const target = prev.find((m) => m.id === movieId);
-      const updated = prev.filter((m) => m.id !== movieId);
-      localStorage.setItem(key, JSON.stringify(updated));
-      if (target) showToast(`Removed "${target.title}" from Favorites.`, 'info');
-      return updated;
-    });
-  }, [user, showToast]);
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const list = await api.getFavorites(token);
+      const dbItem = list.find((item: any) => item.tmdb_id === movieId);
+      if (dbItem?.id) {
+        await api.removeFromFavorites(token, dbItem.id);
+        showToast('Removed from Favorites.', 'info');
+        syncFavorites();
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to remove from favorites', 'danger');
+    }
+  }, [user, getToken, showToast, syncFavorites]);
 
   const inFavorites = useCallback((movieId: number) => {
     return favorites.some((m) => m.id === movieId);
@@ -135,12 +223,8 @@ export const WatchlistProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const updateMovieStatus = useCallback((movieId: number, status: WatchlistStatus) => {
     if (!user) return;
-    const sKey = `kd_statuses_${user.id}`;
-    setMovieStatuses(s => {
-      const next = { ...s, [movieId]: status };
-      localStorage.setItem(sKey, JSON.stringify(next));
-      return next;
-    });
+    // Keep local statuses in sync, but wait for future backend integrations if any
+    setMovieStatuses(s => ({ ...s, [movieId]: status }));
     const target = watchlist.find(m => m.id === movieId);
     const title = target ? `"${target.title}"` : 'Movie';
     showToast(`${title} status updated to: ${status.replace(/-/g, ' ')}`, 'success');
