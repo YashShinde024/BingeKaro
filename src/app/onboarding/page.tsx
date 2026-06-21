@@ -4,17 +4,19 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, ArrowLeft, Check, Film, Globe, Tv, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth as useClerkAuth } from '@clerk/nextjs';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { LANGUAGES, GENRES } from '../../lib/mockData';
 import { PROVIDER_REGISTRY } from '../../lib/providers';
-import { saveUserPreferences } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import type { LanguageId, GenreId, OTTProviderId } from '../../types';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { user, updatePreferences } = useAuth();
   const { showToast } = useToast();
+  const { getToken } = useClerkAuth();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [loading, setLoading] = useState(false);
@@ -70,17 +72,18 @@ export default function OnboardingPage() {
 
     setLoading(true);
     try {
-      // 1. Save to Supabase (with localStorage fallback inside)
-      await saveUserPreferences({
-        userId: user.id,
-        languages: selectedLanguages,
-        genres: selectedGenres,
-        providers: selectedProviders,
-      });
+      const token = await getToken();
+      if (token) {
+        // Save to FastAPI backend
+        await api.onboard(token, {
+          genres: selectedGenres,
+          languages: selectedLanguages,
+          platforms: selectedProviders
+        });
+      }
 
-      // 2. Update local app state preferences (AuthContext)
-      // Since AuthContext stores favoriteGenres and favoriteProviders (favoriteMoods default to empty/existing)
-      updatePreferences(
+      // Update local app state preferences (AuthContext)
+      await updatePreferences(
         selectedGenres,
         user.favoriteMoods || [],
         selectedProviders

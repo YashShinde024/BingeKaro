@@ -1,10 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/nextjs';
 import type { UserProfile, GenreId, MoodId, OTTProviderId } from '../types';
 import { useToast } from './ToastContext';
 import { useRouter } from 'next/navigation';
+import { api } from '../lib/api';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -15,7 +16,7 @@ interface AuthContextType {
     genres: GenreId[],
     moods: MoodId[],
     providers: OTTProviderId[]
-  ) => void;
+  ) => Promise<void>;
   openLoginModal: () => void;
   closeLoginModal: () => void;
   isLoginModalOpen: boolean;
@@ -34,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { signOut } = useClerk();
   const { showToast } = useToast();
   const router = useRouter();
+  const { getToken } = useClerkAuth();
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -42,38 +44,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!isLoaded) return;
 
     if (clerkUser) {
-      const storageKey = `kd_user_${clerkUser.id}`;
-      const savedPrefs = localStorage.getItem(storageKey);
-      let favoriteGenres: GenreId[] = ['thriller', 'drama', 'sci-fi'];
-      let favoriteMoods: MoodId[] = ['thrilling', 'mind-bending', 'dark'];
-      let favoriteProviders: OTTProviderId[] = ['netflix', 'prime-video', 'apple-tv'];
+      const loadProfile = async () => {
+        let favoriteGenres: GenreId[] = ['thriller', 'drama', 'sci-fi'];
+        let favoriteMoods: MoodId[] = ['thrilling', 'mind-bending', 'dark'];
+        let favoriteProviders: OTTProviderId[] = ['netflix', 'prime-video', 'apple-tv'];
 
-      if (savedPrefs) {
         try {
-          const parsed = JSON.parse(savedPrefs);
-          favoriteGenres = parsed.favoriteGenres || favoriteGenres;
-          favoriteMoods = parsed.favoriteMoods || favoriteMoods;
-          favoriteProviders = parsed.favoriteProviders || favoriteProviders;
-        } catch {
-          // Silently handle corrupted preferences
+          const token = await getToken();
+          if (token) {
+            const backendPrefs = await api.getPreferences(token);
+            if (backendPrefs) {
+              if (Array.isArray(backendPrefs.genres) && backendPrefs.genres.length > 0) {
+                favoriteGenres = backendPrefs.genres as GenreId[];
+              }
+              if (Array.isArray(backendPrefs.platforms) && backendPrefs.platforms.length > 0) {
+                favoriteProviders = backendPrefs.platforms as OTTProviderId[];
+              }
+            }
+          }
+        } catch (err) {
+          // Fallback to localStorage if backend fails
+          const storageKey = `kd_user_${clerkUser.id}`;
+          const savedPrefs = localStorage.getItem(storageKey);
+          if (savedPrefs) {
+            try {
+              const parsed = JSON.parse(savedPrefs);
+              favoriteGenres = parsed.favoriteGenres || favoriteGenres;
+              favoriteMoods = parsed.favoriteMoods || favoriteMoods;
+              favoriteProviders = parsed.favoriteProviders || favoriteProviders;
+            } catch {}
+          }
         }
-      }
 
-      setUserProfile({
-        id: clerkUser.id,
-        name: clerkUser.fullName || clerkUser.username || 'Cinephile',
-        email: clerkUser.primaryEmailAddress?.emailAddress || '',
-        avatarUrl: clerkUser.imageUrl,
-        favoriteGenres,
-        favoriteMoods,
-        favoriteProviders,
-        joinedAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'June 2026',
-      });
-      setIsLoginModalOpen(false);
+        setUserProfile({
+          id: clerkUser.id,
+          name: clerkUser.fullName || clerkUser.username || 'Cinephile',
+          email: clerkUser.primaryEmailAddress?.emailAddress || '',
+          avatarUrl: clerkUser.imageUrl,
+          favoriteGenres,
+          favoriteMoods,
+          favoriteProviders,
+          joinedAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'June 2026',
+        });
+        setIsLoginModalOpen(false);
+      };
+
+      loadProfile();
     } else {
       setUserProfile(null);
     }
-  }, [clerkUser, isLoaded]);
+  }, [clerkUser, isLoaded, getToken]);
 
   const login = useCallback(async () => {
     router.push('/sign-in');
@@ -89,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [signOut, showToast, router]);
 
-  const updatePreferences = useCallback((
+  const updatePreferences = useCallback(async (
     genres: GenreId[],
     moods: MoodId[],
     providers: OTTProviderId[]
@@ -103,10 +123,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       favoriteProviders: providers,
     };
 
+    // Optimistic update
     setUserProfile(updated);
     localStorage.setItem(`kd_user_${clerkUser.id}`, JSON.stringify(updated));
-    showToast('Preferences updated successfully!', 'success');
-  }, [clerkUser, userProfile, showToast]);
+
+    try {
+      const token = await getToken();
+      if (token) {
+        await api.updatePreferences(token, {
+          genres,
+          platforms: providers
+        });
+        showToast('Preferences synced to cloud successfully!', 'success');
+      } else {
+        showToast('Preferences updated locally.', 'info');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to sync preferences to cloud.', 'warning');
+    }
+  }, [clerkUser, userProfile, getToken, showToast]);
 
   const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);

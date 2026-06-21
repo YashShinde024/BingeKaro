@@ -201,4 +201,7 @@ export const api = {
     platforms?: string[];
   }) => 
     apiRequest<any>(`/users/preferences`, { method: 'PATCH', body: payload, token }),
+
+  getPreferences: (token: string) => 
+    apiRequest<any>(`/users/preferences`, { token }),
 };
