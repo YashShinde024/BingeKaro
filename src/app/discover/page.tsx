@@ -1,15 +1,15 @@
 "use client";
 
-import React, { Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Sparkles, Filter, Check, X, Star, Clock, Compass, Heart, Zap,
-  Users, Coffee, LayoutGrid, Calendar, HelpCircle, Film, Tv, ChevronDown
+import { 
+  SlidersHorizontal, Check, X, Star, Clock, Compass, HelpCircle, 
+  Film, Tv, ArrowUpDown, RefreshCw, Grid, List, AlertCircle 
 } from 'lucide-react';
-import { MOVIES, GENRES, LANGUAGES, MOODS } from '../../lib/mockData';
+import { GENRES, LANGUAGES, MOVIES } from '../../lib/mockData';
 import { PROVIDER_REGISTRY } from '../../lib/providers';
 import { MovieCard } from '../../components/cards/MovieCard';
-import type { MoodId, GenreId, LanguageId, OTTProviderId, Movie } from '../../types';
+import type { GenreId, LanguageId, OTTProviderId, Movie } from '../../types';
 import { api } from '../../lib/api';
 import { normalizeContent } from '../../lib/tmdb';
 import { MovieCardSkeleton } from '../../components/ui/Skeletons';
@@ -28,105 +28,61 @@ const RATING_OPTIONS = [
   { label: 'Any rating', value: 'any' },
 ];
 
-const YEAR_OPTIONS = [
-  { label: '2024 Releases', value: '2024' },
-  { label: '2023 Releases', value: '2023' },
-  { label: '2020 – 2022', value: '2020-2022' },
-  { label: 'Classic Hits (<2020)', value: 'classic' },
-  { label: 'Any year', value: 'any' },
-];
-
-const WATCHING_WITH_OPTIONS = [
-  { id: 'alone', label: 'Solo Vibe' },
-  { id: 'partner', label: 'Date Night' },
-  { id: 'friends', label: 'Group Watch' },
-  { id: 'family', label: 'Family Friendly' },
-];
-
-const ENERGY_OPTIONS = [
-  { id: 'relaxed', label: 'Relaxed / Chill' },
-  { id: 'focused', label: 'Engaged / Focused' },
-  { id: 'excited', label: 'High Excitement' },
+const SORT_OPTIONS = [
+  { label: 'Popularity', value: 'popularity.desc' },
+  { label: 'Release Date', value: 'release_date.desc' },
+  { label: 'Vote Average', value: 'vote_average.desc' },
 ];
 
 function DiscoverContent() {
-  const [selectedGenres, setSelectedGenres] = React.useState<GenreId[]>([]);
-  const [selectedProviders, setSelectedProviders] = React.useState<string[]>([]);
-  const [selectedLanguages, setSelectedLanguages] = React.useState<LanguageId[]>([]);
-  const [selectedYear, setSelectedYear] = React.useState<string>('any');
-  const [selectedRuntime, setSelectedRuntime] = React.useState<string>('any');
-  const [selectedRating, setSelectedRating] = React.useState<string>('any');
-  const [selectedMoods, setSelectedMoods] = React.useState<MoodId[]>([]);
-  const [watchingWith, setWatchingWith] = React.useState<string | null>(null);
-  const [energyLevel, setEnergyLevel] = React.useState<string | null>(null);
-  
-  const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
-  const [showFutureFilters, setShowFutureFilters] = React.useState(false);
+  const [selectedGenres, setSelectedGenres] = useState<GenreId[]>([]);
+  const [selectedProviders, setSelectedProviders] = useState<OTTProviderId[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<LanguageId[]>([]);
+  const [selectedRuntime, setSelectedRuntime] = useState<string>('any');
+  const [selectedRating, setSelectedRating] = useState<string>('any');
+  const [selectedSort, setSelectedSort] = useState<string>('popularity.desc');
+  const [selectedContentType, setSelectedContentType] = useState<'all' | 'movie' | 'tv'>('all');
+
+  const [discoverResults, setDiscoverResults] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const toggleGenre = (id: GenreId) => {
-    setSelectedGenres(prev =>
-      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
-    );
+    setSelectedGenres(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]);
   };
 
-  const toggleProvider = (id: string) => {
-    setSelectedProviders(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-    );
+  const toggleProvider = (id: OTTProviderId) => {
+    setSelectedProviders(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
   };
 
   const toggleLanguage = (id: LanguageId) => {
-    setSelectedLanguages(prev =>
-      prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]
-    );
-  };
-
-  const toggleMood = (id: MoodId) => {
-    setSelectedMoods(prev =>
-      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
-    );
+    setSelectedLanguages(prev => prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]);
   };
 
   const clearFilters = () => {
     setSelectedGenres([]);
     setSelectedProviders([]);
     setSelectedLanguages([]);
-    setSelectedYear('any');
     setSelectedRuntime('any');
     setSelectedRating('any');
-    setSelectedMoods([]);
-    setWatchingWith(null);
-    setEnergyLevel(null);
+    setSelectedSort('popularity.desc');
+    setSelectedContentType('all');
   };
 
-  const [discoverResults, setDiscoverResults] = React.useState<Movie[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
     setLoading(true);
     setError(null);
 
-    // Map year string
-    let yearParam: number | undefined;
-    if (selectedYear !== 'any') {
-      const yearInt = parseInt(selectedYear);
-      if (!isNaN(yearInt)) {
-        yearParam = yearInt;
-      }
-    }
-
     const filters: Record<string, any> = {
       genre: selectedGenres.join(','),
-      platform: selectedProviders.join(','),
+      provider: selectedProviders.join(','),
       language: selectedLanguages.join(','),
-      year: yearParam,
       runtime: selectedRuntime !== 'any' ? selectedRuntime : undefined,
-      rating: selectedRating !== 'any' ? parseFloat(selectedRating) : undefined,
-      mood: selectedMoods.join(','),
-      watching_with: watchingWith || undefined,
-      energy_level: energyLevel || undefined,
+      vote_average: selectedRating !== 'any' ? parseFloat(selectedRating) : undefined,
+      sort: selectedSort,
+      content_type: selectedContentType,
     };
 
     api.discover(filters, 1)
@@ -139,381 +95,299 @@ function DiscoverContent() {
       })
       .catch((err) => {
         if (!active) return;
-        setError(err.message || 'Failed to fetch discover results');
+        console.warn("FastAPI discover failed, using mock data as fallback", err);
+        // Fallback to mock data matching filters
+        const filtered = MOVIES.filter(m => {
+          const genreMatch = selectedGenres.length === 0 || m.genres.some(g => selectedGenres.includes(g as GenreId));
+          const providerMatch = selectedProviders.length === 0 || m.providers?.some(p => selectedProviders.includes(p as OTTProviderId));
+          const langMatch = selectedLanguages.length === 0 || selectedLanguages.includes(m.language as LanguageId);
+          const typeMatch = selectedContentType === 'all' || m.type === selectedContentType;
+          return genreMatch && providerMatch && langMatch && typeMatch;
+        });
+        setDiscoverResults(filtered);
         setLoading(false);
       });
 
     return () => {
       active = false;
     };
-  }, [
-    selectedGenres, selectedProviders, selectedLanguages,
-    selectedYear, selectedRuntime, selectedRating, selectedMoods,
-    watchingWith, energyLevel
-  ]);
-
-  const FilterSections = () => (
-    <div className="space-y-6">
-      {/* Genres */}
-      <div>
-        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Genres</h4>
-        <div className="flex flex-wrap gap-1.5">
-          {GENRES.map(g => {
-            const active = selectedGenres.includes(g.id);
-            return (
-              <button
-                key={g.id}
-                onClick={() => toggleGenre(g.id)}
-                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
-                  active
-                    ? 'bg-accent border-accent text-white'
-                    : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
-                }`}
-              >
-                {g.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Platforms */}
-      <div>
-        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Platforms</h4>
-        <div className="flex flex-wrap gap-1.5">
-          {Object.values(PROVIDER_REGISTRY).map(p => {
-            const active = selectedProviders.includes(p.id);
-            return (
-              <button
-                key={p.id}
-                onClick={() => toggleProvider(p.id)}
-                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition-all ${
-                  active
-                    ? 'bg-accent border-accent text-white'
-                    : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
-                }`}
-              >
-                <img src={p.logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                {p.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Languages */}
-      <div>
-        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Languages</h4>
-        <div className="flex flex-wrap gap-1.5">
-          {LANGUAGES.map(l => {
-            const active = selectedLanguages.includes(l.id);
-            return (
-              <button
-                key={l.id}
-                onClick={() => toggleLanguage(l.id)}
-                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
-                  active
-                    ? 'bg-accent border-accent text-white'
-                    : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
-                }`}
-              >
-                {l.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Release Year */}
-      <div>
-        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Year</h4>
-        <div className="grid grid-cols-2 gap-1.5">
-          {YEAR_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setSelectedYear(opt.value)}
-              className={`px-3 py-2 rounded-xl border text-[11px] font-bold text-left transition-all ${
-                selectedYear === opt.value
-                  ? 'bg-accent border-accent text-white'
-                  : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Duration */}
-      <div>
-        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Runtime</h4>
-        <div className="grid grid-cols-2 gap-1.5">
-          {RUNTIME_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setSelectedRuntime(opt.value)}
-              className={`px-3 py-2 rounded-xl border text-[11px] font-bold text-left transition-all ${
-                selectedRuntime === opt.value
-                  ? 'bg-accent border-accent text-white'
-                  : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Minimum Rating */}
-      <div>
-        <h4 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">Minimum Rating</h4>
-        <div className="grid grid-cols-2 gap-1.5">
-          {RATING_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setSelectedRating(opt.value)}
-              className={`px-3 py-2 rounded-xl border text-[11px] font-bold text-left transition-all ${
-                selectedRating === opt.value
-                  ? 'bg-accent border-accent text-white'
-                  : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white hover:border-white/10'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Collapse/Expand Future-Ready Filters */}
-      <div className="pt-4 border-t border-white/[0.05]">
-        <button
-          onClick={() => setShowFutureFilters(!showFutureFilters)}
-          className="flex items-center justify-between w-full text-left text-[11px] font-black text-muted-foreground hover:text-white uppercase tracking-widest"
-        >
-          <span>Social & Context Filters (AI)</span>
-          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showFutureFilters ? 'rotate-180' : ''}`} />
-        </button>
-
-        <AnimatePresence>
-          {showFutureFilters && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden space-y-4 pt-4"
-            >
-              {/* Moods */}
-              <div>
-                <span className="text-[9.5px] font-bold text-accent-light uppercase tracking-wider block mb-2">Mood / Vibe</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {MOODS.map(m => {
-                    const active = selectedMoods.includes(m.id);
-                    return (
-                      <button
-                        key={m.id}
-                        onClick={() => toggleMood(m.id)}
-                        className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${
-                          active
-                            ? 'bg-accent border-accent text-white'
-                            : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white'
-                        }`}
-                      >
-                        {m.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Watching With */}
-              <div>
-                <span className="text-[9.5px] font-bold text-accent-light uppercase tracking-wider block mb-2">Watching With</span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {WATCHING_WITH_OPTIONS.map(opt => (
-                    <button
-                      key={opt.id}
-                      onClick={() => setWatchingWith(watchingWith === opt.id ? null : opt.id)}
-                      className={`px-2.5 py-2 rounded-lg border text-[10px] font-bold text-left transition-all ${
-                        watchingWith === opt.id
-                          ? 'bg-accent border-accent text-white'
-                          : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Energy Level */}
-              <div>
-                <span className="text-[9.5px] font-bold text-accent-light uppercase tracking-wider block mb-2">Energy Level</span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {ENERGY_OPTIONS.map(opt => (
-                    <button
-                      key={opt.id}
-                      onClick={() => setEnergyLevel(energyLevel === opt.id ? null : opt.id)}
-                      className={`px-2.5 py-2 rounded-lg border text-[10px] font-bold text-left transition-all ${
-                        energyLevel === opt.id
-                          ? 'bg-accent border-accent text-white'
-                          : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:text-white'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-    </div>
-  );
+  }, [selectedGenres, selectedProviders, selectedLanguages, selectedRuntime, selectedRating, selectedSort, selectedContentType]);
 
   return (
-    <div className="min-h-screen bg-[#050505] pt-24 pb-20">
+    <div className="min-h-screen bg-background pt-24 pb-28">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
         
-        {/* Header Board */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.06] pb-6 mb-8 gap-4">
+        {/* Header Options */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border/60 mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Discover Catalogue</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Filter and discover titles across your subscribed OTT platforms.</p>
+            <h1 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
+              <Compass className="w-6 h-6 text-accent animate-pulse-slow" /> Discover Platform
+            </h1>
+            <p className="text-xs text-muted-foreground font-semibold mt-1">Advanced filter settings to match your exact mood and taste.</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={clearFilters}
-              className="px-4 py-2 rounded-xl text-[12px] font-bold text-white/80 hover:text-white hover:bg-white/5 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 bg-muted/10 hover:bg-muted/15 text-muted-foreground hover:text-foreground border border-border/40 rounded-xl text-xs font-bold transition-all"
             >
-              Reset Filters
+              <RefreshCw className="w-3.5 h-3.5" /> Clear Filters
             </button>
-            <button
-              onClick={() => setMobileFiltersOpen(true)}
-              className="lg:hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[12px] font-bold text-white"
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-            </button>
+            <div className="flex bg-muted/10 border border-border/40 p-1 rounded-xl">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-accent text-white' : 'text-muted-foreground'}`}
+              >
+                <Grid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-accent text-white' : 'text-muted-foreground'}`}
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Board Workspace Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10 items-start">
+        {/* Filters and Results Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           
-          {/* Desktop Filter Sidebar (Sticky) */}
-          <aside className="hidden lg:block sticky top-24 max-h-[80vh] overflow-y-auto pr-4 scrollbar-thin">
-            <FilterSections />
-          </aside>
-
-          {/* Results Grid */}
-          <main className="space-y-6">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Showing <strong>{discoverResults.length}</strong> matches</span>
+          {/* Side Filter Bar */}
+          <div className="lg:col-span-1 space-y-6 bg-card/20 border border-border/40 p-5 rounded-[24px] h-fit">
+            
+            {/* Content Type Selector */}
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">Media Category</h4>
+              <div className="flex gap-1 bg-muted/10 p-1 rounded-xl border border-border/30">
+                {(['all', 'movie', 'tv'] as const).map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedContentType(type)}
+                    className={`flex-1 py-1.5 rounded-lg text-[10.5px] font-bold uppercase transition-colors ${
+                      selectedContentType === type 
+                        ? 'bg-accent text-white shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-6">
-                {[...Array(8)].map((_, idx) => (
-                  <MovieCardSkeleton key={idx} />
-                ))}
-              </div>
-            ) : error ? (
-              <div className="py-24 text-center border border-dashed border-white/5 rounded-3xl bg-white/[0.005]">
-                <h3 className="text-base font-bold text-white">Error searching catalogue</h3>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed">{error}</p>
-              </div>
-            ) : discoverResults.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-6">
-                {discoverResults.map((movie, idx) => (
-                  <MovieCard key={movie.id} movie={movie} index={idx} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-24 text-center border border-dashed border-white/5 rounded-3xl bg-white/[0.005]">
-                <Film className="w-10 h-10 mx-auto text-muted-foreground/35 mb-4" />
-                <h3 className="text-base font-bold text-white">No titles match filters</h3>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed">
-                  Try adjusting genres, minimum ratings, or platform channels to broaden your discovery match.
-                </p>
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 px-4.5 py-2 rounded-xl bg-accent text-[12px] font-bold text-white hover:bg-accent/90"
+            {/* Sort options */}
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">Sort Results</h4>
+              <div className="relative">
+                <select
+                  value={selectedSort}
+                  onChange={(e) => setSelectedSort(e.target.value)}
+                  className="w-full bg-muted/10 hover:bg-muted/15 border border-border/30 rounded-xl px-3 py-2.5 text-xs text-foreground font-semibold outline-none appearance-none cursor-pointer"
                 >
-                  Clear Filters
-                </button>
+                  {SORT_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value} className="bg-background">{opt.label}</option>
+                  ))}
+                </select>
+                <ArrowUpDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               </div>
-            )}
-          </main>
+            </div>
+
+            {/* Genres Selection */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">Genres</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {GENRES.map(g => {
+                  const active = selectedGenres.includes(g.id);
+                  return (
+                    <button
+                      key={g.id}
+                      onClick={() => toggleGenre(g.id)}
+                      className={`px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${
+                        active
+                          ? 'bg-accent border-accent text-white shadow-sm'
+                          : 'bg-muted/5 border-border/40 text-muted-foreground hover:text-foreground hover:border-border'
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Platform Selection */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">Platforms</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.values(PROVIDER_REGISTRY).map(p => {
+                  const active = selectedProviders.includes(p.id as OTTProviderId);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => toggleProvider(p.id as OTTProviderId)}
+                      className={`px-3 py-1.5 rounded-xl border text-[10px] font-bold flex items-center gap-1.5 transition-all ${
+                        active
+                          ? 'bg-accent border-accent text-white shadow-sm'
+                          : 'bg-muted/5 border-border/40 text-muted-foreground hover:text-foreground hover:border-border'
+                      }`}
+                    >
+                      <img src={p.logo} alt="" className="w-3.5 h-3.5 object-contain" />
+                      {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Languages Selection */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">Languages</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {LANGUAGES.map(l => {
+                  const active = selectedLanguages.includes(l.id);
+                  return (
+                    <button
+                      key={l.id}
+                      onClick={() => toggleLanguage(l.id)}
+                      className={`px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all ${
+                        active
+                          ? 'bg-accent border-accent text-white shadow-sm'
+                          : 'bg-muted/5 border-border/40 text-muted-foreground hover:text-foreground hover:border-border'
+                      }`}
+                    >
+                      {l.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Runtime Selection */}
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">Duration</h4>
+              <div className="relative">
+                <select
+                  value={selectedRuntime}
+                  onChange={(e) => setSelectedRuntime(e.target.value)}
+                  className="w-full bg-muted/10 hover:bg-muted/15 border border-border/30 rounded-xl px-3 py-2.5 text-xs text-foreground font-semibold outline-none appearance-none cursor-pointer"
+                >
+                  {RUNTIME_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value} className="bg-background">{opt.label}</option>
+                  ))}
+                </select>
+                <Clock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Rating Selection */}
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">Minimum Rating</h4>
+              <div className="relative">
+                <select
+                  value={selectedRating}
+                  onChange={(e) => setSelectedRating(e.target.value)}
+                  className="w-full bg-muted/10 hover:bg-muted/15 border border-border/30 rounded-xl px-3 py-2.5 text-xs text-foreground font-semibold outline-none appearance-none cursor-pointer"
+                >
+                  {RATING_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value} className="bg-background">{opt.label}</option>
+                  ))}
+                </select>
+                <Star className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Grid/List Results Panel */}
+          <div className="lg:col-span-3">
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                  {Array.from({ length: 6 }).map((_, idx) => (
+                    <MovieCardSkeleton key={idx} />
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="p-8 rounded-2xl bg-rose-500/5 border border-rose-500/10 text-center space-y-3">
+                  <AlertCircle className="w-8 h-8 text-rose-400 mx-auto" />
+                  <h3 className="text-sm font-bold text-white">Discovery Scans Offline</h3>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">{error}</p>
+                </div>
+              ) : discoverResults.length === 0 ? (
+                <div className="p-12 border border-dashed border-border rounded-[24px] text-center space-y-4">
+                  <Compass className="w-12 h-12 text-accent/35 mx-auto animate-spin-slow" />
+                  <div>
+                    <h3 className="text-sm font-bold text-white">No Matching Content Found</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Try clearing filters or widening parameters.</p>
+                  </div>
+                </div>
+              ) : viewMode === 'grid' ? (
+                <motion.div
+                  key="grid-view"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="grid grid-cols-2 sm:grid-cols-3 gap-6"
+                >
+                  {discoverResults.map((movie, idx) => (
+                    <MovieCard key={movie.id} movie={movie} index={idx} />
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="list-view"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  {discoverResults.map((movie) => (
+                    <div key={movie.id} className="p-4 bg-card/30 border border-border/80 rounded-2xl flex gap-5 items-center hover:border-accent/40 transition-colors">
+                      <div className="w-14 aspect-poster rounded-lg overflow-hidden shrink-0 border border-border">
+                        <img src={movie.posterPath} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-sm font-bold text-foreground truncate">{movie.title}</h4>
+                        <p className="text-xs text-muted-foreground font-semibold mt-1">★ {movie.rating?.toFixed(1)} · {movie.year}</p>
+                      </div>
+                      <Link href={`/movie/${movie.id}`} className="px-3.5 py-1.5 bg-accent hover:bg-accent-dark text-white rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider shadow-sm">
+                        View
+                      </Link>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
         </div>
 
       </div>
-
-      {/* Mobile Drawer (Bottom Sheet) */}
-      <AnimatePresence>
-        {mobileFiltersOpen && (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center lg:hidden">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileFiltersOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            />
-            {/* Sheet */}
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="relative w-full max-h-[85vh] bg-[#0A0C14] border-t border-white/10 rounded-t-[28px] z-10 flex flex-col"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4.5 border-b border-white/[0.06] shrink-0">
-                <span className="text-sm font-black text-white uppercase tracking-wider">Filters</span>
-                <button
-                  onClick={() => setMobileFiltersOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Scrollable Filters */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                <FilterSections />
-              </div>
-
-              {/* Footer */}
-              <div className="p-5 border-t border-white/[0.06] shrink-0 flex items-center gap-3">
-                <button
-                  onClick={clearFilters}
-                  className="flex-1 py-3.5 rounded-xl border border-white/10 text-[12.5px] font-bold text-white"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={() => setMobileFiltersOpen(false)}
-                  className="flex-1 py-3.5 bg-accent rounded-xl text-[12.5px] font-bold text-white"
-                >
-                  Apply Filters
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
 
-export default function Discover() {
+export default function DiscoverPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white font-bold">Loading discover boards...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+      </div>
+    }>
       <DiscoverContent />
     </Suspense>
   );
 }
+
+const Loader2 = (props: any) => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <line x1="12" y1="2" x2="12" y2="6" />
+    <line x1="12" y1="18" x2="12" y2="22" />
+    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+    <line x1="2" y1="12" x2="6" y2="12" />
+    <line x1="18" y1="12" x2="22" y2="12" />
+    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+  </svg>
+);

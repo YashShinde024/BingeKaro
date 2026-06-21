@@ -6,29 +6,32 @@
 
 /* ─────────────────────────────────────────
    MIDNIGHT CINEMA — Design Tokens
+   Accent: Orange (#F97316)
 ───────────────────────────────────────── */
 :root {
-  --bg:           #050505;
-  --surface:      rgba(15, 15, 15, 0.75);
-  --surface-2:    rgba(20, 20, 20, 0.85);
-  --card:         rgba(20, 20, 20, 0.6);
-  --card-hover:   rgba(26, 26, 26, 0.75);
-  --accent:       #8B5CF6;
-  --accent-light: #A78BFA;
-  --accent-dark:  #7C3AED;
-  --accent-glow:  rgba(139, 92, 246, 0.25);
-  --text:         #FFFFFF;
-  --text-secondary: #FFFFFF;
-  --muted:        #A1A1AA;
-  --muted-dark:   #71717A;
-  --border:       rgba(255, 255, 255, 0.05);
-  --border-light: rgba(255, 255, 255, 0.12);
+  /* Light mode defaults */
+  --background:    #FBFBFB;
+  --bg:           #FBFBFB;
+  --surface:      rgba(245, 245, 245, 0.8);
+  --surface-2:    rgba(240, 240, 240, 0.9);
+  --card:         rgba(243, 244, 246, 0.85);
+  --card-hover:   rgba(229, 231, 235, 0.95);
+  --accent:       #F97316;
+  --accent-light: #FB923C;
+  --accent-dark:  #EA580C;
+  --accent-glow:  rgba(249, 115, 22, 0.15);
+  --text:         #171717;
+  --text-secondary: #262626;
+  --muted:        #737373;
+  --muted-dark:   #525252;
+  --border:       rgba(0, 0, 0, 0.08);
+  --border-light: rgba(0, 0, 0, 0.14);
 
   /* Cinematic shadows */
-  --shadow-card:  0 4px 20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
-  --shadow-card-hover: 0 20px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(139,92,246,0.2), 0 0 30px rgba(139,92,246,0.12);
-  --shadow-glow:  0 0 60px rgba(139,92,246,0.25), 0 0 120px rgba(139,92,246,0.1);
-  --shadow-poster: 0 24px 80px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.05);
+  --shadow-card:  0 4px 20px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02);
+  --shadow-card-hover: 0 20px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(249,115,22,0.2), 0 0 30px rgba(249,115,22,0.08);
+  --shadow-glow:  0 0 60px rgba(249,115,22,0.15), 0 0 120px rgba(249,115,22,0.05);
+  --shadow-poster: 0 24px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04);
 
   /* Radius scale */
   --radius-sm:  8px;

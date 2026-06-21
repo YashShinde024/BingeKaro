@@ -1,60 +1,36 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  TrendingUp, Film, Tv, Star, Calendar,
-  Clapperboard, Swords, Laugh, Atom, Skull, Zap, Wand2, Globe, Flame, Clock,
+  TrendingUp, Film, Tv, Star, Calendar, Clapperboard,
+  Sparkles, Flame, Shield, ArrowRight, Play, CheckCircle2, Mail
 } from 'lucide-react';
 import { HeroSection } from '../components/features/HeroSection';
 import { MoodRibbon } from '../components/features/MoodRibbon';
 import { PlatformRow } from '../components/features/PlatformRow';
-import { ContentRail } from '../components/features/ContentRail';
 import { MovieCard } from '../components/cards/MovieCard';
 import { MovieCardSkeleton } from '../components/ui/Skeletons';
-import { SearchOverlay } from '../components/search/SearchOverlay';
-import { MOVIES } from '../lib/mockData';
-import { useHistory } from '../context/HistoryContext';
+import { useTrendingToday, usePopularMovies, usePopularTV, useTopRatedMovies, useNowPlaying } from '../hooks/useTMDB';
 import { isTMDBAvailable } from '../lib/tmdb';
-import {
-  useTrendingToday,
-  useTrendingWeek,
-  usePopularMovies,
-  usePopularTV,
-  useTopRatedMovies,
-  useTopRatedTV,
-  useNowPlaying,
-  useUpcoming,
-  useGenreMovies,
-  useGenreTV,
-} from '../hooks/useTMDB';
+import { MOVIES } from '../lib/mockData';
+import Link from 'next/link';
 
 export default function Home() {
-  const [searchOpen, setSearchOpen] = React.useState(false);
-  const { continueWatching } = useHistory();
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
-  // TMDB Data Hooks
+  // Live TMDB Hooks
   const trendingToday = useTrendingToday();
-  const trendingWeek = useTrendingWeek();
   const popularMovies = usePopularMovies();
   const popularTV = usePopularTV();
   const topRatedMovies = useTopRatedMovies();
-  const topRatedTV = useTopRatedTV();
   const nowPlaying = useNowPlaying();
-  const upcoming = useUpcoming();
-  const actionPicks = useGenreMovies(28);
-  const comedyPicks = useGenreMovies(35);
-  const scifiPicks = useGenreMovies(878);
-  const crimePicks = useGenreMovies(80);
-  const thrillerPicks = useGenreMovies(53);
-  const animationPicks = useGenreMovies(16);
-  const animePicks = useGenreTV(16);
 
   const tmdbAvailable = isTMDBAvailable();
 
-  // Mock fallback data for trending
-  const trendingMock = React.useMemo(() =>
-    MOVIES.filter(m => m.isTrending).slice(0, 8).map(m => ({
+  const mockMovies = React.useMemo(() =>
+    MOVIES.map(m => ({
       id: m.id, title: m.title, mediaType: m.type as 'movie' | 'tv',
       posterUrl: m.posterPath, backdropUrl: m.backdropPath, year: m.year,
       rating: m.rating, voteCount: m.voteCount, overview: m.overview,
@@ -63,151 +39,244 @@ export default function Home() {
     []
   );
 
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) {
+      setSubscribed(true);
+      setEmail("");
+    }
+  };
+
+  const trendingList = tmdbAvailable ? trendingToday.data : mockMovies.slice(0, 8);
+  const nowPlayingList = tmdbAvailable ? nowPlaying.data : mockMovies.slice(4, 12);
+  const popularMoviesList = tmdbAvailable ? popularMovies.data : mockMovies.slice(2, 10);
+  const popularTVList = tmdbAvailable ? popularTV.data : mockMovies.slice(6, 14);
+  const topRatedList = tmdbAvailable ? topRatedMovies.data : mockMovies.slice(1, 9);
+
   return (
-    <div className="min-h-screen bg-[#050505]">
-      {/* Hero */}
-      <HeroSection onSearchOpen={() => setSearchOpen(true)} />
+    <div className="min-h-screen bg-background">
+      {/* Cinematic Hero */}
+      <HeroSection onSearchOpen={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))} />
 
-      {/* Mood Ribbon */}
+      {/* Mood Ribbon & OTT Platforms */}
       <MoodRibbon />
-
-      {/* OTT Platforms */}
       <PlatformRow />
 
-      {/* Content Rails */}
-      <div className="max-w-[1400px] mx-auto pt-10 pb-20">
-
-        {/* Continue Watching */}
-        {continueWatching && continueWatching.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-12"
-          >
-            <div className="flex items-end justify-between mb-5 px-6 lg:px-10">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.05]">
-                  <Clock className="w-4 h-4 text-accent-light" />
-                </div>
-                <div>
-                  <h2 className="text-[17px] font-bold text-white tracking-tight">Continue Watching</h2>
-                  <p className="text-xs text-muted mt-0.5">Pick up where you left off</p>
-                </div>
+      {/* Main Page Layout Rails */}
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 space-y-20 py-16">
+        
+        {/* SECTION 1: Trending Today — Premium Horizontal List */}
+        <section className="space-y-6">
+          <div className="flex items-end justify-between border-b border-border/40 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                <Flame className="w-4.5 h-4.5" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-foreground tracking-tight">Trending Today</h2>
+                <p className="text-xs text-muted-foreground font-medium">The most popular titles in BingeKaro right now</p>
               </div>
             </div>
-            <div className="flex gap-4 content-rail px-6 lg:px-10 pb-4">
-              {continueWatching.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)}
+            <Link href="/discover" className="text-xs font-bold text-accent hover:text-accent-light flex items-center gap-1.5 transition-colors">
+              Explore More <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          
+          <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin">
+            {trendingToday.loading ? (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <div key={idx} className="w-[180px] shrink-0">
+                  <MovieCardSkeleton />
+                </div>
+              ))
+            ) : (
+              trendingList.map((item, idx) => (
+                <div key={item.id} className="w-[185px] shrink-0">
+                  <MovieCard movie={item} index={idx} />
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        {/* SECTION 2: Now Streaming — Featured Grid Cards */}
+        <section className="space-y-6">
+          <div className="flex items-end justify-between border-b border-border/40 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                <Play className="w-4.5 h-4.5" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-foreground tracking-tight">Streaming Now</h2>
+                <p className="text-xs text-muted-foreground font-medium">New releases available on your connected OTT platforms</p>
+              </div>
             </div>
-          </motion.section>
-        )}
+          </div>
 
-        {/* 1. Trending Today */}
-        <div id="trending-row">
-          <ContentRail
-            title="Trending Today"
-            subtitle="What everyone's watching right now"
-            badge={<Flame className="w-4 h-4 text-orange-500" />}
-            items={tmdbAvailable ? trendingToday.data : trendingMock}
-            loading={tmdbAvailable ? trendingToday.loading : false}
-            hasMore={trendingToday.hasMore}
-            onLoadMore={trendingToday.loadMore}
-            viewAllTo="/discover"
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {nowPlayingList.slice(0, 4).map((item, idx) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.08, duration: 0.5 }}
+                className="group relative rounded-2xl overflow-hidden aspect-video bg-card border border-border/60 hover:border-accent/40 shadow-sm transition-all duration-300"
+              >
+                {item.backdropUrl ? (
+                  <img src={item.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                ) : (
+                  <div className="w-full h-full bg-accent/5 flex items-center justify-center text-muted-foreground font-bold">{item.title}</div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
+                  <h3 className="text-sm font-bold text-white truncate">{item.title}</h3>
+                  <div className="flex items-center justify-between mt-2.5">
+                    <span className="text-[10px] text-white/60 font-semibold">{item.year}</span>
+                    <Link href={`/movie/${item.id}`} className="text-[10px] font-black text-accent group-hover:text-white flex items-center gap-1 transition-all">
+                      Watch details <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
 
-        {/* 2. Trending This Week */}
-        <ContentRail
-          title="Trending This Week"
-          subtitle="Hot picks of the week"
-          badge={<TrendingUp className="w-4 h-4 text-emerald-400" />}
-          items={trendingWeek.data}
-          loading={trendingWeek.loading}
-          hasMore={trendingWeek.hasMore}
-          onLoadMore={trendingWeek.loadMore}
-        />
+        {/* SECTION 3: Popular Movies & TV Shows — Balanced Alternate Grid */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Popular Movies block */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-black text-foreground border-b border-border/40 pb-3 flex items-center gap-2">
+              <Film className="w-4.5 h-4.5 text-accent" /> Popular Movies
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {popularMoviesList.slice(0, 6).map((item) => (
+                <MovieCard key={item.id} movie={item} />
+              ))}
+            </div>
+          </div>
 
-        {/* 3. Popular Movies */}
-        <ContentRail
-          title="Popular Movies"
-          subtitle="Top movie blockbusters this season"
-          badge={<Film className="w-4 h-4 text-violet-400" />}
-          items={popularMovies.data}
-          loading={popularMovies.loading}
-          hasMore={popularMovies.hasMore}
-          onLoadMore={popularMovies.loadMore}
-          viewAllTo="/discover?type=movie"
-        />
+          {/* Popular TV block */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-black text-foreground border-b border-border/40 pb-3 flex items-center gap-2">
+              <Tv className="w-4.5 h-4.5 text-accent" /> Popular TV Shows
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {popularTVList.slice(0, 6).map((item) => (
+                <MovieCard key={item.id} movie={item} />
+              ))}
+            </div>
+          </div>
+        </section>
 
-        {/* 4. Popular TV Shows */}
-        <ContentRail
-          title="Popular TV Shows"
-          subtitle="Trending episodic drama & comedies"
-          badge={<Tv className="w-4 h-4 text-sky-400" />}
-          items={popularTV.data}
-          loading={popularTV.loading}
-          hasMore={popularTV.hasMore}
-          onLoadMore={popularTV.loadMore}
-          viewAllTo="/discover?type=tv"
-        />
+        {/* SECTION 4: Top Rated Cinematic Picks — Vertical Card Highlight List */}
+        <section className="space-y-6">
+          <div className="flex items-end justify-between border-b border-border/40 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                <Star className="w-4.5 h-4.5 fill-accent" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-foreground tracking-tight">Top Rated Masterpieces</h2>
+                <p className="text-xs text-muted-foreground font-medium">All-time classic cinema and critically acclaimed titles</p>
+              </div>
+            </div>
+          </div>
 
-        {/* 5. Top Rated Movies */}
-        <ContentRail
-          title="Top Rated Movies"
-          subtitle="Highest rated films of all time"
-          badge={<Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
-          items={topRatedMovies.data}
-          loading={topRatedMovies.loading}
-          hasMore={topRatedMovies.hasMore}
-          onLoadMore={topRatedMovies.loadMore}
-        />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {topRatedList.slice(0, 3).map((item, idx) => (
+              <div key={item.id} className="p-4 rounded-2xl bg-card border border-border flex gap-4 hover:border-accent/40 transition-all duration-300">
+                <div className="w-20 aspect-poster rounded-xl overflow-hidden shrink-0 border border-border">
+                  <img src={item.posterUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-foreground truncate">{item.title}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed font-medium">{item.overview}</p>
+                  </div>
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-[10px] text-accent font-extrabold flex items-center gap-0.5">
+                      ★ {item.rating?.toFixed(1)}
+                    </span>
+                    <Link href={`/movie/${item.id}`} className="text-[10px] font-bold text-muted-foreground hover:text-accent transition-colors">
+                      View details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-        {/* 6. Top Rated TV Shows */}
-        <ContentRail
-          title="Top Rated TV Shows"
-          subtitle="Critically acclaimed television"
-          badge={<Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
-          items={topRatedTV.data}
-          loading={topRatedTV.loading}
-          hasMore={topRatedTV.hasMore}
-          onLoadMore={topRatedTV.loadMore}
-        />
+        {/* SECTION 5: Why BingeKaro — Feature Pillars */}
+        <section className="py-10 bg-card/40 border border-border/50 rounded-3xl p-8 lg:p-12 text-center space-y-10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-accent/5 blur-[90px] pointer-events-none" />
+          <div className="space-y-3 max-w-xl mx-auto">
+            <span className="text-[11px] font-black text-accent uppercase tracking-widest">Premium Features</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Why Choose BingeKaro?</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed font-medium">
+              Discovering what to watch should be as enjoyable as watching itself. BingeKaro changes the game.
+            </p>
+          </div>
 
-        {/* 7. Now Playing */}
-        <ContentRail
-          title="Now Playing"
-          subtitle="Currently in theaters and streaming"
-          badge={<Clapperboard className="w-4 h-4 text-rose-400" />}
-          items={nowPlaying.data}
-          loading={nowPlaying.loading}
-          hasMore={nowPlaying.hasMore}
-          onLoadMore={nowPlaying.loadMore}
-        />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { title: "AI-Powered Taste DNA", desc: "No generic categories. Our radar charts map your cinematic requirements based on intensity, romance, and pacing.", icon: Sparkles },
+              { title: "Dynamic OTT Availability", desc: "Instantly check stream, rent, and buy options across Netflix, JioHotstar, Prime, and Apple TV+.", icon: Play },
+              { title: "Modern Curation", desc: "Collaborate on watchlists and track statistics of your watched collection in a premium cinephile dashboard.", icon: Shield }
+            ].map((pillar, idx) => (
+              <div key={idx} className="space-y-4 p-5 rounded-2xl bg-background/50 border border-border/60 hover:border-accent/35 hover:shadow-lg transition-all duration-300">
+                <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center text-accent mx-auto">
+                  <pillar.icon className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-foreground">{pillar.title}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed font-medium">{pillar.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-        {/* 8. Upcoming */}
-        <ContentRail
-          title="Upcoming Releases"
-          subtitle="Most anticipated films coming soon"
-          badge={<Calendar className="w-4 h-4 text-accent" />}
-          items={upcoming.data}
-          loading={upcoming.loading}
-          hasMore={upcoming.hasMore}
-          onLoadMore={upcoming.loadMore}
-        />
+        {/* SECTION 6: Newsletter Subscription Callout */}
+        <section className="bg-gradient-to-r from-accent/10 to-accent-dark/5 border border-accent/25 rounded-3xl p-8 lg:p-12 flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div className="space-y-3 text-center lg:text-left">
+            <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">Find Your Next Obsession.</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-medium max-w-md">
+              Subscribe to get customized weekly updates on the best movies, TV shows, and OTT releases matching your DNA.
+            </p>
+          </div>
 
-        {/* 9-15. Genre Picks */}
-        <ContentRail title="Action Picks" subtitle="Explosive action and adrenaline" badge={<Swords className="w-4 h-4 text-red-400" />} items={actionPicks.data} loading={actionPicks.loading} hasMore={actionPicks.hasMore} onLoadMore={actionPicks.loadMore} />
-        <ContentRail title="Comedy Picks" subtitle="Laugh-out-loud entertainment" badge={<Laugh className="w-4 h-4 text-yellow-400" />} items={comedyPicks.data} loading={comedyPicks.loading} hasMore={comedyPicks.hasMore} onLoadMore={comedyPicks.loadMore} />
-        <ContentRail title="Sci-Fi Picks" subtitle="Science fiction and futuristic worlds" badge={<Atom className="w-4 h-4 text-cyan-400" />} items={scifiPicks.data} loading={scifiPicks.loading} hasMore={scifiPicks.hasMore} onLoadMore={scifiPicks.loadMore} />
-        <ContentRail title="Crime Picks" subtitle="Gritty crime dramas and thrillers" badge={<Skull className="w-4 h-4 text-slate-400" />} items={crimePicks.data} loading={crimePicks.loading} hasMore={crimePicks.hasMore} onLoadMore={crimePicks.loadMore} />
-        <ContentRail title="Thriller Picks" subtitle="Edge-of-seat suspense" badge={<Zap className="w-4 h-4 text-amber-500" />} items={thrillerPicks.data} loading={thrillerPicks.loading} hasMore={thrillerPicks.hasMore} onLoadMore={thrillerPicks.loadMore} />
-        <ContentRail title="Animation Picks" subtitle="Animated films and features" badge={<Wand2 className="w-4 h-4 text-pink-400" />} items={animationPicks.data} loading={animationPicks.loading} hasMore={animationPicks.hasMore} onLoadMore={animationPicks.loadMore} />
-        <ContentRail title="Anime Picks" subtitle="Top anime series and films" badge={<Globe className="w-4 h-4 text-indigo-400" />} items={animePicks.data} loading={animePicks.loading} hasMore={animePicks.hasMore} onLoadMore={animePicks.loadMore} />
+          <div className="w-full lg:max-w-md">
+            {subscribed ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-3 p-4 bg-accent/15 border border-accent/30 rounded-2xl text-accent"
+              >
+                <CheckCircle2 className="w-5 h-5 shrink-0" />
+                <span className="text-xs font-bold">Successfully subscribed! Check your inbox soon.</span>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex gap-2 w-full">
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 bg-background border border-border/80 rounded-xl px-4 py-3 text-xs text-foreground placeholder-muted-foreground/60 outline-none focus:border-accent transition-colors"
+                />
+                <button
+                  type="submit"
+                  className="bg-accent hover:bg-accent/90 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-1.5 transition-all shadow-[0_4px_12px_rgba(249,115,22,0.2)] shrink-0"
+                >
+                  <Mail className="w-4 h-4" /> Subscribe
+                </button>
+              </form>
+            )}
+          </div>
+        </section>
+
       </div>
-
-      {/* Search Overlay (only here as fallback for hero search click) */}
-      <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }

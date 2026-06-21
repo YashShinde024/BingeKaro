@@ -14,7 +14,6 @@ import { useHistory } from '../../../context/HistoryContext';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from '../../../context/AuthContext';
 import {
-  fetchMovieDetails,
   fetchTVDetails,
   isTMDBAvailable,
   getBackdropUrl,
@@ -24,14 +23,14 @@ import {
   FALLBACK_BACKDROP,
   FALLBACK_POSTER,
 } from '../../../lib/tmdb';
-import type { TMDBMovieDetails, TMDBTVDetails, TMDBCastMember, TMDBWatchProvider, NormalizedContent } from '../../../lib/tmdb-types';
+import type { TMDBTVDetails, TMDBCastMember, TMDBWatchProvider, NormalizedContent } from '../../../lib/tmdb-types';
 import { OptimizedImage } from '../../../components/ui/OptimizedImage';
 
-// Recharts imports for signature Movie DNA
+// Recharts imports for signature TV DNA
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
-function getMovieDNA(movieTitle: string, genres: string[]) {
-  const hash = movieTitle.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+function getTVDNA(tvTitle: string, genres: string[]) {
+  const hash = tvTitle.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const getVal = (base: number, genreBoost: string[], multiplier: number = 20) => {
     let val = base + (hash % multiplier);
     const hasGenre = genres.some(g => genreBoost.includes(g.toLowerCase()));
@@ -40,23 +39,21 @@ function getMovieDNA(movieTitle: string, genres: string[]) {
   };
 
   return [
-    { subject: 'Emotion', value: getVal(40, ['drama', 'romance']) },
-    { subject: 'Intensity', value: getVal(35, ['action', 'thriller', 'horror']) },
-    { subject: 'Humor', value: getVal(30, ['comedy', 'family', 'animation']) },
-    { subject: 'Romance', value: getVal(20, ['romance']) },
-    { subject: 'Violence', value: getVal(20, ['action', 'crime', 'horror']) },
-    { subject: 'Mind-bending', value: getVal(15, ['sci-fi', 'mystery']) },
+    { subject: 'Emotion', value: getVal(40, ['drama', 'soap']) },
+    { subject: 'Intensity', value: getVal(35, ['action', 'adventure', 'sci-fi']) },
+    { subject: 'Humor', value: getVal(30, ['comedy', 'animation']) },
+    { subject: 'Romance', value: getVal(20, ['romance', 'soap']) },
+    { subject: 'Violence', value: getVal(20, ['action', 'crime', 'drama']) },
+    { subject: 'Mind-bending', value: getVal(15, ['sci-fi-&-fantasy', 'mystery']) },
     { subject: 'Pacing', value: getVal(45, ['action', 'adventure']) },
-    { subject: 'Darkness', value: getVal(20, ['horror', 'thriller', 'crime']) },
-    { subject: 'Rewatchability', value: getVal(45, ['comedy', 'action', 'sci-fi']) },
+    { subject: 'Darkness', value: getVal(20, ['crime', 'mystery']) },
+    { subject: 'Rewatchability', value: getVal(45, ['comedy', 'animation']) },
   ];
 }
 
-export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default function TVDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
-  const searchParams = useSearchParams();
-  const mediaType = searchParams.get('type') || 'movie';
 
   const { user } = useAuth();
   const { addToWatchlist, removeFromWatchlist, inWatchlist, addToFavorites, removeFromFavorites, inFavorites } = useWatchlist();
@@ -65,124 +62,78 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
   const [bgErr, setBgErr] = useState(false);
   const [posterErr, setPosterErr] = useState(false);
-  const [showTrailer, setShowTrailer] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [isClient, setIsClient] = useState(false);
-
-  // TMDB data state
-  const [tmdbData, setTmdbData] = useState<TMDBMovieDetails | TMDBTVDetails | null>(null);
-  const [tmdbLoading, setTmdbLoading] = useState(true);
-  const [tmdbError, setTmdbError] = useState(false);
+  
+  // TV Details State
+  const [tvData, setTvData] = useState<TMDBTVDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [selectedSeason, setSelectedSeason] = useState(1);
   const [similar, setSimilar] = useState<NormalizedContent[]>([]);
-
-  // Legacy mock data fallback
-  const mockMovie = getMovieById(Number(id));
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Fetch TMDB details
+  // Fetch TV data
   useEffect(() => {
-    if (!isTMDBAvailable()) {
-      setTmdbLoading(false);
-      return;
-    }
+    setLoading(true);
+    setError(false);
 
-    setTmdbLoading(true);
-    setTmdbError(false);
-
-    const fetchData = mediaType === 'tv' ? fetchTVDetails(Number(id)) : fetchMovieDetails(Number(id));
-
-    fetchData
+    fetchTVDetails(Number(id))
       .then((data) => {
-        setTmdbData(data);
+        setTvData(data);
         if (data.similar?.results) {
           setSimilar(data.similar.results.slice(0, 10).map(normalizeContent));
         }
-        setTmdbLoading(false);
+        setLoading(false);
       })
       .catch(() => {
-        setTmdbError(true);
-        setTmdbLoading(false);
+        setError(true);
+        setLoading(false);
       });
-  }, [id, mediaType]);
+  }, [id]);
 
-  // Track views for mock movies
-  useEffect(() => {
-    if (mockMovie) {
-      addToRecentlyViewed(mockMovie);
-      addToContinueWatching(mockMovie);
-    }
-  }, [mockMovie]);
-
-  if (tmdbLoading) {
+  if (loading) {
     return <DetailPageSkeleton />;
   }
 
-  const hasTMDB = !!tmdbData && !tmdbError;
+  const hasTV = !!tvData && !error;
 
-  // TMDB data extraction
-  const tmdbTitle = hasTMDB ? (tmdbData as any).title || (tmdbData as any).name || '' : '';
-  const tmdbYear = hasTMDB ? new Date((tmdbData as any).release_date || (tmdbData as any).first_air_date || '').getFullYear() : 0;
-  const tmdbRating = hasTMDB ? (tmdbData as any).vote_average : 0;
-  const tmdbVoteCount = hasTMDB ? (tmdbData as any).vote_count : 0;
-  const tmdbRuntime = hasTMDB ? (tmdbData as any).runtime || (tmdbData as any).episode_run_time?.[0] : 0;
-  const tmdbOverview = hasTMDB ? (tmdbData as any).overview : '';
-  const tmdbTagline = hasTMDB ? (tmdbData as any).tagline : '';
-  const tmdbGenres = hasTMDB ? (tmdbData as any).genres?.map((g: any) => typeof g === 'object' ? g.name : g) || [] : [];
-  const tmdbBackdrop = hasTMDB ? getBackdropUrl((tmdbData as any).backdrop_path, 'original') : null;
-  const tmdbPoster = hasTMDB ? getPosterUrl((tmdbData as any).poster_path, 'w500') : null;
-  const tmdbCast = hasTMDB ? (tmdbData as any).cast?.slice(0, 16) || [] : [];
-  const tmdbDirector = hasTMDB ? (tmdbData as any).crew?.find((c: any) => c.job === 'Director' || c.job === 'Creator' || c.job === 'Writer')?.name || '' : '';
-  const tmdbTrailer = hasTMDB ? (tmdbData as any).trailer?.key || '' : '';
-  const tmdbLanguage = hasTMDB ? (tmdbData as any).language || 'en' : '';
+  const title = hasTV ? tvData.name || '' : 'TV Show';
+  const year = hasTV && tvData.first_air_date ? new Date(tvData.first_air_date).getFullYear() : 0;
+  const rating = hasTV ? tvData.vote_average : 0;
+  const voteCount = hasTV ? tvData.vote_count : 0;
+  const overview = hasTV ? tvData.overview : '';
+  const tagline = hasTV ? tvData.tagline : '';
+  const genres = hasTV ? tvData.genres?.map((g: any) => typeof g === 'object' ? g.name : g) || [] : [];
+  const backdropImg = hasTV && tvData.backdrop_path ? getBackdropUrl(tvData.backdrop_path, 'original') : FALLBACK_BACKDROP;
+  const posterImg = hasTV && tvData.poster_path ? getPosterUrl(tvData.poster_path, 'w500') : FALLBACK_POSTER;
+  const cast = hasTV ? tvData.cast?.slice(0, 16) || [] : [];
+  const totalSeasons = hasTV ? tvData.number_of_seasons || 1 : 1;
+  const totalEpisodes = hasTV ? tvData.number_of_episodes || 0 : 0;
 
-  // Fallback bindings
-  const title = hasTMDB ? tmdbTitle : mockMovie?.title || 'Unknown Title';
-  const year = hasTMDB ? tmdbYear : mockMovie?.year || 0;
-  const rating = hasTMDB ? tmdbRating : mockMovie?.rating || 0;
-  const voteCount = hasTMDB ? tmdbVoteCount : mockMovie?.voteCount || 0;
-  const runtime = hasTMDB ? tmdbRuntime : mockMovie?.runtime || 0;
-  const overview = hasTMDB ? tmdbOverview : mockMovie?.overview || '';
-  const tagline = hasTMDB ? tmdbTagline : mockMovie?.tagline || '';
-  const genres = hasTMDB ? tmdbGenres : mockMovie?.genres || [];
-  const director = hasTMDB ? tmdbDirector : mockMovie?.director || '';
-  const trailerKey = hasTMDB ? tmdbTrailer : mockMovie?.trailerKey || '';
-  const language = hasTMDB ? tmdbLanguage : mockMovie?.language || '';
-
-  // Image Fallbacks
-  const backdropImg = bgErr || (!hasTMDB && !mockMovie?.backdropPath)
-    ? FALLBACK_BACKDROP
-    : hasTMDB ? tmdbBackdrop : mockMovie?.backdropPath;
-
-  const posterImg = posterErr || (!hasTMDB && !mockMovie?.posterPath)
-    ? FALLBACK_POSTER
-    : hasTMDB ? tmdbPoster : mockMovie?.posterPath;
-
-  // Stream Provider buckets (TMDB outputs providers in nested keys)
-  const providersData = hasTMDB ? (tmdbData as any).watch_providers || {} : {};
+  const providersData = hasTV ? (tvData as any).watch_providers || {} : {};
   const flatrateProviders = providersData.flatrate || [];
-  const rentProviders = providersData.rent || [];
-  const buyProviders = providersData.buy || [];
 
   const isFavorited = inFavorites(Number(id));
   const isSaved = inWatchlist(Number(id));
 
   const handleWatchlist = () => {
-    const movieObj: Movie = {
+    const obj: Movie = {
       id: Number(id),
-      type: mediaType as 'movie' | 'tv',
+      type: 'tv',
       title,
       posterPath: posterImg || '',
       backdropPath: backdropImg || '',
       year,
       rating,
       voteCount,
-      runtime,
+      runtime: 0,
       overview,
       genres,
-      language: language as any,
+      language: 'en',
       providers: flatrateProviders.map((p: any) => p.provider_name.toLowerCase().replace(/\s+/g, '-')),
       isFree: false,
     };
@@ -190,24 +141,24 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
     if (isSaved) {
       removeFromWatchlist(Number(id));
     } else {
-      addToWatchlist(movieObj);
+      addToWatchlist(obj);
     }
   };
 
   const handleFavorite = () => {
-    const movieObj: Movie = {
+    const obj: Movie = {
       id: Number(id),
-      type: mediaType as 'movie' | 'tv',
+      type: 'tv',
       title,
       posterPath: posterImg || '',
       backdropPath: backdropImg || '',
       year,
       rating,
       voteCount,
-      runtime,
+      runtime: 0,
       overview,
       genres,
-      language: language as any,
+      language: 'en',
       providers: flatrateProviders.map((p: any) => p.provider_name.toLowerCase().replace(/\s+/g, '-')),
       isFree: false,
     };
@@ -215,7 +166,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
     if (isFavorited) {
       removeFromFavorites(Number(id));
     } else {
-      addToFavorites(movieObj);
+      addToFavorites(obj);
     }
   };
 
@@ -225,8 +176,16 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
     setShowShare(false);
   };
 
-  const similarContent = hasTMDB ? similar : MOVIES.filter(m => m.id !== Number(id)).slice(0, 4);
-  const dnaChartData = getMovieDNA(title, genres);
+  // Generate episodes listing dynamically
+  const episodesList = Array.from({ length: 8 }).map((_, idx) => ({
+    episode_number: idx + 1,
+    name: `Episode ${idx + 1}: Path of discovery`,
+    overview: `Detailed progression and narrative twists unfold as the main characters chart their next steps.`,
+    runtime: 45,
+    vote_average: 8.2 + (idx % 3) * 0.3
+  }));
+
+  const dnaChartData = getTVDNA(title, genres);
 
   return (
     <div className="min-h-screen bg-background pb-28 pt-16">
@@ -244,11 +203,11 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-transparent" />
       </div>
 
-      {/* Main Content Info Block */}
+      {/* Main content */}
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 -mt-36 md:-mt-48 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 md:gap-12 items-start">
           
-          {/* Left Column (Poster and Quick CTA) */}
+          {/* Left Side */}
           <div className="space-y-4">
             <div className="w-full aspect-[2/3] rounded-[24px] overflow-hidden border border-border shadow-[0_24px_80px_rgba(0,0,0,0.4)] bg-card">
               {posterImg && (
@@ -293,7 +252,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               </button>
             </div>
 
-            {/* Streaming Network badges */}
+            {/* Streaming networks */}
             {flatrateProviders.length > 0 && (
               <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3">
                 <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest block">Available Stream</span>
@@ -306,14 +265,12 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             )}
           </div>
 
-          {/* Right Column Details */}
+          {/* Right Side Details */}
           <div className="space-y-8 pt-4">
-            
-            {/* Title & Metadata */}
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-1 rounded-md bg-accent/15 border border-accent/25 text-[10px] font-black text-accent uppercase tracking-wider">
-                  {mediaType === 'tv' ? 'TV Series' : 'Feature Film'}
+                  TV Series
                 </span>
                 {genres.map((g, i) => (
                   <span key={i} className="px-2.5 py-1 rounded-md bg-muted/10 border border-border/60 text-[10px] font-bold text-muted-foreground">
@@ -329,41 +286,29 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               {tagline && <p className="text-sm text-accent italic font-semibold">{tagline}</p>}
 
               <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground">
-                {rating > 0 && (
-                  <span className="flex items-center gap-1 text-accent font-black">
-                    ★ {rating.toFixed(1)} <span className="text-muted-foreground/60 font-semibold">({voteCount} votes)</span>
-                  </span>
-                )}
-                {runtime > 0 && (
-                  <span>{runtime} min</span>
-                )}
-                {language && (
-                  <span className="uppercase">{language}</span>
-                )}
+                <span className="flex items-center gap-1 text-accent font-black">
+                  ★ {rating.toFixed(1)} <span className="text-muted-foreground/60 font-semibold">({voteCount} votes)</span>
+                </span>
+                <span>{totalSeasons} Seasons</span>
+                <span>{totalEpisodes} Episodes</span>
               </div>
             </div>
 
-            {/* Synopsis Overview */}
+            {/* Synopsis */}
             <div className="space-y-3">
               <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Overview</h3>
-              {director && (
-                <p className="text-xs text-muted-foreground font-semibold">
-                  Directed/Created by <span className="text-foreground">{director}</span>
-                </p>
-              )}
               <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed font-semibold">
                 {overview}
               </p>
             </div>
 
-            {/* Movie DNA Section (Radar Chart) */}
+            {/* TV Show DNA (Radar Chart) */}
             <div className="space-y-4 border-t border-border pt-6">
               <h3 className="text-sm font-black text-foreground uppercase tracking-widest flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-accent" /> Entertainment Taste DNA
+                <Sparkles className="w-4 h-4 text-accent" /> Entertainment DNA profile
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 items-center">
-                {/* Recharts Radar Chart */}
                 <div className="h-64 md:h-72 w-full flex items-center justify-center bg-card/10 border border-border/60 rounded-3xl p-4">
                   {isClient ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -379,7 +324,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   )}
                 </div>
 
-                {/* Metrics Breakdown */}
                 <div className="space-y-3">
                   <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest block">DNA Metric Highlights</span>
                   <div className="grid grid-cols-2 gap-3">
@@ -399,57 +343,52 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
 
-            {/* Cast & Crew slider */}
-            {tmdbCast.length > 0 && (
-              <div className="space-y-4 border-t border-border pt-6">
-                <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Main Cast</h3>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin">
-                  {tmdbCast.map((member: any) => {
-                    const profileImg = member.profilePath || member.profile_path ? getProfileUrl(member.profile_path || member.profilePath) : null;
-                    return (
-                      <div key={member.id} className="w-24 shrink-0 text-center space-y-2">
-                        <div className="w-20 h-20 rounded-full overflow-hidden border border-border bg-card mx-auto">
-                          {profileImg ? (
-                            <img src={profileImg} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full bg-muted/10 flex items-center justify-center text-muted-foreground font-black text-sm">{member.name?.[0]}</div>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-bold text-foreground truncate leading-none">{member.name}</p>
-                          <p className="text-[9px] text-muted-foreground truncate mt-1 leading-none">{member.character}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
+            {/* Season Selector & Episode Cards */}
+            <div className="space-y-6 border-t border-border pt-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Episodes List</h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-semibold">Select Season:</span>
+                  <select
+                    value={selectedSeason}
+                    onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                    className="bg-card border border-border/80 rounded-xl px-3 py-1.5 text-xs text-foreground font-semibold outline-none cursor-pointer"
+                  >
+                    {Array.from({ length: totalSeasons }).map((_, idx) => (
+                      <option key={idx + 1} value={idx + 1} className="bg-background">Season {idx + 1}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            )}
 
-            {/* Trailer CTA Trigger */}
-            {trailerKey && (
-              <div className="pt-4 flex justify-center md:justify-start">
-                <button
-                  onClick={() => setShowTrailer(true)}
-                  className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-[0_4px_16px_rgba(249,115,22,0.25)]"
-                >
-                  <Play className="w-4 h-4 fill-white" /> Watch Cinematic Trailer
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {episodesList.map((ep) => (
+                  <div key={ep.episode_number} className="p-4 bg-card border border-border rounded-2xl space-y-2 hover:border-accent/40 transition-colors">
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="text-xs font-bold text-foreground line-clamp-1">{ep.episode_number}. {ep.name}</h4>
+                      <span className="text-[10px] text-accent font-black shrink-0">★ {ep.vote_average.toFixed(1)}</span>
+                    </div>
+                    <p className="text-[11.5px] text-muted-foreground font-semibold line-clamp-2 leading-relaxed">{ep.overview}</p>
+                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground/60 font-semibold pt-1 border-t border-border/20">
+                      <span>Runtime: {ep.runtime} min</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
           </div>
 
         </div>
 
-        {/* Similar Recommendations List */}
-        {similarContent.length > 0 && (
+        {/* Similar recommendations */}
+        {similar.length > 0 && (
           <section className="space-y-6 border-t border-border pt-12 mt-16">
             <h3 className="text-lg font-black text-foreground tracking-tight flex items-center gap-2">
-              <Film className="w-4.5 h-4.5 text-accent" /> You Might Also Obsess Over
+              <Tv className="w-4.5 h-4.5 text-accent" /> You Might Also Obsess Over
             </h3>
             <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin">
-              {similarContent.map((item: any, i: number) => (
+              {similar.map((item: any, i: number) => (
                 <div key={item.id} className="w-[185px] shrink-0">
                   <MovieCard movie={item} index={i} />
                 </div>
@@ -459,42 +398,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         )}
       </div>
 
-      {/* Trailer Dialog Modal Overlay */}
-      <AnimatePresence>
-        {showTrailer && trailerKey && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowTrailer(false)}
-            className="fixed inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8"
-          >
-            <button
-              onClick={() => setShowTrailer(false)}
-              className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-4xl aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.95)]"
-            >
-              <iframe
-                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
-                title="Movie Trailer"
-                className="w-full h-full border-none"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Share Overlay dialog */}
+      {/* Share Overlay */}
       <AnimatePresence>
         {showShare && (
           <motion.div

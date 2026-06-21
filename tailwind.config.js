@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#050505',
-        surface: '#0F0F0F',
-        card: '#141414',
+        bg: 'var(--background)',
+        surface: 'var(--surface)',
+        card: 'var(--card)',
         accent: {
-          DEFAULT: '#8B5CF6',
-          light: '#A78BFA',
-          dark: '#7C3AED',
+          DEFAULT: '#F97316',
+          light: '#FB923C',
+          dark: '#EA580C',
         },
-        muted: '#A1A1AA',
+        muted: 'var(--muted)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
