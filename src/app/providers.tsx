@@ -16,7 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <WatchlistProvider>
             <HistoryProvider>
               {children}
-              <Toaster position="top-right" theme="dark" />
+              <Toaster position="top-right" theme="system" />
             </HistoryProvider>
           </WatchlistProvider>
         </AuthProvider>

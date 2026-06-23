@@ -17,8 +17,8 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center space-y-6 pt-24">
-        <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-[#8B5CF6]">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-6 pt-24">
+        <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center text-accent">
           <Film className="w-7 h-7" />
         </div>
         <div className="space-y-2 max-w-sm">
@@ -29,7 +29,7 @@ export default function DashboardPage() {
         </div>
         <button
           onClick={openLoginModal}
-          className="h-10 px-5 rounded-xl bg-[#8B5CF6] text-[12.5px] font-bold text-white flex items-center gap-1.5 shadow-lg hover:bg-[#8B5CF6]/90 transition-all"
+          className="h-10 px-5 rounded-xl bg-accent text-[12.5px] font-bold text-white flex items-center gap-1.5 shadow-lg hover:bg-accent/90 transition-all"
         >
           <LogIn className="w-4 h-4" />
           Sign In Now
@@ -93,7 +93,7 @@ export default function DashboardPage() {
   ).slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20 px-6 sm:px-10 max-w-[1400px] mx-auto space-y-10">
+    <div className="min-h-screen bg-background text-white pt-24 pb-20 px-6 sm:px-10 max-w-[1400px] mx-auto space-y-10">
       
       {/* Welcome Banner */}
       <motion.div 
@@ -101,10 +101,10 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-[24px] border border-white/[0.08] p-6 sm:p-8 bg-gradient-to-r from-white/[0.02] to-white/[0.01]"
       >
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#8B5CF6]/10 filter blur-[80px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-accent/10 filter blur-[80px] pointer-events-none" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#8B5CF6]/15 border border-[#8B5CF6]/20 text-[10px] font-bold text-[#8B5CF6] uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 border border-accent/20 text-[10px] font-bold text-accent uppercase tracking-wider">
               <Sparkles className="w-3 h-3" />
               Taste Engine Calibrated
             </div>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
         {/* Top Genre & Top Platform */}
         <div className="p-6 rounded-2xl bg-white/[0.01] border border-white/[0.05] space-y-6">
           <h3 className="text-[14px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 border-b border-white/[0.04] pb-3">
-            <Award className="w-4 h-4 text-[#8B5CF6]" />
+            <Award className="w-4 h-4 text-accent" />
             Taste Indicators
           </h3>
 
@@ -165,7 +165,7 @@ export default function DashboardPage() {
         {/* Movie DNA Visualizer */}
         <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.01] border border-white/[0.05] space-y-4">
           <h3 className="text-[14px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 border-b border-white/[0.04] pb-3">
-            <BarChart2 className="w-4 h-4 text-[#8B5CF6]" />
+            <BarChart2 className="w-4 h-4 text-accent" />
             Movie DNA
           </h3>
 
@@ -178,7 +178,7 @@ export default function DashboardPage() {
                     <span>{item.percentage}%</span>
                   </div>
                   <div className="h-2 w-full bg-white/[0.04] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#8B5CF6]" style={{ width: `${item.percentage}%` }} />
+                    <div className="h-full bg-accent" style={{ width: `${item.percentage}%` }} />
                   </div>
                 </div>
               ))}
@@ -197,7 +197,7 @@ export default function DashboardPage() {
         {/* Recently Viewed */}
         <div className="space-y-4">
           <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
-            <Eye className="w-4.5 h-4.5 text-[#8B5CF6]" />
+            <Eye className="w-4.5 h-4.5 text-accent" />
             Recently Viewed
           </h3>
           <div className="flex gap-4 overflow-x-auto scroll-row pb-4">
@@ -216,7 +216,7 @@ export default function DashboardPage() {
         {/* Recent AI Recommendations History */}
         <div className="space-y-4">
           <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
-            <Sparkles className="w-4.5 h-4.5 text-[#8B5CF6]" />
+            <Sparkles className="w-4.5 h-4.5 text-accent" />
             Recent AI Picks History
           </h3>
           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
@@ -249,7 +249,7 @@ export default function DashboardPage() {
       {/* Recommendations For Your Taste */}
       <div className="space-y-4 pt-4 border-t border-white/[0.05]">
         <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-2">
-          <Compass className="w-4.5 h-4.5 text-[#8B5CF6]" />
+          <Compass className="w-4.5 h-4.5 text-accent" />
           Recommendations For Your Taste
         </h3>
         <div className="flex gap-4 overflow-x-auto scroll-row pb-4">

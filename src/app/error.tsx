@@ -13,7 +13,7 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center px-6 relative overflow-hidden">
       {/* Subtle ambient */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0"

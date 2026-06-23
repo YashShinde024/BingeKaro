@@ -118,7 +118,7 @@ export const AuthModal: React.FC = () => {
 
       {/* Main card */}
       <div 
-        className="relative w-full max-w-[440px] bg-[#050505] border border-white/[0.08] p-8 rounded-[28px] shadow-[0_24px_80px_rgba(0,0,0,0.9),0_0_40px_rgba(139,92,246,0.06)] z-10 space-y-6"
+        className="relative w-full max-w-[440px] bg-background border border-white/[0.08] p-8 rounded-[28px] shadow-[0_24px_80px_rgba(0,0,0,0.9),0_0_40px_rgba(139,92,246,0.06)] z-10 space-y-6"
       >
         <button 
           onClick={closeLoginModal}
@@ -130,7 +130,7 @@ export const AuthModal: React.FC = () => {
         {/* Top Branding */}
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-black text-white tracking-tight">
-            Binge<span className="text-[#8B5CF6]">Karo</span>
+            Binge<span className="text-accent">Karo</span>
           </h2>
           <p className="text-[12px] text-muted-foreground uppercase tracking-widest font-semibold">
             Find Your Next Obsession
@@ -149,7 +149,7 @@ export const AuthModal: React.FC = () => {
         {/* Divider */}
         <div className="relative flex items-center justify-center">
           <div className="absolute inset-x-0 h-[1px] bg-white/[0.06]" />
-          <span className="relative z-10 px-3 bg-[#050505] text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+          <span className="relative z-10 px-3 bg-background text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             OR
           </span>
         </div>
@@ -165,7 +165,7 @@ export const AuthModal: React.FC = () => {
                 placeholder="e.g. Yash Shinde"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
               />
             </div>
           )}
@@ -178,7 +178,7 @@ export const AuthModal: React.FC = () => {
               placeholder="name@domain.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+              className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
             />
           </div>
 
@@ -191,7 +191,7 @@ export const AuthModal: React.FC = () => {
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-11 px-3.5 pr-10 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                className="w-full h-11 px-3.5 pr-10 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
               />
               <button
                 type="button"
@@ -212,7 +212,7 @@ export const AuthModal: React.FC = () => {
                 placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
               />
             </div>
           )}
@@ -222,7 +222,7 @@ export const AuthModal: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all disabled:opacity-50"
+            className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -247,7 +247,7 @@ export const AuthModal: React.FC = () => {
               </button>
               <button 
                 onClick={() => { setMode('signup'); setError(''); }}
-                className="text-[#8B5CF6] hover:text-white font-bold transition-colors"
+                className="text-accent hover:text-white font-bold transition-colors"
               >
                 Create Account
               </button>
@@ -255,7 +255,7 @@ export const AuthModal: React.FC = () => {
           ) : (
             <button 
               onClick={() => { setMode('signin'); setError(''); }}
-              className="text-[#8B5CF6] hover:text-white font-bold transition-colors"
+              className="text-accent hover:text-white font-bold transition-colors"
             >
               Back to Sign In
             </button>

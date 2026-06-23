@@ -294,15 +294,69 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               </button>
             </div>
 
-            {/* Streaming Network badges */}
-            {flatrateProviders.length > 0 && (
-              <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3">
-                <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest block">Available Stream</span>
-                <div className="flex flex-wrap gap-2">
-                  {flatrateProviders.slice(0, 4).map((p: any) => (
-                    <OTTBadge key={p.provider_id} provider={p.provider_name.toLowerCase().replace(/\s+/g, '-')} size="sm" />
-                  ))}
+            {/* Where to Watch — Premium Provider Section */}
+            {(flatrateProviders.length > 0 || rentProviders.length > 0 || buyProviders.length > 0) ? (
+              <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-accent" />
+                  <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">Where to Watch</span>
                 </div>
+                
+                {/* Stream */}
+                {flatrateProviders.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Stream</span>
+                    <div className="flex flex-wrap gap-2">
+                      {flatrateProviders.map((p: any) => (
+                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border border-emerald-500/15 rounded-xl hover:border-emerald-500/30 transition-colors cursor-default">
+                          {p.logo_path && (
+                            <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-5 h-5 rounded object-contain" />
+                          )}
+                          <span className="text-[10.5px] font-bold text-foreground">{p.provider_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Rent */}
+                {rentProviders.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest">Rent</span>
+                    <div className="flex flex-wrap gap-2">
+                      {rentProviders.slice(0, 6).map((p: any) => (
+                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 bg-blue-500/5 border border-blue-500/15 rounded-xl hover:border-blue-500/30 transition-colors cursor-default">
+                          {p.logo_path && (
+                            <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-5 h-5 rounded object-contain" />
+                          )}
+                          <span className="text-[10.5px] font-bold text-foreground">{p.provider_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Buy */}
+                {buyProviders.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest">Buy</span>
+                    <div className="flex flex-wrap gap-2">
+                      {buyProviders.slice(0, 6).map((p: any) => (
+                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 bg-amber-500/5 border border-amber-500/15 rounded-xl hover:border-amber-500/30 transition-colors cursor-default">
+                          {p.logo_path && (
+                            <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-5 h-5 rounded object-contain" />
+                          )}
+                          <span className="text-[10.5px] font-bold text-foreground">{p.provider_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-card/40 border border-dashed border-border/60 text-center space-y-1.5">
+                <Globe className="w-5 h-5 text-muted-foreground/40 mx-auto" />
+                <p className="text-[10.5px] text-muted-foreground/60 font-semibold">Streaming availability data is not yet available for this title in your region.</p>
               </div>
             )}
           </div>

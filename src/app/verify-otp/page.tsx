@@ -86,7 +86,7 @@ function VerifyOtpContent() {
             className="space-y-6"
           >
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-[#8B5CF6] mx-auto shadow-[0_0_20px_rgba(139,92,246,0.15)]">
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-accent mx-auto shadow-[0_0_20px_rgba(139,92,246,0.15)]">
                 <ShieldCheck className="w-6 h-6 animate-pulse" />
               </div>
               <h2 className="text-xl font-bold text-white tracking-tight">Verify Code</h2>
@@ -108,7 +108,7 @@ function VerifyOtpContent() {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    className="w-11 h-13 text-center text-lg font-bold rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-white focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                    className="w-11 h-13 text-center text-lg font-bold rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-white focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
                   />
                 ))}
               </div>
@@ -118,7 +118,7 @@ function VerifyOtpContent() {
               <button
                 type="submit"
                 disabled={loading || otp.some(d => !d)}
-                className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify Code'}
               </button>
@@ -131,7 +131,7 @@ function VerifyOtpContent() {
               >
                 ← Back
               </button>
-              <button className="text-[#8B5CF6] hover:text-white transition-colors font-semibold">
+              <button className="text-accent hover:text-white transition-colors font-semibold">
                 Resend Code
               </button>
             </div>
@@ -161,16 +161,16 @@ function VerifyOtpContent() {
 
 export default function VerifyOtpPage() {
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 pt-24 pb-20">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-24 pb-20">
       {/* Glow Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-[#8B5CF6]/15 filter blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-accent/15 filter blur-[100px]" />
         <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-[#FF3B30]/10 filter blur-[80px]" />
       </div>
 
       <Suspense fallback={
         <div className="relative z-10 flex flex-col items-center gap-3 text-muted-foreground">
-          <Loader2 className="w-8 h-8 animate-spin text-[#8B5CF6]" />
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
           <span className="text-[13px]">Loading OTP interface…</span>
         </div>
       }>

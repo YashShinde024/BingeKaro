@@ -46,7 +46,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#8B5CF6',
+  themeColor: '#F97316',
   width: 'device-width',
   initialScale: 1,
 };
@@ -80,7 +80,7 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className={`${inter.className} antialiased min-h-screen bg-[#050505] text-white`}>
+        <body className={`${inter.className} antialiased min-h-screen bg-bg text-[var(--text)]`}>
           <Providers>
             <Navbar />
             <main className="min-h-screen relative">

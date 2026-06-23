@@ -85,10 +85,10 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 pt-24 pb-20">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-24 pb-20">
       {/* Glow Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-[#8B5CF6]/15 filter blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-accent/15 filter blur-[100px]" />
         <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-[#FF3B30]/10 filter blur-[80px]" />
       </div>
 
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
               className="space-y-5"
             >
               <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-[#8B5CF6] mx-auto">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-accent mx-auto">
                   <KeyRound className="w-5.5 h-5.5" />
                 </div>
                 <h2 className="text-xl font-bold text-white tracking-tight">Forgot Password?</h2>
@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
                       placeholder="name@domain.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-11 pl-10 pr-4 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                      className="w-full h-11 pl-10 pr-4 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
                     />
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
@@ -137,7 +137,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all"
+                  className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Code'}
                 </button>
@@ -154,7 +154,7 @@ export default function ForgotPasswordPage() {
               className="space-y-5"
             >
               <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-[#8B5CF6] mx-auto">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-accent mx-auto">
                   <KeyRound className="w-5.5 h-5.5 animate-pulse" />
                 </div>
                 <h2 className="text-xl font-bold text-white tracking-tight">Reset Password</h2>
@@ -172,7 +172,7 @@ export default function ForgotPasswordPage() {
                     placeholder="Enter 6-digit code"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    className="w-full h-11 px-4 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13.5px] text-center font-bold tracking-widest text-white focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                    className="w-full h-11 px-4 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13.5px] text-center font-bold tracking-widest text-white focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
                   />
                 </div>
 
@@ -185,7 +185,7 @@ export default function ForgotPasswordPage() {
                       placeholder="Min 8 characters"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full h-11 pl-4 pr-10 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                      className="w-full h-11 pl-4 pr-10 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
                     />
                     <button
                       type="button"
@@ -202,7 +202,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all"
+                  className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Complete Reset'}
                 </button>

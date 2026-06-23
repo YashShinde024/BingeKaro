@@ -7,11 +7,11 @@ import { Home, Compass } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center px-6 relative overflow-hidden">
       {/* Ambient */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0"
-             style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(139,92,246,0.07) 0%, transparent 100%)' }} />
+             style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(249,115,22,0.07) 0%, transparent 100%)' }} />
       </div>
 
       <div className="relative z-10 text-center max-w-md w-full">
@@ -34,14 +34,14 @@ export default function NotFound() {
               <rect key={y} x="186" y={y} width="14" height="9" rx="2.5" fill="#080808" stroke="rgba(255,255,255,0.06)" strokeWidth="0.75"/>
             ))}
             {/* Screen area */}
-            <rect x="46" y="28" width="128" height="94" rx="5" fill="#0f0a1e" stroke="rgba(139,92,246,0.15)" strokeWidth="1"/>
+            <rect x="46" y="28" width="128" height="94" rx="5" fill="#1a0f00" stroke="rgba(249,115,22,0.15)" strokeWidth="1"/>
             {/* 404 */}
-            <text x="110" y="88" textAnchor="middle" fill="rgba(139,92,246,0.7)" fontSize="44"
+            <text x="110" y="88" textAnchor="middle" fill="rgba(249,115,22,0.7)" fontSize="44"
                   fontWeight="900" fontFamily="Inter, sans-serif" letterSpacing="-2">
               404
             </text>
             {/* Scan line */}
-            <rect x="46" y="72" width="128" height="1" fill="rgba(139,92,246,0.15)"/>
+            <rect x="46" y="72" width="128" height="1" fill="rgba(249,115,22,0.15)"/>
             {/* Grain dots */}
             {[[70, 42], [148, 50], [78, 104], [138, 96], [110, 74], [158, 38], [60, 88]].map(([cx, cy], i) => (
               <circle key={i} cx={cx} cy={cy} r="1.2" fill="rgba(255,255,255,0.08)"/>
@@ -68,8 +68,8 @@ export default function NotFound() {
                 whileTap={{ scale: 0.96 }}
                 className="inline-flex items-center gap-2.5 text-white font-bold px-6 py-3.5 rounded-xl cursor-pointer"
                 style={{
-                  background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-                  boxShadow: '0 6px 24px rgba(139,92,246,0.4)',
+                  background: 'linear-gradient(135deg, #F97316, #EA580C)',
+                  boxShadow: '0 6px 24px rgba(249,115,22,0.4)',
                 }}
               >
                 <Home className="w-4 h-4" />

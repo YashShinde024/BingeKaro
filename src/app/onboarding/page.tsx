@@ -101,10 +101,10 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 pt-24 pb-20">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-24 pb-20">
       {/* Glow Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full bg-[#8B5CF6]/15 filter blur-[110px]" />
+        <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full bg-accent/15 filter blur-[110px]" />
         <div className="absolute bottom-10 right-10 w-72 h-72 rounded-full bg-[#FF3B30]/10 filter blur-[90px]" />
       </div>
 
@@ -121,7 +121,7 @@ export default function OnboardingPage() {
           </div>
           <div className="h-1 w-full bg-white/[0.04] rounded-full overflow-hidden">
             <div 
-              className="h-full bg-[#8B5CF6] transition-all duration-300"
+              className="h-full bg-accent transition-all duration-300"
               style={{ width: `${(step / 3) * 100}%` }}
             />
           </div>
@@ -138,7 +138,7 @@ export default function OnboardingPage() {
               className="space-y-4"
             >
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-[#8B5CF6]">
+                <div className="flex items-center gap-2 text-accent">
                   <Globe className="w-5 h-5" />
                   <h2 className="text-xl font-bold text-white tracking-tight">Preferred Languages</h2>
                 </div>
@@ -154,7 +154,7 @@ export default function OnboardingPage() {
                       onClick={() => toggleLanguage(lang.id)}
                       className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all ${
                         active 
-                          ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] text-white shadow-[0_0_15px_rgba(139,92,246,0.15)]'
+                          ? 'bg-accent/10 border-accent text-white shadow-[0_0_15px_rgba(139,92,246,0.15)]'
                           : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:border-white/20 hover:text-white'
                       }`}
                     >
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
               className="space-y-4"
             >
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-[#8B5CF6]">
+                <div className="flex items-center gap-2 text-accent">
                   <Film className="w-5 h-5" />
                   <h2 className="text-xl font-bold text-white tracking-tight">Favorite Genres</h2>
                 </div>
@@ -192,12 +192,12 @@ export default function OnboardingPage() {
                       onClick={() => toggleGenre(genre.id)}
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-[12.5px] font-semibold transition-all ${
                         active 
-                          ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] text-white'
+                          ? 'bg-accent/10 border-accent text-white'
                           : 'bg-white/[0.015] border-white/[0.05] text-muted-foreground hover:border-white/15 hover:text-white'
                       }`}
                     >
                       <span>{genre.label}</span>
-                      {active && <Check className="w-3.5 h-3.5 text-[#8B5CF6]" />}
+                      {active && <Check className="w-3.5 h-3.5 text-accent" />}
                     </button>
                   );
                 })}
@@ -214,7 +214,7 @@ export default function OnboardingPage() {
               className="space-y-4"
             >
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-[#8B5CF6]">
+                <div className="flex items-center gap-2 text-accent">
                   <Tv className="w-5 h-5" />
                   <h2 className="text-xl font-bold text-white tracking-tight">OTT Providers</h2>
                 </div>
@@ -230,7 +230,7 @@ export default function OnboardingPage() {
                       onClick={() => toggleProvider(prov.id as OTTProviderId)}
                       className={`flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center ${
                         active 
-                          ? 'bg-[#8B5CF6]/10 border-[#8B5CF6] text-white shadow-[0_0_15px_rgba(139,92,246,0.15)]'
+                          ? 'bg-accent/10 border-accent text-white shadow-[0_0_15px_rgba(139,92,246,0.15)]'
                           : 'bg-white/[0.02] border-white/[0.06] text-muted-foreground hover:border-white/25 hover:text-white'
                       }`}
                     >
@@ -262,7 +262,7 @@ export default function OnboardingPage() {
           {step < 3 ? (
             <button
               onClick={handleNext}
-              className="h-10 px-5 rounded-xl bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 text-[12px] font-bold text-white flex items-center gap-1.5 shadow-[0_4px_15px_rgba(139,92,246,0.2)] transition-all"
+              className="h-10 px-5 rounded-xl bg-accent hover:bg-accent/90 text-[12px] font-bold text-white flex items-center gap-1.5 shadow-[0_4px_15px_rgba(139,92,246,0.2)] transition-all"
             >
               Continue
               <ArrowRight className="w-3.5 h-3.5" />
@@ -271,7 +271,7 @@ export default function OnboardingPage() {
             <button
               onClick={handleComplete}
               disabled={loading}
-              className="h-10 px-5 rounded-xl bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 text-[12px] font-bold text-white flex items-center gap-1.5 shadow-[0_4px_20px_rgba(139,92,246,0.3)] transition-all disabled:opacity-50"
+              className="h-10 px-5 rounded-xl bg-accent hover:bg-accent/90 text-[12px] font-bold text-white flex items-center gap-1.5 shadow-[0_4px_20px_rgba(139,92,246,0.3)] transition-all disabled:opacity-50"
             >
               {loading ? (
                 <>

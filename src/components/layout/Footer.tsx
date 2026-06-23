@@ -57,7 +57,7 @@ export const Footer: React.FC = () => {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <img src="/logo.png" alt="BingeKaro Logo" className="w-8.5 h-8.5 object-contain group-hover:scale-105 transition-transform" />
+              <img src="/logo.png" alt="BingeKaro Logo" className="w-8 h-8 object-contain group-hover:scale-105 transition-transform" />
               <span className="text-[17px] font-bold text-foreground tracking-tight">
                 Binge<span className="text-accent">Karo</span>
               </span>

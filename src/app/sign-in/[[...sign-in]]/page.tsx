@@ -68,20 +68,20 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 pt-24 pb-20">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-24 pb-20">
       {/* Glow Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-[#8B5CF6]/15 filter blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-accent/15 filter blur-[100px]" />
         <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-[#FF3B30]/10 filter blur-[80px]" />
       </div>
 
       {/* Centered Auth Card */}
-      <div className="relative w-full max-w-[440px] bg-[#050505] border border-white/[0.08] p-8 rounded-[28px] shadow-[0_24px_80px_rgba(0,0,0,0.9),0_0_40px_rgba(139,92,246,0.06)] z-10 space-y-6">
+      <div className="relative w-full max-w-[440px] bg-background border border-white/[0.08] p-8 rounded-[28px] shadow-[0_24px_80px_rgba(0,0,0,0.9),0_0_40px_rgba(139,92,246,0.06)] z-10 space-y-6">
         
         {/* Top Header */}
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-black text-white tracking-tight">
-            Binge<span className="text-[#8B5CF6]">Karo</span>
+            Binge<span className="text-accent">Karo</span>
           </h2>
           <p className="text-[12px] text-muted-foreground uppercase tracking-widest font-bold">
             Find Your Next Obsession
@@ -100,7 +100,7 @@ export default function SignInPage() {
         {/* Divider */}
         <div className="relative flex items-center justify-center">
           <div className="absolute inset-x-0 h-[1px] bg-white/[0.06]" />
-          <span className="relative z-10 px-3 bg-[#050505] text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+          <span className="relative z-10 px-3 bg-background text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             ──────── OR ────────
           </span>
         </div>
@@ -115,7 +115,7 @@ export default function SignInPage() {
               placeholder="name@domain.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+              className="w-full h-11 px-3.5 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
             />
           </div>
 
@@ -128,7 +128,7 @@ export default function SignInPage() {
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-11 px-3.5 pr-10 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-[#8B5CF6]/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
+                className="w-full h-11 px-3.5 pr-10 rounded-[12px] bg-white/[0.03] border border-white/[0.08] text-[13px] text-white placeholder-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.05] focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)] transition-all"
               />
               <button
                 type="button"
@@ -145,7 +145,7 @@ export default function SignInPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all disabled:opacity-50"
+            className="w-full h-11 rounded-[14px] text-[13.5px] font-bold text-white flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 shadow-[0_4px_20px_rgba(139,92,246,0.25)] transition-all disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -166,7 +166,7 @@ export default function SignInPage() {
           <div className="flex items-center gap-1">
             <span>Don't have an account?</span>
             <Link href="/sign-up">
-              <span className="text-[#8B5CF6] hover:text-white font-bold transition-colors cursor-pointer">Create Account</span>
+              <span className="text-accent hover:text-white font-bold transition-colors cursor-pointer">Create Account</span>
             </Link>
           </div>
         </div>

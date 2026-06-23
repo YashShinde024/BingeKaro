@@ -154,13 +154,13 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#050505] pt-24 pb-20 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-background pt-24 pb-20 flex items-center justify-center px-6">
         <div className="text-center space-y-4 max-w-sm">
-          <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mx-auto text-muted/30">
+          <div className="w-16 h-16 rounded-2xl bg-accent/5 border border-accent/15 flex items-center justify-center mx-auto text-accent/40">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold text-white">Guest Mode Profile</h2>
-          <p className="text-[13.5px] text-muted/60 leading-relaxed">
+          <h2 className="text-xl font-bold text-foreground">Guest Mode Profile</h2>
+          <p className="text-[13.5px] text-muted-foreground leading-relaxed">
             Please sign in to compute your personalized Binge Profile, track watch achievements, and customize providers.
           </p>
         </div>
@@ -176,24 +176,28 @@ export default function ProfilePage() {
   const visibleHistory = viewAllRecent ? recentlyViewed : recentlyViewed.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-[#050505] pt-24 pb-28">
+    <div className="min-h-screen bg-background pt-24 pb-28">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
 
         {/* Header Block */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-white/[0.05] mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-border mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] flex items-center justify-center border border-white/10 shadow-[0_4px_24px_rgba(139,92,246,0.25)]">
-              <span className="text-2xl font-black text-white">{user.name.charAt(0).toUpperCase()}</span>
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center border border-accent/20 shadow-[0_4px_24px_rgba(249,115,22,0.2)]">
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-black text-white">{user.name.charAt(0).toUpperCase()}</span>
+              )}
             </div>
             <div>
-              <h1 className="text-[20px] font-bold text-white tracking-tight leading-snug">{user.name}</h1>
+              <h1 className="text-[20px] font-bold text-foreground tracking-tight leading-snug">{user.name}</h1>
               <p className="text-[12px] text-muted-foreground font-semibold">Member since {user.joinedAt}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/settings"
-              className="px-4.5 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[12px] font-bold hover:bg-white/10 transition-colors"
+              className="px-4.5 py-2 bg-card/50 border border-border text-foreground rounded-xl text-[12px] font-bold hover:bg-card/70 transition-colors"
             >
               Preferences Blueprint
             </Link>
@@ -211,51 +215,51 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
           {/* Bento Widget 1: Taste DNA */}
-          <div className="md:col-span-2 bg-white/[0.02] backdrop-blur-md p-6 rounded-[24px] relative overflow-hidden flex flex-col justify-between min-h-[220px] border border-white/[0.05] hover:border-white/[0.08] hover:shadow-[0_12px_40px_rgba(139,92,246,0.06)] transition-all duration-300">
+          <div className="md:col-span-2 bg-card/40 backdrop-blur-md p-6 rounded-[24px] relative overflow-hidden flex flex-col justify-between min-h-[220px] border border-border hover:border-accent/20 hover:shadow-[0_12px_40px_rgba(249,115,22,0.06)] transition-all duration-300">
             <div className={`absolute top-0 right-0 w-72 h-72 rounded-full bg-gradient-to-br ${dnaGradient} opacity-[0.07] blur-[75px] pointer-events-none`} />
             <div className="space-y-3 relative z-10">
-              <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-[#8B5CF6] uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-accent uppercase tracking-widest">
                 <Sparkles className="w-3.5 h-3.5" />
                 Entertainment Taste DNA
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight flex items-center gap-3">
-                <DnaIcon className="w-8 h-8 text-[#8B5CF6] shrink-0" />
+              <h2 className="text-2xl sm:text-3xl font-black text-foreground leading-tight flex items-center gap-3">
+                <DnaIcon className="w-8 h-8 text-accent shrink-0" />
                 {dnaPersona}
               </h2>
               <p className="text-[13.5px] text-muted-foreground max-w-md leading-relaxed font-medium">{dnaDescription}</p>
             </div>
 
-            <div className="flex flex-wrap gap-3 pt-5 border-t border-white/5 mt-6 relative z-10">
-              <span className="bg-white/[0.03] border border-white/[0.08] px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-white/90 flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-[#8B5CF6]" />
+            <div className="flex flex-wrap gap-3 pt-5 border-t border-border mt-6 relative z-10">
+              <span className="bg-card/50 border border-border px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-foreground/90 flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-accent" />
                 Top Genre: {stats.genre}
               </span>
-              <span className="bg-white/[0.03] border border-white/[0.08] px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-white/90 flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5 text-[#8B5CF6]" />
+              <span className="bg-card/50 border border-border px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-foreground/90 flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5 text-accent" />
                 Language Focus: {dnaData?.languages?.[0] ? dnaData.languages[0].toUpperCase() : 'English'}
               </span>
             </div>
           </div>
 
           {/* Bento Widget 2: Queue Stats */}
-          <div className="bg-white/[0.02] backdrop-blur-md p-6 rounded-[24px] flex flex-col justify-between gap-6 border border-white/[0.05] hover:border-white/[0.08] hover:shadow-[0_12px_40px_rgba(139,92,246,0.06)] transition-all duration-300">
-            <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-white/40 uppercase tracking-widest">
+          <div className="bg-card/40 backdrop-blur-md p-6 rounded-[24px] flex flex-col justify-between gap-6 border border-border hover:border-accent/20 hover:shadow-[0_12px_40px_rgba(249,115,22,0.06)] transition-all duration-300">
+            <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">
               <Activity className="w-3.5 h-3.5" />
               Watch History Stats
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">Hours Screened</p>
-                <p className="text-white font-black text-3xl text-white tracking-tight">{stats.hours} <span className="text-xs text-muted-foreground font-semibold">h</span></p>
+                <p className="text-foreground font-black text-3xl tracking-tight">{stats.hours} <span className="text-xs text-muted-foreground font-semibold">h</span></p>
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">Total Watched</p>
-                <p className="text-white font-black text-3xl text-white tracking-tight">{stats.completed} <span className="text-xs text-muted-foreground font-semibold">titles</span></p>
+                <p className="text-foreground font-black text-3xl tracking-tight">{stats.completed} <span className="text-xs text-muted-foreground font-semibold">titles</span></p>
               </div>
             </div>
-            <div className="text-[11px] text-muted-foreground font-semibold border-t border-white/5 pt-3.5 flex items-center justify-between">
+            <div className="text-[11px] text-muted-foreground font-semibold border-t border-border pt-3.5 flex items-center justify-between">
               <span>Avg Rating across watchlist:</span>
-              <span className="text-white font-extrabold flex items-center gap-0.5">
+              <span className="text-foreground font-extrabold flex items-center gap-0.5">
                 <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 {stats.score}
               </span>
@@ -268,21 +272,21 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
           {/* Platform Distribution */}
-          <div className="bg-white/[0.02] backdrop-blur-md p-6 rounded-[24px] space-y-4 border border-white/[0.05] flex flex-col justify-between hover:border-white/[0.08] transition-all duration-300">
+          <div className="bg-card/40 backdrop-blur-md p-6 rounded-[24px] space-y-4 border border-border flex flex-col justify-between hover:border-accent/20 transition-all duration-300">
             <div className="space-y-3">
-              <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+              <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                 <PieChart className="w-3.5 h-3.5" />
                 Platform Distribution
               </p>
               <div className="space-y-3">
                 {platformDistribution.length > 0 ? platformDistribution.map(item => (
                   <div key={item.provider} className="space-y-1.5">
-                    <div className="flex justify-between text-[11.5px] font-bold text-white/90">
+                    <div className="flex justify-between text-[11.5px] font-bold text-foreground/90">
                       <span>{item.name}</span>
-                      <span className="text-[#8B5CF6]">{item.percentage}%</span>
+                      <span className="text-accent">{item.percentage}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#8B5CF6]" style={{ width: `${item.percentage}%` }} />
+                    <div className="h-1.5 w-full bg-muted/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-accent" style={{ width: `${item.percentage}%` }} />
                     </div>
                   </div>
                 )) : (
@@ -293,31 +297,31 @@ export default function ProfilePage() {
           </div>
 
           {/* Achievements */}
-          <div className="bg-white/[0.02] backdrop-blur-md p-6 rounded-[24px] space-y-4 border border-white/[0.05] hover:border-white/[0.08] transition-all duration-300">
-            <div className="flex justify-between items-center text-[10px] font-extrabold text-white/40 uppercase tracking-widest">
+          <div className="bg-card/40 backdrop-blur-md p-6 rounded-[24px] space-y-4 border border-border hover:border-accent/20 transition-all duration-300">
+            <div className="flex justify-between items-center text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">
               <span className="flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5" />
                 Achievements
               </span>
-              <span className="text-[#8B5CF6] font-black">{achievementsProgress}%</span>
+              <span className="text-accent font-black">{achievementsProgress}%</span>
             </div>
-            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-3">
-              <div className="h-full bg-[#8B5CF6] rounded-full" style={{ width: `${achievementsProgress}%` }} />
+            <div className="h-1.5 w-full bg-muted/10 rounded-full overflow-hidden mb-3">
+              <div className="h-full bg-accent rounded-full" style={{ width: `${achievementsProgress}%` }} />
             </div>
             <div className="space-y-2">
               {achievements.slice(0, 3).map(ach => (
-                <div key={ach.id} className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.01] border border-white/[0.03]">
+                <div key={ach.id} className="flex items-center gap-2.5 p-2 rounded-xl bg-card/20 border border-border/60">
                   <span className="text-lg shrink-0">
-                    <ach.icon className="w-5 h-5 text-[#8B5CF6] shrink-0" />
+                    <ach.icon className="w-5 h-5 text-accent shrink-0" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11.5px] font-bold text-white truncate leading-none">{ach.title}</p>
+                    <p className="text-[11.5px] font-bold text-foreground truncate leading-none">{ach.title}</p>
                     <p className="text-[9.5px] text-muted-foreground truncate mt-0.5">{ach.description}</p>
                   </div>
                   {ach.unlocked ? (
                     <span className="text-[8px] bg-emerald-500/10 text-emerald-400 font-extrabold px-1.5 py-0.5 rounded border border-emerald-500/10">UNLOCKED</span>
                   ) : (
-                    <span className="text-[8px] bg-white/5 text-muted-foreground/45 font-extrabold px-1.5 py-0.5 rounded border border-white/5">LOCKED</span>
+                    <span className="text-[8px] bg-muted/10 text-muted-foreground/45 font-extrabold px-1.5 py-0.5 rounded border border-border/60">LOCKED</span>
                   )}
                 </div>
               ))}
@@ -325,9 +329,9 @@ export default function ProfilePage() {
           </div>
 
           {/* Discovery History / AI Scans */}
-          <div className="bg-white/[0.02] backdrop-blur-md p-6 rounded-[24px] space-y-4 border border-white/[0.05] flex flex-col justify-between hover:border-white/[0.08] transition-all duration-300">
+          <div className="bg-card/40 backdrop-blur-md p-6 rounded-[24px] space-y-4 border border-border flex flex-col justify-between hover:border-accent/20 transition-all duration-300">
             <div className="space-y-3">
-              <p className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+              <p className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5" />
                 Taste DNA Scans
               </p>
@@ -338,10 +342,10 @@ export default function ProfilePage() {
                   </p>
                 ) : (
                   recommendationHistory.slice(0, 3).map((rec) => (
-                    <div key={rec.movie.id} className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] flex items-center gap-2.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6] shrink-0" />
-                      <Link href={`/movie/${rec.movie.id}`} className="min-w-0 flex-1 hover:text-[#8B5CF6] transition-colors">
-                        <p className="text-[11.5px] font-bold text-white truncate leading-none mb-1">{rec.movie.title}</p>
+                    <div key={rec.movie.id} className="p-2.5 rounded-xl bg-card/20 border border-border/60 flex items-center gap-2.5">
+                      <Sparkles className="w-3.5 h-3.5 text-accent shrink-0" />
+                      <Link href={`/movie/${rec.movie.id}`} className="min-w-0 flex-1 hover:text-accent transition-colors">
+                        <p className="text-[11.5px] font-bold text-foreground truncate leading-none mb-1">{rec.movie.title}</p>
                         <p className="text-[9.5px] text-muted-foreground truncate leading-none">{rec.aiExplanation}</p>
                       </Link>
                     </div>
@@ -359,33 +363,33 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.18 }}
-            className="mb-8 p-6 rounded-3xl bg-white/[0.01] border border-white/[0.04] space-y-4"
+            className="mb-8 p-6 rounded-3xl bg-card/20 border border-border space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-[#8B5CF6]" />
-                <h3 className="text-[11.5px] font-extrabold text-white uppercase tracking-wider">Recently Screened History</h3>
+                <Clock className="w-4 h-4 text-accent" />
+                <h3 className="text-[11.5px] font-extrabold text-foreground uppercase tracking-wider">Recently Screened History</h3>
               </div>
               <button
                 onClick={() => setViewAllRecent(!viewAllRecent)}
-                className="text-[11px] font-bold text-muted-foreground hover:text-white transition-colors"
+                className="text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors"
               >
                 {viewAllRecent ? 'View Less' : 'View All'}
               </button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {visibleHistory.map(movie => (
-                <div key={movie.id} className="relative rounded-2xl overflow-hidden aspect-[2/3] bg-white/5 border border-white/10 group">
+                <div key={movie.id} className="relative rounded-2xl overflow-hidden aspect-[2/3] bg-card/30 border border-border group">
                   {movie.posterPath ? (
                     <img src={`https://image.tmdb.org/t/p/w300${movie.posterPath}`} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-white/5 flex items-center justify-center text-white font-bold">{movie.title}</div>
+                    <div className="w-full h-full bg-card/30 flex items-center justify-center text-foreground font-bold">{movie.title}</div>
                   )}
                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex flex-col justify-end p-3.5 transition-all">
                     <p className="text-[12px] font-bold text-white truncate mb-1.5">{movie.title}</p>
                     <div className="flex gap-2">
                       <Link href={`/movie/${movie.id}`} className="flex-1">
-                        <button className="w-full bg-[#8B5CF6] hover:bg-[#8b5cf6]/90 text-white rounded-lg py-1.5 text-[10px] font-bold transition-all">
+                        <button className="w-full bg-accent hover:bg-accent-dark text-white rounded-lg py-1.5 text-[10px] font-bold transition-all">
                           Details
                         </button>
                       </Link>

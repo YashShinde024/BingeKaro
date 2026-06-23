@@ -113,7 +113,7 @@ export const SearchResultSkeleton: React.FC<{ count?: number }> = ({ count = 4 }
 // Detail Page Skeleton
 // ===========================
 export const DetailPageSkeleton: React.FC = () => (
-  <div className="min-h-screen bg-[#050505]" role="status" aria-label="Loading movie details" aria-busy="true">
+  <div className="min-h-screen bg-background" role="status" aria-label="Loading movie details" aria-busy="true">
     {/* Hero backdrop */}
     <div className="relative h-[60vh] min-h-[460px] w-full overflow-hidden">
       <div className="absolute inset-0 skeleton" />
