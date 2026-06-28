@@ -17,7 +17,7 @@ const MOOD_ICONS: Record<string, React.ComponentType<any>> = {
 
 export const MoodRibbon: React.FC = React.memo(() => {
   return (
-    <div className="relative border-y border-white/[0.04] bg-white/[0.01] backdrop-blur-md z-20">
+    <div className="relative border-y border-border bg-surface/50 backdrop-blur-md z-20">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-5">
         <div className="flex items-center gap-6 overflow-x-auto scroll-row">
           <span className="text-[10px] font-extrabold text-accent-light uppercase tracking-widest shrink-0 flex items-center gap-1.5">
@@ -31,7 +31,7 @@ export const MoodRibbon: React.FC = React.memo(() => {
                 <motion.div
                   whileHover={{ scale: 1.05, y: -1 }}
                   whileTap={{ scale: 0.95 }}
-                  className="chip border-white/[0.08] hover:border-white/20 hover:text-white py-1.5 shrink-0 flex items-center gap-2"
+                  className="chip border-border hover:border-accent/30 hover:text-foreground py-1.5 shrink-0 flex items-center gap-2"
                 >
                   <MoodIcon className="w-3.5 h-3.5 text-accent-light" />
                   <span className="text-xs font-bold uppercase tracking-wider">{mood.label}</span>

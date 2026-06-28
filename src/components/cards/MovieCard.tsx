@@ -101,7 +101,7 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
     >
       <Link href={detailPath} className="block" prefetch={false}>
         {/* Poster Wrapper */}
-        <div className="relative aspect-poster rounded-[20px] overflow-hidden bg-[#0A0D14] border border-white/[0.06] transition-all duration-300 group-hover:border-accent/50 group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(249,115,22,0.25)]">
+        <div className="relative aspect-poster rounded-[20px] overflow-hidden bg-card border border-border transition-all duration-300 group-hover:border-accent/50 group-hover:shadow-[var(--shadow-card-hover)]">
           {/* Poster image with blur-up */}
           <img
             src={posterSrc}
@@ -121,16 +121,16 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
           {/* Badges Overlay */}
           <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-20 transition-all duration-300 group-hover:translate-y-[-1px]">
             {/* Rating pill */}
-            <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-0.5 border border-white/10">
+            <div className="flex items-center gap-1 bg-background/70 backdrop-blur-md rounded-full px-2 py-0.5 border border-border">
               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-              <span className="text-[10px] font-black text-white">{rating.toFixed(1)}</span>
+              <span className="text-[10px] font-black text-foreground">{rating.toFixed(1)}</span>
             </div>
 
             {/* Runtime or media type badge */}
             {runtimeStr ? (
-              <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-0.5 border border-white/10">
-                <Clock className="w-2.5 h-2.5 text-white/70" />
-                <span className="text-[9.5px] font-bold text-white/90">{runtimeStr}</span>
+              <div className="flex items-center gap-1 bg-background/70 backdrop-blur-md rounded-full px-2 py-0.5 border border-border">
+                <Clock className="w-2.5 h-2.5 text-muted-foreground" />
+                <span className="text-[9.5px] font-bold text-foreground/90">{runtimeStr}</span>
               </div>
             ) : (
               <span className={`media-badge ${mediaType === 'tv' ? 'media-badge-tv' : 'media-badge-movie'}`}>
@@ -208,7 +208,7 @@ export const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, content,
 
         {/* Info below poster */}
         <div className="mt-3 px-1">
-          <h3 className="text-[13px] font-bold text-white/90 leading-tight truncate group-hover:text-accent transition-colors duration-200">
+          <h3 className="text-[13px] font-bold text-foreground/90 leading-tight truncate group-hover:text-accent transition-colors duration-200">
             {title}
           </h3>
           <div className="flex items-center justify-between gap-1.5 mt-1.5">

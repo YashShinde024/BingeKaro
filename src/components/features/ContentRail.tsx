@@ -65,17 +65,17 @@ export const ContentRail: React.FC<ContentRailProps> = React.memo(({
       <div className="flex items-end justify-between mb-5 px-6 lg:px-10">
         <div className="flex items-center gap-3">
           {badge && (
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10 border border-accent/20">
               {badge}
             </div>
           )}
           <div>
-            <h2 className="text-[17px] font-bold text-white tracking-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-muted mt-0.5">{subtitle}</p>}
+            <h2 className="text-[17px] font-bold text-foreground tracking-tight">{title}</h2>
+            {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
         </div>
         {viewAllTo && (
-          <Link href={viewAllTo} className="flex items-center gap-1 text-xs font-semibold text-accent-light hover:text-white transition-colors group">
+          <Link href={viewAllTo} className="flex items-center gap-1 text-xs font-semibold text-accent hover:text-accent-dark transition-colors group">
             See all
             <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
@@ -88,7 +88,7 @@ export const ContentRail: React.FC<ContentRailProps> = React.memo(({
           <button
             onClick={() => scrollBy('left')}
             aria-label="Scroll left"
-            className="absolute left-1 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover/rail:opacity-100 transition-opacity hover:bg-black hover:border-white/20 shadow-lg"
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-background/90 backdrop-blur-md border border-border flex items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:bg-background hover:border-accent/30 shadow-lg"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -98,7 +98,7 @@ export const ContentRail: React.FC<ContentRailProps> = React.memo(({
           <button
             onClick={() => scrollBy('right')}
             aria-label="Scroll right"
-            className="absolute right-1 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover/rail:opacity-100 transition-opacity hover:bg-black hover:border-white/20 shadow-lg"
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-background/90 backdrop-blur-md border border-border flex items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-opacity hover:bg-background hover:border-accent/30 shadow-lg"
           >
             <ChevronRight className="w-5 h-5" />
           </button>

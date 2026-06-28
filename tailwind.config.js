@@ -8,14 +8,28 @@ export default {
     extend: {
       colors: {
         bg: 'var(--background)',
+        background: 'var(--background)',
+        foreground: 'var(--text)',
         surface: 'var(--surface)',
-        card: 'var(--card)',
+        card: {
+          DEFAULT: 'var(--card)',
+          hover: 'var(--card-hover)',
+        },
         accent: {
           DEFAULT: '#F97316',
           light: '#FB923C',
           dark: '#EA580C',
+          glow: 'var(--accent-glow)',
         },
-        muted: 'var(--muted)',
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted)',
+          dark: 'var(--muted-dark)',
+        },
+        border: {
+          DEFAULT: 'var(--border)',
+          light: 'var(--border-light)',
+        },
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],

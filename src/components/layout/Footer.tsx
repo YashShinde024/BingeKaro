@@ -159,9 +159,9 @@ export const Footer: React.FC = () => {
           {/* Social Links */}
           <div className="flex items-center gap-3">
             {[
-              { Icon: GithubIcon, href: '#', label: 'GitHub', hoverBg: 'hover:bg-muted/10 hover:border-border hover:text-foreground' },
-              { Icon: TwitterIcon, href: '#', label: 'Twitter/X', hoverBg: 'hover:bg-[#F97316]/10 hover:border-[#F97316]/25 hover:text-accent' },
-              { Icon: InstagramIcon, href: '#', label: 'Instagram', hoverBg: 'hover:bg-pink-500/10 hover:border-pink-500/25 hover:text-pink-500' },
+              { Icon: GithubIcon, href: 'https://github.com/nyxen-in', label: 'GitHub', hoverBg: 'hover:bg-muted/10 hover:border-border hover:text-foreground' },
+              { Icon: TwitterIcon, href: 'https://x.com/nyxen_in', label: 'Twitter/X', hoverBg: 'hover:bg-[#F97316]/10 hover:border-[#F97316]/25 hover:text-accent' },
+              { Icon: InstagramIcon, href: 'https://instagram.com/nyxen_in', label: 'Instagram', hoverBg: 'hover:bg-pink-500/10 hover:border-pink-500/25 hover:text-pink-500' },
             ].map(({ Icon, href, label, hoverBg }) => (
               <motion.a
                 key={label}
