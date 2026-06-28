@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { useAuth as useClerkAuth } from '@clerk/nextjs';
+import { useAuth as useClerkAuth, useUser, useClerk } from '@clerk/nextjs';
 import { useTheme } from 'next-themes';
 import { api } from '../../lib/api';
 import { GENRES, LANGUAGES } from '../../lib/mockData';
@@ -23,8 +23,47 @@ export default function SettingsPage() {
   const { getToken } = useClerkAuth();
   const { theme: currentTheme, setTheme: setNextTheme } = useTheme();
 
+  const { user: clerkUser, isLoaded: clerkUserLoaded } = useUser();
+  const clerk = useClerk();
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('blueprint');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Identity Form State
+  const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [isUpdatingIdentity, setIsUpdatingIdentity] = useState(false);
+
+  useEffect(() => {
+    if (clerkUser) {
+      setDisplayName(clerkUser.fullName || '');
+      setUsername(clerkUser.username || '');
+      setAvatarUrl(clerkUser.imageUrl || '');
+    }
+  }, [clerkUser]);
+
+  const handleUpdateIdentity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clerkUser) return;
+    setIsUpdatingIdentity(true);
+    try {
+      const parts = displayName.trim().split(/\s+/);
+      const firstName = parts[0] || '';
+      const lastName = parts.slice(1).join(' ') || '';
+      
+      await clerkUser.update({
+        username: username.trim() || undefined,
+        firstName,
+        lastName,
+      });
+      showToast('Identity updated successfully!', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update identity', 'error');
+    } finally {
+      setIsUpdatingIdentity(false);
+    }
+  };
 
   // Taste Blueprint State
   const [selectedGenres, setSelectedGenres] = useState<GenreId[]>([]);
@@ -478,21 +517,80 @@ export default function SettingsPage() {
                 >
                   <div className="space-y-1">
                     <h3 className="text-[15px] font-black text-foreground">Security & Identity</h3>
-                    <p className="text-xs text-muted-foreground">Authentication profile details synced from Clerk.</p>
+                    <p className="text-xs text-muted-foreground">Manage your credentials, username, and identity synced from Clerk.</p>
                   </div>
 
-                  {/* Profile Details Card */}
-                  <div className="p-4 bg-card/30 border border-border rounded-2xl flex items-center gap-4">
-                    {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-border" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-white font-bold text-lg">
-                        {user.name.charAt(0).toUpperCase()}
+                  {/* Profile Details Edit Form */}
+                  <form onSubmit={handleUpdateIdentity} className="space-y-4 bg-card/20 p-5 border border-border rounded-2xl">
+                    <div className="flex items-center gap-4 border-b border-border/40 pb-4 mb-4">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border border-border/80 shadow-md" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center text-white font-black text-lg">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="text-[12.5px] font-bold text-foreground leading-none mb-1">Avatar & Picture</h4>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Customized via Clerk security panel below.</p>
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-[13px] font-bold text-foreground leading-none mb-1">{user.name}</h4>
-                      <p className="text-[11px] text-muted-foreground truncate leading-none">{user.email}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label htmlFor="settings-display-name" className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest block">Display Name</label>
+                        <input
+                          id="settings-display-name"
+                          type="text"
+                          required
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder="e.g. Yash Shinde"
+                          className="w-full bg-muted/5 border border-border/80 rounded-xl px-4 py-3 text-xs text-foreground outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label htmlFor="settings-username" className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest block">Username</label>
+                        <input
+                          id="settings-username"
+                          type="text"
+                          required
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="e.g. yashshinde"
+                          className="w-full bg-muted/5 border border-border/80 rounded-xl px-4 py-3 text-xs text-foreground outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={isUpdatingIdentity}
+                        className="bg-accent/15 hover:bg-accent/25 border border-accent/25 text-accent font-bold text-[11px] px-4.5 py-2.5 rounded-xl transition-all"
+                      >
+                        {isUpdatingIdentity ? 'Updating...' : 'Update Identity'}
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Clerk Authentication integrations */}
+                  <div className="pt-4 border-t border-border space-y-4">
+                    <h4 className="text-xs font-bold text-muted-foreground">Account Controls</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        onClick={() => clerk.openUserProfile()}
+                        className="flex items-center justify-center gap-2 py-3 bg-card border border-border hover:border-accent/40 text-foreground font-bold text-[11px] rounded-xl transition-all shadow-sm"
+                      >
+                        <Sliders className="w-3.5 h-3.5 text-accent" /> Manage Connected Accounts
+                      </button>
+                      <button
+                        onClick={() => clerk.openUserProfile()}
+                        className="flex items-center justify-center gap-2 py-3 bg-card border border-border hover:border-accent/40 text-foreground font-bold text-[11px] rounded-xl transition-all shadow-sm"
+                      >
+                        <Shield className="w-3.5 h-3.5 text-accent" /> Change Clerk Password
+                      </button>
                     </div>
                   </div>
 
@@ -502,9 +600,9 @@ export default function SettingsPage() {
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={logout}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/30 text-rose-400 font-bold text-[12px] rounded-xl transition-all"
+                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/35 text-rose-400 font-bold text-[11px] rounded-xl transition-all"
                       >
-                        <LogOut className="w-4 h-4" /> Sign Out Session
+                        <LogOut className="w-3.5 h-3.5" /> Sign Out Session
                       </button>
                     </div>
                   </div>
@@ -521,9 +619,15 @@ export default function SettingsPage() {
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleClearData}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/15 hover:border-rose-500/25 text-rose-400 font-bold text-[12px] rounded-xl transition-all"
+                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/15 hover:border-rose-500/25 text-rose-400 font-bold text-[11px] rounded-xl transition-all"
                       >
-                        <Trash2 className="w-4 h-4" /> Clear Local Data
+                        <Trash2 className="w-3.5 h-3.5" /> Clear Local Data
+                      </button>
+                      <button
+                        onClick={() => clerk.openUserProfile()}
+                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/25 hover:border-rose-500/40 text-rose-400 font-bold text-[11px] rounded-xl transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete Account
                       </button>
                     </div>
                   </div>

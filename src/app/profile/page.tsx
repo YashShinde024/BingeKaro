@@ -13,6 +13,7 @@ import { useWatchlist } from '../../context/WatchlistContext';
 import { useHistory } from '../../context/HistoryContext';
 import { useAuth as useClerkAuth } from '@clerk/nextjs';
 import { api } from '../../lib/api';
+import { FALLBACK_POSTER } from '../../lib/tmdb';
 import type { OTTProviderId, GenreId, MoodId } from '../../types';
 
 const DNA_ICONS: Record<string, React.ComponentType<any>> = {
@@ -381,9 +382,14 @@ export default function ProfilePage() {
               {visibleHistory.map(movie => (
                 <div key={movie.id} className="relative rounded-2xl overflow-hidden aspect-[2/3] bg-card/30 border border-border group">
                   {movie.posterPath ? (
-                    <img src={`https://image.tmdb.org/t/p/w300${movie.posterPath}`} alt="" className="w-full h-full object-cover" />
+                    <img 
+                      src={movie.posterPath.startsWith('http') ? movie.posterPath : `https://image.tmdb.org/t/p/w300${movie.posterPath}`} 
+                      alt="" 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => { (e.target as any).src = FALLBACK_POSTER; }}
+                    />
                   ) : (
-                    <div className="w-full h-full bg-card/30 flex items-center justify-center text-foreground font-bold">{movie.title}</div>
+                    <div className="w-full h-full bg-card/30 flex items-center justify-center text-foreground font-bold p-3 text-center text-xs">{movie.title}</div>
                   )}
                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 flex flex-col justify-end p-3.5 transition-all">
                     <p className="text-[12px] font-bold text-white truncate mb-1.5">{movie.title}</p>

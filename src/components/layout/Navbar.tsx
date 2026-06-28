@@ -30,7 +30,7 @@ export const Navbar: React.FC = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { user, openLoginModal, logout } = useAuth();
 
@@ -76,7 +76,7 @@ export const Navbar: React.FC = () => {
   }, [lastScrollY]);
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   const handleProtectedClick = (e: React.MouseEvent, to: string) => {
@@ -159,7 +159,7 @@ export const Navbar: React.FC = () => {
               onClick={toggleTheme}
               className="p-2 hover:bg-muted/15 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
             >
-              {theme === 'dark' ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
+              {resolvedTheme === 'dark' ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
             </button>
           )}
 

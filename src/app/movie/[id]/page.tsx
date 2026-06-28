@@ -296,67 +296,123 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
             {/* Where to Watch — Premium Provider Section */}
             {(flatrateProviders.length > 0 || rentProviders.length > 0 || buyProviders.length > 0) ? (
-              <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-accent" />
-                  <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">Where to Watch</span>
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-card/80 to-card/30 border border-border/80 shadow-lg space-y-5">
+                <div className="flex items-center justify-between border-b border-border/40 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4.5 h-4.5 text-accent animate-pulse" />
+                    <span className="text-[11px] font-black text-foreground uppercase tracking-widest">Where to Watch</span>
+                  </div>
+                  <span className="text-[9px] bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full text-accent font-extrabold uppercase">IN Region</span>
                 </div>
                 
                 {/* Stream */}
                 {flatrateProviders.length > 0 && (
-                  <div className="space-y-2">
-                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Stream</span>
-                    <div className="flex flex-wrap gap-2">
-                      {flatrateProviders.map((p: any) => (
-                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 border border-emerald-500/15 rounded-xl hover:border-emerald-500/30 transition-colors cursor-default">
-                          {p.logo_path && (
-                            <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-5 h-5 rounded object-contain" />
-                          )}
-                          <span className="text-[10.5px] font-bold text-foreground">{p.provider_name}</span>
-                        </div>
-                      ))}
+                  <div className="space-y-2.5">
+                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">Subscription</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {flatrateProviders.map((p: any) => {
+                        const redirectUrl = p.link || p.url || providersData.link || `https://www.google.com/search?q=${encodeURIComponent(p.provider_name + " " + title + " stream watch")}`;
+                        return (
+                          <a
+                            key={p.provider_id}
+                            href={redirectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2.5 bg-emerald-500/[0.03] hover:bg-emerald-500/[0.08] border border-emerald-500/15 hover:border-emerald-500/35 rounded-xl transition-all duration-300 group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {p.logo_path ? (
+                                <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-6 h-6 rounded-lg object-contain shadow-md" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-[10px] font-bold text-emerald-400">{p.provider_name[0]}</div>
+                              )}
+                              <div>
+                                <span className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors block">{p.provider_name}</span>
+                                <span className="text-[9px] text-muted-foreground font-medium">Watch Now</span>
+                              </div>
+                            </div>
+                            <span className="text-[8.5px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 tracking-wider">4K UHD</span>
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
                 {/* Rent */}
                 {rentProviders.length > 0 && (
-                  <div className="space-y-2">
-                    <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest">Rent</span>
-                    <div className="flex flex-wrap gap-2">
-                      {rentProviders.slice(0, 6).map((p: any) => (
-                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 bg-blue-500/5 border border-blue-500/15 rounded-xl hover:border-blue-500/30 transition-colors cursor-default">
-                          {p.logo_path && (
-                            <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-5 h-5 rounded object-contain" />
-                          )}
-                          <span className="text-[10.5px] font-bold text-foreground">{p.provider_name}</span>
-                        </div>
-                      ))}
+                  <div className="space-y-2.5">
+                    <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block">Rent</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {rentProviders.slice(0, 4).map((p: any) => {
+                        const redirectUrl = p.link || p.url || providersData.link || `https://www.google.com/search?q=${encodeURIComponent(p.provider_name + " " + title + " rent watch")}`;
+                        return (
+                          <a
+                            key={p.provider_id}
+                            href={redirectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2.5 bg-blue-500/[0.03] hover:bg-blue-500/[0.08] border border-blue-500/15 hover:border-blue-500/35 rounded-xl transition-all duration-300 group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {p.logo_path ? (
+                                <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-6 h-6 rounded-lg object-contain shadow-md" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400">{p.provider_name[0]}</div>
+                              )}
+                              <div>
+                                <span className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors block">{p.provider_name}</span>
+                                <span className="text-[9px] text-muted-foreground font-medium">Rent from ₹50</span>
+                              </div>
+                            </div>
+                            <span className="text-[8.5px] font-black uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 tracking-wider">HD</span>
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
                 {/* Buy */}
                 {buyProviders.length > 0 && (
-                  <div className="space-y-2">
-                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest">Buy</span>
-                    <div className="flex flex-wrap gap-2">
-                      {buyProviders.slice(0, 6).map((p: any) => (
-                        <div key={p.provider_id} className="flex items-center gap-2 px-3 py-2 bg-amber-500/5 border border-amber-500/15 rounded-xl hover:border-amber-500/30 transition-colors cursor-default">
-                          {p.logo_path && (
-                            <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-5 h-5 rounded object-contain" />
-                          )}
-                          <span className="text-[10.5px] font-bold text-foreground">{p.provider_name}</span>
-                        </div>
-                      ))}
+                  <div className="space-y-2.5">
+                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">Buy</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {buyProviders.slice(0, 4).map((p: any) => {
+                        const redirectUrl = p.link || p.url || providersData.link || `https://www.google.com/search?q=${encodeURIComponent(p.provider_name + " " + title + " buy watch")}`;
+                        return (
+                          <a
+                            key={p.provider_id}
+                            href={redirectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2.5 bg-amber-500/[0.03] hover:bg-amber-500/[0.08] border border-amber-500/15 hover:border-amber-500/35 rounded-xl transition-all duration-300 group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {p.logo_path ? (
+                                <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-6 h-6 rounded-lg object-contain shadow-md" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center text-[10px] font-bold text-amber-400">{p.provider_name[0]}</div>
+                              )}
+                              <div>
+                                <span className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors block">{p.provider_name}</span>
+                                <span className="text-[9px] text-muted-foreground font-medium">Buy to own</span>
+                              </div>
+                            </div>
+                            <span className="text-[8.5px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 tracking-wider">HD</span>
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="p-4 rounded-2xl bg-card/40 border border-dashed border-border/60 text-center space-y-1.5">
-                <Globe className="w-5 h-5 text-muted-foreground/40 mx-auto" />
-                <p className="text-[10.5px] text-muted-foreground/60 font-semibold">Streaming availability data is not yet available for this title in your region.</p>
+              <div className="p-6 rounded-2xl bg-card/20 border border-dashed border-border/80 text-center space-y-2">
+                <Globe className="w-5 h-5 text-muted-foreground/30 mx-auto" />
+                <p className="text-[11px] text-muted-foreground/80 font-semibold leading-relaxed">
+                  Streaming availability data is not currently available for this title in your region. Check back later!
+                </p>
               </div>
             )}
           </div>
@@ -506,7 +562,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin">
               {similarContent.map((item: any, i: number) => (
                 <div key={item.id} className="w-[185px] shrink-0">
-                  <MovieCard movie={item} index={i} />
+                  <MovieCard movie={hasTMDB ? undefined : item} content={hasTMDB ? item : undefined} index={i} />
                 </div>
               ))}
             </div>

@@ -12,7 +12,7 @@ import { PROVIDER_REGISTRY } from '../../lib/providers';
 import { MovieCard } from '../../components/cards/MovieCard';
 import type { GenreId, LanguageId, OTTProviderId, Movie } from '../../types';
 import { api } from '../../lib/api';
-import { normalizeContent } from '../../lib/tmdb';
+import { normalizeContent, FALLBACK_POSTER } from '../../lib/tmdb';
 import { MovieCardSkeleton } from '../../components/ui/Skeletons';
 
 const RUNTIME_OPTIONS = [
@@ -440,9 +440,17 @@ function DiscoverContent() {
                   exit={{ opacity: 0 }}
                   className="grid grid-cols-2 sm:grid-cols-3 gap-6"
                 >
-                  {discoverResults.map((movie, idx) => (
-                    <MovieCard key={movie.id} movie={movie} index={idx} />
-                  ))}
+                  {discoverResults.map((movie, idx) => {
+                    const isLegacy = 'type' in movie;
+                    return (
+                      <MovieCard
+                        key={movie.id}
+                        movie={isLegacy ? (movie as Movie) : undefined}
+                        content={!isLegacy ? (movie as any) : undefined}
+                        index={idx}
+                      />
+                    );
+                  })}
                 </motion.div>
               ) : (
                 <motion.div
@@ -452,20 +460,29 @@ function DiscoverContent() {
                   exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  {discoverResults.map((movie) => (
-                    <div key={movie.id} className="p-4 bg-card/30 border border-border/80 rounded-2xl flex gap-5 items-center hover:border-accent/40 transition-colors">
-                      <div className="w-14 aspect-poster rounded-lg overflow-hidden shrink-0 border border-border">
-                        <img src={movie.posterPath} alt="" className="w-full h-full object-cover" />
+                  {discoverResults.map((movie) => {
+                    const isLegacy = 'type' in movie;
+                    const title = isLegacy ? movie.title : (movie as any).title;
+                    const poster = isLegacy ? movie.posterPath : (movie as any).posterUrl;
+                    const rating = isLegacy ? movie.rating : (movie as any).rating;
+                    const year = isLegacy ? movie.year : (movie as any).year;
+                    const mediaType = isLegacy ? movie.type : (movie as any).mediaType;
+                    const detailPath = mediaType === 'tv' ? `/tv/${movie.id}` : `/movie/${movie.id}`;
+                    return (
+                      <div key={movie.id} className="p-4 bg-card/30 border border-border/80 rounded-2xl flex gap-5 items-center hover:border-accent/40 transition-colors">
+                        <div className="w-14 aspect-poster rounded-lg overflow-hidden shrink-0 border border-border">
+                          <img src={poster || FALLBACK_POSTER} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-bold text-foreground truncate">{title}</h4>
+                          <p className="text-xs text-muted-foreground font-semibold mt-1">★ {rating?.toFixed(1)} · {year}</p>
+                        </div>
+                        <Link href={detailPath} className="px-3.5 py-1.5 bg-accent hover:bg-accent-dark text-white rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider shadow-sm">
+                          View
+                        </Link>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-sm font-bold text-foreground truncate">{movie.title}</h4>
-                        <p className="text-xs text-muted-foreground font-semibold mt-1">★ {movie.rating?.toFixed(1)} · {movie.year}</p>
-                      </div>
-                      <Link href={`/movie/${movie.id}`} className="px-3.5 py-1.5 bg-accent hover:bg-accent-dark text-white rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider shadow-sm">
-                        View
-                      </Link>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>

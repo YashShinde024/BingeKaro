@@ -410,7 +410,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         return (
                           <Link
                             key={`tv-${tv.id}`}
-                            href={`/movie/${tv.id}?type=tv`}
+                            href={`/tv/${tv.id}`}
                             onClick={() => handleResultClick(tv.title)}
                             className={`flex items-center gap-4 p-2.5 rounded-2xl border border-transparent transition-all ${
                               active ? 'bg-accent/10 border-accent/20 text-white' : 'hover:bg-white/[0.02]'

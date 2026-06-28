@@ -117,6 +117,8 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
 
   const providersData = hasTV ? (tvData as any).watch_providers || {} : {};
   const flatrateProviders = providersData.flatrate || [];
+  const rentProviders = providersData.rent || [];
+  const buyProviders = providersData.buy || [];
 
   const isFavorited = inFavorites(Number(id));
   const isSaved = inWatchlist(Number(id));
@@ -253,15 +255,125 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
               </button>
             </div>
 
-            {/* Streaming networks */}
-            {flatrateProviders.length > 0 && (
-              <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3">
-                <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest block">Available Stream</span>
-                <div className="flex flex-wrap gap-2">
-                  {flatrateProviders.slice(0, 4).map((p: any) => (
-                    <OTTBadge key={p.provider_id} provider={p.provider_name.toLowerCase().replace(/\s+/g, '-')} size="sm" />
-                  ))}
+            {/* Where to Watch — Premium Provider Section */}
+            {(flatrateProviders.length > 0 || rentProviders.length > 0 || buyProviders.length > 0) ? (
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-card/80 to-card/30 border border-border/80 shadow-lg space-y-5">
+                <div className="flex items-center justify-between border-b border-border/40 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4.5 h-4.5 text-accent animate-pulse" />
+                    <span className="text-[11px] font-black text-foreground uppercase tracking-widest">Where to Watch</span>
+                  </div>
+                  <span className="text-[9px] bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full text-accent font-extrabold uppercase">IN Region</span>
                 </div>
+                
+                {/* Stream */}
+                {flatrateProviders.length > 0 && (
+                  <div className="space-y-2.5">
+                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block">Subscription</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {flatrateProviders.map((p: any) => {
+                        const redirectUrl = p.link || p.url || providersData.link || `https://www.google.com/search?q=${encodeURIComponent(p.provider_name + " " + title + " stream watch")}`;
+                        return (
+                          <a
+                            key={p.provider_id}
+                            href={redirectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2.5 bg-emerald-500/[0.03] hover:bg-emerald-500/[0.08] border border-emerald-500/15 hover:border-emerald-500/35 rounded-xl transition-all duration-300 group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {p.logo_path ? (
+                                <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-6 h-6 rounded-lg object-contain shadow-md" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-[10px] font-bold text-emerald-400">{p.provider_name[0]}</div>
+                              )}
+                              <div>
+                                <span className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors block">{p.provider_name}</span>
+                                <span className="text-[9px] text-muted-foreground font-medium">Watch Now</span>
+                              </div>
+                            </div>
+                            <span className="text-[8.5px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 tracking-wider">4K UHD</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Rent */}
+                {rentProviders.length > 0 && (
+                  <div className="space-y-2.5">
+                    <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block">Rent</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {rentProviders.slice(0, 4).map((p: any) => {
+                        const redirectUrl = p.link || p.url || providersData.link || `https://www.google.com/search?q=${encodeURIComponent(p.provider_name + " " + title + " rent watch")}`;
+                        return (
+                          <a
+                            key={p.provider_id}
+                            href={redirectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2.5 bg-blue-500/[0.03] hover:bg-blue-500/[0.08] border border-blue-500/15 hover:border-blue-500/35 rounded-xl transition-all duration-300 group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {p.logo_path ? (
+                                <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-6 h-6 rounded-lg object-contain shadow-md" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-400">{p.provider_name[0]}</div>
+                              )}
+                              <div>
+                                <span className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors block">{p.provider_name}</span>
+                                <span className="text-[9px] text-muted-foreground font-medium flex items-center gap-1">Rent Episode</span>
+                              </div>
+                            </div>
+                            <span className="text-[8.5px] font-black uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 tracking-wider">HD</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Buy */}
+                {buyProviders.length > 0 && (
+                  <div className="space-y-2.5">
+                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">Buy</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {buyProviders.slice(0, 4).map((p: any) => {
+                        const redirectUrl = p.link || p.url || providersData.link || `https://www.google.com/search?q=${encodeURIComponent(p.provider_name + " " + title + " buy watch")}`;
+                        return (
+                          <a
+                            key={p.provider_id}
+                            href={redirectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2.5 bg-amber-500/[0.03] hover:bg-amber-500/[0.08] border border-amber-500/15 hover:border-amber-500/35 rounded-xl transition-all duration-300 group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {p.logo_path ? (
+                                <img src={`https://image.tmdb.org/t/p/w45${p.logo_path}`} alt="" className="w-6 h-6 rounded-lg object-contain shadow-md" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center text-[10px] font-bold text-amber-400">{p.provider_name[0]}</div>
+                              )}
+                              <div>
+                                <span className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors block">{p.provider_name}</span>
+                                <span className="text-[9px] text-muted-foreground font-medium">Buy Season</span>
+                              </div>
+                            </div>
+                            <span className="text-[8.5px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 tracking-wider">HD</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-6 rounded-2xl bg-card/20 border border-dashed border-border/80 text-center space-y-2">
+                <Globe className="w-5 h-5 text-muted-foreground/30 mx-auto" />
+                <p className="text-[11px] text-muted-foreground/80 font-semibold leading-relaxed">
+                  Streaming availability data is not currently available for this series in your region. Check back later!
+                </p>
               </div>
             )}
           </div>
@@ -391,7 +503,7 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
             <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin">
               {similar.map((item: any, i: number) => (
                 <div key={item.id} className="w-[185px] shrink-0">
-                  <MovieCard movie={item} index={i} />
+                  <MovieCard content={item} index={i} />
                 </div>
               ))}
             </div>
